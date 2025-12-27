@@ -158,6 +158,90 @@ class TestInvestmentModel:
 
             assert investment.get_total_dividends_received() == 300.0
 
+    def test_calculate_annual_dividends_multiple_same_frequency(self, app):
+        """Test annual dividends sums up when full year of data exists."""
+        with app.app_context():
+            from datetime import datetime, timedelta
+
+            investment = Investment(
+                name="Test",
+                ticker="TST",
+                total_invested=10000.0,
+            )
+            db.session.add(investment)
+            db.session.commit()
+
+            # Add 12 monthly dividends (simulating a year of dividend payments)
+            base_date = datetime(2024, 1, 1)
+            for i in range(12):
+                dividend = Dividend(
+                    investment_id=investment.id,
+                    amount=100.0,
+                    frequency="monthly",
+                    date_received=base_date + timedelta(days=30 * i),
+                )
+                db.session.add(dividend)
+            db.session.commit()
+
+            # With 12 monthly dividends of 100 each, should sum to 1200
+            assert investment.calculate_annual_dividends() == 1200.0
+
+    def test_calculate_annual_dividends_partial_year(self, app):
+        """Test annual dividends projects from partial data."""
+        with app.app_context():
+            from datetime import datetime
+
+            investment = Investment(
+                name="Test",
+                ticker="TST",
+                total_invested=10000.0,
+            )
+            db.session.add(investment)
+            db.session.commit()
+
+            # Only 2 monthly dividends
+            for i in range(2):
+                dividend = Dividend(
+                    investment_id=investment.id,
+                    amount=100.0,
+                    frequency="monthly",
+                    date_received=datetime(2024, i + 1, 1),
+                )
+                db.session.add(dividend)
+            db.session.commit()
+
+            # With less than 12 monthly dividends, should project: avg(100) * 12 = 1200
+            assert investment.calculate_annual_dividends() == 1200.0
+
+    def test_calculate_annual_dividends_varying_amounts(self, app):
+        """Test annual dividends with varying dividend amounts."""
+        with app.app_context():
+            from datetime import datetime, timedelta
+
+            investment = Investment(
+                name="Test",
+                ticker="TST",
+                total_invested=10000.0,
+            )
+            db.session.add(investment)
+            db.session.commit()
+
+            # Add 12 monthly dividends with varying amounts
+            base_date = datetime(2024, 1, 1)
+            amounts = [100, 110, 105, 115, 120, 100, 130, 125, 140, 135, 150, 145]
+            for i, amount in enumerate(amounts):
+                dividend = Dividend(
+                    investment_id=investment.id,
+                    amount=amount,
+                    frequency="monthly",
+                    date_received=base_date + timedelta(days=30 * i),
+                )
+                db.session.add(dividend)
+            db.session.commit()
+
+            # Should sum the 12 most recent (all of them): 1475
+            assert investment.calculate_annual_dividends() == sum(amounts)
+
     def test_get_summary(self, app):
         """Test investment summary generation."""
         with app.app_context():
@@ -285,6 +369,58 @@ class TestDividendModel:
             assert data["frequency"] == "quarterly"
             assert data["notes"] == "Test"
             assert data["annualized_amount"] == 200.0
+            assert data["investment_amount_at_time"] is None
+            assert data["yield_at_time"] is None
+
+    def test_to_dict_with_investment_amount_at_time(self, app, sample_investment):
+        """Test dividend dictionary conversion with investment amount at time."""
+        with app.app_context():
+            dividend = Dividend(
+                investment_id=sample_investment.id,
+                amount=50.0,
+                frequency="quarterly",
+                investment_amount_at_time=5000.0,
+            )
+            db.session.add(dividend)
+            db.session.commit()
+
+            data = dividend.to_dict()
+
+            assert data["investment_amount_at_time"] == 5000.0
+            assert data["yield_at_time"] == pytest.approx(4.0)  # (50 * 4 / 5000) * 100
+
+    def test_yield_at_time_property(self, app, sample_investment):
+        """Test yield_at_time property calculation."""
+        with app.app_context():
+            dividend = Dividend(
+                investment_id=sample_investment.id,
+                amount=100.0,
+                frequency="monthly",
+                investment_amount_at_time=10000.0,
+            )
+            # Yield = (100 * 12 / 10000) * 100 = 12%
+            assert dividend.yield_at_time == pytest.approx(12.0)
+
+    def test_yield_at_time_none_when_no_investment_amount(self, app, sample_investment):
+        """Test yield_at_time returns None when investment_amount_at_time is not set."""
+        with app.app_context():
+            dividend = Dividend(
+                investment_id=sample_investment.id,
+                amount=100.0,
+                frequency="monthly",
+            )
+            assert dividend.yield_at_time is None
+
+    def test_yield_at_time_none_when_investment_amount_is_zero(self, app, sample_investment):
+        """Test yield_at_time returns None when investment_amount_at_time is zero."""
+        with app.app_context():
+            dividend = Dividend(
+                investment_id=sample_investment.id,
+                amount=100.0,
+                frequency="monthly",
+                investment_amount_at_time=0.0,
+            )
+            assert dividend.yield_at_time is None
 
 
 class TestCascadeDelete:

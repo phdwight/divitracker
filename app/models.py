@@ -75,30 +75,56 @@ class Investment(db.Model):
         """Return string representation of the investment."""
         return f"<Investment {self.name} ({self.ticker or 'N/A'})>"
 
-    def calculate_annual_dividends(self) -> float:
+    def calculate_annual_dividends(self, year: int | None = None) -> float:
         """
-        Calculate total annualized dividends for this investment.
+        Calculate total dividends for a specific year.
+
+        Args:
+            year: The year to calculate dividends for. If None, uses current year.
 
         Returns:
-            Total annual dividend amount based on all dividend records.
+            Total dividend amount for the specified year.
         """
+        if year is None:
+            year = datetime.now(timezone.utc).year
+
+        all_dividends = self.dividends.all()
+        
+        # Sum dividends for the specified year based on period_year
         total = 0.0
-        for dividend in self.dividends.all():
-            frequency = DividendFrequency(dividend.frequency)
-            total += dividend.amount * frequency.annual_multiplier
+        for dividend in all_dividends:
+            if dividend.period_year == year:
+                total += dividend.amount
+        
         return total
 
-    def calculate_dividend_yield(self) -> float:
+    def calculate_dividend_yield(self, year: int | None = None) -> float:
         """
-        Calculate annualized dividend yield percentage.
+        Calculate dividend yield percentage for a specific year.
+
+        Args:
+            year: The year to calculate yield for. If None, uses current year.
 
         Returns:
             Dividend yield as a percentage (0.0 if no investment).
         """
         if self.total_invested <= 0:
             return 0.0
-        annual_dividends = self.calculate_annual_dividends()
+        annual_dividends = self.calculate_annual_dividends(year)
         return (annual_dividends / self.total_invested) * 100
+
+    def get_years_with_dividends(self) -> list[int]:
+        """
+        Get list of years that have dividend records.
+
+        Returns:
+            List of years sorted in descending order.
+        """
+        years = set()
+        for dividend in self.dividends.all():
+            if dividend.period_year:
+                years.add(dividend.period_year)
+        return sorted(years, reverse=True)
 
     def get_total_dividends_received(self) -> float:
         """
@@ -150,6 +176,15 @@ class Dividend(db.Model):
     )
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     frequency: Mapped[str] = mapped_column(String(20), nullable=False)
+    investment_amount_at_time: Mapped[Optional[float]] = mapped_column(
+        Float, nullable=True
+    )
+    period_month: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True
+    )
+    period_year: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True
+    )
     date_received: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, nullable=False
     )
@@ -175,6 +210,46 @@ class Dividend(db.Model):
         frequency = DividendFrequency(self.frequency)
         return self.amount * frequency.annual_multiplier
 
+    @property
+    def yield_at_time(self) -> Optional[float]:
+        """
+        Calculate the yield percentage at the time the dividend was recorded.
+
+        Returns:
+            Yield percentage or None if investment amount was not recorded.
+        """
+        if self.investment_amount_at_time and self.investment_amount_at_time > 0:
+            return (self.annualized_amount / self.investment_amount_at_time) * 100
+        return None
+
+    @property
+    def period_label(self) -> Optional[str]:
+        """
+        Get a formatted label for the dividend period.
+
+        Returns:
+            Formatted period string (e.g., 'Jan 2025', 'Q1 2025') or None.
+        """
+        if not self.period_year:
+            return None
+
+        month_names = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ]
+
+        if self.frequency == 'monthly' and self.period_month:
+            return f"{month_names[self.period_month - 1]} {self.period_year}"
+        elif self.frequency == 'quarterly' and self.period_month:
+            quarter = (self.period_month - 1) // 3 + 1
+            return f"Q{quarter} {self.period_year}"
+        elif self.frequency == 'yearly':
+            return str(self.period_year)
+        elif self.period_month:
+            return f"{month_names[self.period_month - 1]} {self.period_year}"
+        else:
+            return str(self.period_year)
+
     def to_dict(self) -> dict:
         """
         Convert dividend to dictionary representation.
@@ -187,7 +262,12 @@ class Dividend(db.Model):
             "investment_id": self.investment_id,
             "amount": self.amount,
             "frequency": self.frequency,
+            "investment_amount_at_time": self.investment_amount_at_time,
+            "period_month": self.period_month,
+            "period_year": self.period_year,
+            "period_label": self.period_label,
             "date_received": self.date_received.isoformat() if self.date_received else None,
             "notes": self.notes,
             "annualized_amount": self.annualized_amount,
+            "yield_at_time": self.yield_at_time,
         }

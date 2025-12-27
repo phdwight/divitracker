@@ -76,6 +76,7 @@ def view_investment(investment_id: int):
     Returns:
         Rendered view_investment template or 404 error.
     """
+    from datetime import datetime
     from app.models import Dividend
     
     investment_service = InvestmentService()
@@ -89,10 +90,29 @@ def view_investment(investment_id: int):
             .order_by(Dividend.date_received.desc())
             .all()
         )
+        
+        # Get years with dividends for the year selector
+        years_with_dividends = investment.get_years_with_dividends()
+        
+        # Get selected year from query params, default to current year
+        current_year = datetime.now().year
+        selected_year = request.args.get('year', type=int)
+        
+        # If no year selected or year has no data, use current year or most recent year with data
+        if selected_year is None or selected_year not in years_with_dividends:
+            if current_year in years_with_dividends:
+                selected_year = current_year
+            elif years_with_dividends:
+                selected_year = years_with_dividends[0]  # Most recent year (list is desc sorted)
+            else:
+                selected_year = current_year  # No dividends yet, show current year
+        
         return render_template(
             "view_investment.html",
             investment=investment,
             dividends=dividends,
+            years_with_dividends=years_with_dividends,
+            selected_year=selected_year,
         )
     except NotFoundError:
         flash("Investment not found", "error")

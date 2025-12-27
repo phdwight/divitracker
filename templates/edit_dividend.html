@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Dividend - DiviTracker{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1>Edit Dividend</h1>
+    <p class="subtitle">Update dividend record for {{ dividend.investment.name }}</p>
+    
+    <div class="form-container">
+        <form method="POST" action="{{ url_for('dividends.edit_dividend', dividend_id=dividend.id) }}">
+            <div class="form-group">
+                <label for="amount">Dividend Amount ({{ currency_symbol }}) *</label>
+                <input type="number" 
+                       id="amount" 
+                       name="amount" 
+                       step="0.01" 
+                       min="0.01"
+                       value="{{ dividend.amount }}"
+                       required>
+                <small class="form-help">Enter the dividend amount you received</small>
+            </div>
+
+            <div class="form-group">
+                <label>Dividend Period *</label>
+                <div class="period-inputs">
+                    <select id="period_month" name="period_month" required>
+                        <option value="">-- Month --</option>
+                        <option value="1" {% if dividend.period_month == 1 %}selected{% endif %}>January</option>
+                        <option value="2" {% if dividend.period_month == 2 %}selected{% endif %}>February</option>
+                        <option value="3" {% if dividend.period_month == 3 %}selected{% endif %}>March</option>
+                        <option value="4" {% if dividend.period_month == 4 %}selected{% endif %}>April</option>
+                        <option value="5" {% if dividend.period_month == 5 %}selected{% endif %}>May</option>
+                        <option value="6" {% if dividend.period_month == 6 %}selected{% endif %}>June</option>
+                        <option value="7" {% if dividend.period_month == 7 %}selected{% endif %}>July</option>
+                        <option value="8" {% if dividend.period_month == 8 %}selected{% endif %}>August</option>
+                        <option value="9" {% if dividend.period_month == 9 %}selected{% endif %}>September</option>
+                        <option value="10" {% if dividend.period_month == 10 %}selected{% endif %}>October</option>
+                        <option value="11" {% if dividend.period_month == 11 %}selected{% endif %}>November</option>
+                        <option value="12" {% if dividend.period_month == 12 %}selected{% endif %}>December</option>
+                    </select>
+                    <select id="period_year" name="period_year" required>
+                        <option value="">-- Year --</option>
+                        {% for year in range(2020, 2031) %}
+                        <option value="{{ year }}" {% if dividend.period_year == year %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <small class="form-help">Select the month and year this dividend is for</small>
+            </div>
+
+            <div class="form-group">
+                <label for="investment_amount_at_time">Investment Amount at Time ({{ currency_symbol }})</label>
+                <input type="number" 
+                       id="investment_amount_at_time" 
+                       name="investment_amount_at_time" 
+                       step="0.01" 
+                       min="0"
+                       value="{{ dividend.investment_amount_at_time or '' }}">
+                <small class="form-help">Optional: The investment value when this dividend was received</small>
+            </div>
+
+            <div class="form-group">
+                <label>Dividend Frequency *</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="frequency" value="monthly" {% if dividend.frequency == 'monthly' %}checked{% endif %} required>
+                        <span class="radio-label">
+                            <strong>Monthly</strong>
+                            <small>Paid every month (×12 annually)</small>
+                        </span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="frequency" value="quarterly" {% if dividend.frequency == 'quarterly' %}checked{% endif %}>
+                        <span class="radio-label">
+                            <strong>Quarterly</strong>
+                            <small>Paid every 3 months (×4 annually)</small>
+                        </span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="frequency" value="yearly" {% if dividend.frequency == 'yearly' %}checked{% endif %}>
+                        <span class="radio-label">
+                            <strong>Yearly</strong>
+                            <small>Paid once per year (×1 annually)</small>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notes (Optional)</label>
+                <textarea id="notes" name="notes" rows="2" placeholder="Any additional notes...">{{ dividend.notes or '' }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('investments.view_investment', investment_id=dividend.investment_id) }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Dividend</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
