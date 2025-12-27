@@ -8,5 +8,9 @@
         "thousands_separator": ",",
         "decimal_separator": ".",
         "decimal_places": 2
+    },
+    "timezone": {
+        "offset_hours": 8,
+        "name": "GMT+8"
     }
 }

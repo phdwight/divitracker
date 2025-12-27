@@ -1,6 +1,7 @@
 """DiviTracker Flask Application Factory."""
 
 import logging
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import Flask
@@ -55,6 +56,13 @@ def create_app(config_name: str = "development") -> Flask:
     def inject_settings() -> dict:
         """Inject user settings into all templates."""
         settings = get_user_settings()
+        
+        def get_local_time() -> datetime:
+            """Get current time in user's configured timezone."""
+            utc_now = datetime.now(timezone.utc)
+            local_tz = timezone(timedelta(hours=settings.timezone.offset_hours))
+            return utc_now.astimezone(local_tz)
+        
         return {
             "currency_symbol": settings.currency.symbol,
             "currency_code": settings.currency.code,
@@ -63,6 +71,8 @@ def create_app(config_name: str = "development") -> Flask:
             "decimal_separator": settings.formatting.decimal_separator,
             "decimal_places": settings.formatting.decimal_places,
             "format_currency": format_currency,
+            "now": get_local_time,
+            "timezone_name": settings.timezone.name,
         }
 
     # Create database tables

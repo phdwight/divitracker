@@ -219,6 +219,10 @@ main {
     color: rgba(255, 255, 255, 0.8);
 }
 
+.stat-card.highlight .stat-hint {
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .stat-value {
     font-size: 1.5rem;
     font-weight: 700;
@@ -700,6 +704,208 @@ main {
     color: var(--primary-color);
 }
 
+/* Stat Card Link */
+.stat-card-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card-link:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Yield Breakdown Page */
+.yield-breakdown {
+    padding: 2rem 0;
+}
+
+.yield-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.yield-title h1 {
+    margin-bottom: 0.25rem;
+}
+
+.yield-subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.yield-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.yield-summary-box {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.yield-formula {
+    margin-bottom: 2rem;
+}
+
+.yield-formula h2,
+.yield-result h2,
+.yield-details h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.formula-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 1.1rem;
+    padding: 1rem;
+    background: var(--bg-color);
+    border-radius: var(--radius);
+}
+
+.formula-fraction {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.formula-numerator {
+    border-bottom: 2px solid var(--text-color);
+    padding-bottom: 0.25rem;
+}
+
+.formula-denominator {
+    padding-top: 0.25rem;
+}
+
+.formula-equals,
+.formula-multiply {
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+
+.result-calculation {
+    background: var(--bg-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.calc-label {
+    color: var(--text-muted);
+}
+
+.calc-value {
+    font-weight: 500;
+}
+
+.calc-divider {
+    border-top: 2px solid var(--border-color);
+    margin: 0.5rem 0;
+}
+
+.calc-final {
+    font-size: 1.1rem;
+}
+
+.calc-yield {
+    color: var(--success-color);
+}
+
+.yield-details {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+}
+
+.yield-note {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-color);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--info-color);
+}
+
+.yield-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.yield-table th,
+.yield-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.yield-table th {
+    background: var(--bg-color);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.yield-table .text-right {
+    text-align: right;
+}
+
+.yield-table .totals-row {
+    background: var(--bg-color);
+    font-weight: 600;
+}
+
+.yield-table .totals-row td {
+    border-bottom: none;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.yield-total {
+    background: var(--primary-color) !important;
+    color: white !important;
+}
+
+.yield-footer {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.print-date {
+    margin-top: 1rem;
+}
+
 /* Footer */
 .footer {
     background-color: var(--card-bg);
@@ -712,6 +918,73 @@ main {
     text-align: center;
     color: var(--text-muted);
     font-size: 0.875rem;
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white;
+        font-size: 12pt;
+    }
+
+    .navbar,
+    .footer,
+    .no-print {
+        display: none !important;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .yield-breakdown {
+        padding: 0;
+    }
+
+    .yield-summary-box,
+    .yield-details {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+    }
+
+    .yield-table {
+        font-size: 10pt;
+    }
+
+    .yield-table th,
+    .yield-table td {
+        padding: 0.5rem;
+    }
+
+    .yield-badge {
+        border: 1px solid currentColor;
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .yield-total {
+        background: #333 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .yield-header {
+        margin-bottom: 1rem;
+    }
+
+    .print-date {
+        display: block;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
 }
 
 /* Responsive */
@@ -739,5 +1012,30 @@ main {
 
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+
+    .yield-header {
+        flex-direction: column;
+    }
+
+    .yield-actions {
+        width: 100%;
+    }
+
+    .yield-actions .btn {
+        flex: 1;
+    }
+
+    .formula-display {
+        font-size: 0.9rem;
+    }
+
+    .yield-table {
+        font-size: 0.875rem;
+    }
+
+    .yield-table th,
+    .yield-table td {
+        padding: 0.5rem;
     }
 }

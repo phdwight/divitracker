@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Yield Calculation Breakdown - DiviTracker{% endblock %}
+
+{% block content %}
+<div class="yield-breakdown">
+    <div class="yield-header">
+        <div class="yield-title">
+            <h1>Annualized Yield Calculation</h1>
+            <p class="yield-subtitle">Detailed breakdown for {{ selected_year }}</p>
+        </div>
+        <div class="yield-actions no-print">
+            <button onclick="window.print()" class="btn btn-primary">🖨️ Print</button>
+            <a href="{{ url_for('main.index', year=selected_year) }}" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="yield-summary-box">
+        <div class="yield-formula">
+            <h2>Formula</h2>
+            <div class="formula-display">
+                <span class="formula-text">Annualized Yield</span>
+                <span class="formula-equals">=</span>
+                <div class="formula-fraction">
+                    <span class="formula-numerator">Total Dividends Received</span>
+                    <span class="formula-denominator">Total Investment Amount</span>
+                </div>
+                <span class="formula-multiply">×</span>
+                <span class="formula-text">100</span>
+            </div>
+        </div>
+
+        <div class="yield-result">
+            <h2>Result</h2>
+            <div class="result-calculation">
+                <div class="calc-row">
+                    <span class="calc-label">Total Dividends Received:</span>
+                    <span class="calc-value">{{ format_currency(total_dividends) }}</span>
+                </div>
+                <div class="calc-row">
+                    <span class="calc-label">Total Investment Amount:</span>
+                    <span class="calc-value">{{ format_currency(total_investment_for_yield) }}</span>
+                </div>
+                <div class="calc-row calc-divider"></div>
+                <div class="calc-row calc-final">
+                    <span class="calc-label">Annualized Yield:</span>
+                    <span class="calc-value calc-yield">
+                        {% if total_investment_for_yield > 0 %}
+                        {{ format_currency(total_dividends) }} ÷ {{ format_currency(total_investment_for_yield) }} × 100 = <strong>{{ "%.2f"|format(overall_yield) }}%</strong>
+                        {% else %}
+                        N/A (no investments)
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="yield-details">
+        <h2>Investment Breakdown</h2>
+        <p class="yield-note">The investment amount used for yield calculation is based on the amount recorded at the time of the most recent dividend for each investment in {{ selected_year }}.</p>
+
+        {% if investment_details %}
+        <table class="yield-table">
+            <thead>
+                <tr>
+                    <th>Investment</th>
+                    <th>Ticker</th>
+                    <th class="text-right">Investment Amount</th>
+                    <th class="text-right">Dividends Received</th>
+                    <th class="text-right">Yield</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in investment_details %}
+                <tr>
+                    <td>{{ detail.name }}</td>
+                    <td>{{ detail.ticker or '-' }}</td>
+                    <td class="text-right">{{ format_currency(detail.investment_amount) }}</td>
+                    <td class="text-right">{{ format_currency(detail.dividends_received) }}</td>
+                    <td class="text-right">
+                        <span class="yield-badge {% if detail.yield_percent >= 5 %}yield-high{% elif detail.yield_percent >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                            {{ "%.2f"|format(detail.yield_percent) }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="totals-row">
+                    <td colspan="2"><strong>Total</strong></td>
+                    <td class="text-right"><strong>{{ format_currency(total_investment_for_yield) }}</strong></td>
+                    <td class="text-right"><strong>{{ format_currency(total_dividends) }}</strong></td>
+                    <td class="text-right">
+                        <span class="yield-badge yield-total">
+                            <strong>{{ "%.2f"|format(overall_yield) }}%</strong>
+                        </span>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No dividend data for {{ selected_year }}</h3>
+            <p>Add dividends to see the yield calculation breakdown.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="yield-footer">
+        <p class="print-date">Generated on {{ now().strftime('%B %d, %Y at %I:%M %p') }} ({{ timezone_name }})</p>
+    </div>
+</div>
+{% endblock %}
