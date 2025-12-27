@@ -8,9 +8,9 @@ from flask import Flask
 
 from app.config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
 from app.extensions import db, migrate
-from app.routes.main import main_bp
-from app.routes.investments import investments_bp
 from app.routes.dividends import dividends_bp
+from app.routes.investments import investments_bp
+from app.routes.main import main_bp
 from app.settings import format_currency, get_user_settings
 
 
@@ -56,13 +56,13 @@ def create_app(config_name: str = "development") -> Flask:
     def inject_settings() -> dict:
         """Inject user settings into all templates."""
         settings = get_user_settings()
-        
+
         def get_local_time() -> datetime:
             """Get current time in user's configured timezone."""
             utc_now = datetime.now(timezone.utc)
             local_tz = timezone(timedelta(hours=settings.timezone.offset_hours))
             return utc_now.astimezone(local_tz)
-        
+
         return {
             "currency_symbol": settings.currency.symbol,
             "currency_code": settings.currency.code,

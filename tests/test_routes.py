@@ -1,9 +1,7 @@
 """Tests for Flask routes."""
 
-import pytest
-
 from app.extensions import db
-from app.models import Investment, Dividend
+from app.models import Dividend, Investment
 
 
 class TestMainRoutes:
@@ -24,6 +22,31 @@ class TestMainRoutes:
     def test_index_shows_investments(self, client, app, sample_investment):
         """Test that index shows investments when they exist."""
         response = client.get("/")
+        assert response.status_code == 200
+        assert b"Test Investment" in response.data
+
+    def test_yield_breakdown_page_loads(self, client):
+        """Test that the yield breakdown page loads successfully."""
+        response = client.get("/yield-breakdown")
+        assert response.status_code == 200
+        assert b"Annualized Yield Calculation" in response.data
+
+    def test_yield_breakdown_with_year_param(self, client):
+        """Test yield breakdown page with year parameter."""
+        response = client.get("/yield-breakdown?year=2025")
+        assert response.status_code == 200
+        assert b"2025" in response.data
+
+    def test_yield_breakdown_shows_formula(self, client):
+        """Test that yield breakdown shows the calculation formula."""
+        response = client.get("/yield-breakdown")
+        assert response.status_code == 200
+        assert b"Total Dividends Received" in response.data
+        assert b"Total Investment Amount" in response.data
+
+    def test_yield_breakdown_with_investments(self, client, app, sample_investment):
+        """Test yield breakdown with existing investments."""
+        response = client.get("/yield-breakdown")
         assert response.status_code == 200
         assert b"Test Investment" in response.data
 
@@ -196,9 +219,7 @@ class TestDividendRoutes:
         assert b"Added quarterly dividend" in response.data
 
         with app.app_context():
-            dividend = Dividend.query.filter_by(
-                investment_id=sample_investment.id
-            ).first()
+            dividend = Dividend.query.filter_by(investment_id=sample_investment.id).first()
             assert dividend is not None
             assert dividend.amount == 100.0
             assert dividend.frequency == "quarterly"
@@ -318,7 +339,9 @@ class TestDividendRoutes:
             assert updated_dividend.period_month == 6
             assert updated_dividend.period_year == 2025
 
-    def test_edit_dividend_post_validation_error(self, client, app, sample_investment_with_dividend):
+    def test_edit_dividend_post_validation_error(
+        self, client, app, sample_investment_with_dividend
+    ):
         """Test updating dividend with invalid data shows error."""
         with app.app_context():
             dividend = Dividend.query.filter_by(
@@ -338,7 +361,9 @@ class TestDividendRoutes:
         assert response.status_code == 200
         assert b"invalid" in response.data.lower()
 
-    def test_edit_dividend_with_investment_amount_at_time(self, client, app, sample_investment_with_dividend):
+    def test_edit_dividend_with_investment_amount_at_time(
+        self, client, app, sample_investment_with_dividend
+    ):
         """Test updating dividend with investment amount at time."""
         with app.app_context():
             dividend = Dividend.query.filter_by(

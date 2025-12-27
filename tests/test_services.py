@@ -2,12 +2,12 @@
 
 import pytest
 
+from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
-from app.models import Investment, Dividend
-from app.services.investment_service import InvestmentService
+from app.models import Dividend, Investment
 from app.services.dividend_service import DividendService
+from app.services.investment_service import InvestmentService
 from app.services.portfolio_service import PortfolioService, PortfolioSummary
-from app.exceptions import ValidationError, NotFoundError
 
 
 class TestInvestmentService:
@@ -457,9 +457,7 @@ class TestDividendService:
         """Test getting dividends for an investment."""
         with app.app_context():
             service = DividendService()
-            dividends = service.get_dividends_for_investment(
-                sample_investment_with_dividend.id
-            )
+            dividends = service.get_dividends_for_investment(sample_investment_with_dividend.id)
 
             assert len(dividends) == 4  # 4 quarterly dividends from fixture
             assert all(d.amount == 50.0 for d in dividends)
@@ -484,9 +482,7 @@ class TestPortfolioService:
             assert summary.projected_yield == 0.0
             assert summary.investment_count == 0
 
-    def test_get_portfolio_summary_with_investments(
-        self, app, sample_investment_with_dividend
-    ):
+    def test_get_portfolio_summary_with_investments(self, app, sample_investment_with_dividend):
         """Test portfolio summary with investments and dividends."""
         with app.app_context():
             investment_service = InvestmentService()
@@ -502,6 +498,7 @@ class TestPortfolioService:
     def test_get_portfolio_summary_multiple_investments(self, app):
         """Test portfolio summary with multiple investments."""
         from datetime import datetime, timezone
+
         with app.app_context():
             current_year = datetime.now(timezone.utc).year
             # Create multiple investments
@@ -520,7 +517,7 @@ class TestPortfolioService:
                     period_year=current_year,
                 )
                 db.session.add(div)
-            
+
             # Add 12 monthly dividends for inv2 (50 * 12 = 600)
             for month in range(1, 13):
                 div = Dividend(

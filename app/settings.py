@@ -144,6 +144,7 @@ class SettingsManager:
         """
         # Deep copy defaults to avoid mutating the original
         import copy
+
         settings_dict = copy.deepcopy(DEFAULT_SETTINGS)
 
         if self._config_path.exists():

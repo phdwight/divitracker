@@ -3,12 +3,13 @@
 import logging
 from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
+from app.exceptions import NotFoundError, ValidationError
 from app.services.dividend_service import DividendService
 from app.services.investment_service import InvestmentService
-from app.exceptions import ValidationError, NotFoundError
 from app.settings import format_currency
+from app.utils import sanitize_log_input
 
 dividends_bp = Blueprint("dividends", __name__)
 logger = logging.getLogger(__name__)
@@ -34,7 +35,9 @@ def add_dividend():
         amount_str = request.form.get("amount", "")
         frequency = request.form.get("frequency", "")
         notes = request.form.get("notes", "").strip() or None
-        investment_amount_at_time_str = request.form.get("investment_amount_at_time", "").strip() or None
+        investment_amount_at_time_str = (
+            request.form.get("investment_amount_at_time", "").strip() or None
+        )
         period_month_str = request.form.get("period_month", "").strip() or None
         period_year_str = request.form.get("period_year", "").strip() or None
 
@@ -52,29 +55,30 @@ def add_dividend():
             # Calculate annualized yield for the message
             period_info = f" for {dividend.period_label}" if dividend.period_label else ""
             flash(
-                f"Added {frequency} dividend of {format_currency(dividend.amount)}{period_info} to {investment.name}. "
+                f"Added {frequency} dividend of {format_currency(dividend.amount)}"
+                f"{period_info} to {investment.name}. "
                 f"Annualized: {format_currency(dividend.annualized_amount)} "
                 f"({investment.calculate_dividend_yield():.2f}% yield)",
                 "success",
             )
             logger.info(
                 "Dividend added to %s: $%.2f (%s)",
-                investment.name,
+                sanitize_log_input(investment.name),
                 dividend.amount,
-                frequency,
+                sanitize_log_input(frequency),
             )
-            return redirect(
-                url_for("investments.view_investment", investment_id=investment.id)
-            )
+            return redirect(url_for("investments.view_investment", investment_id=investment.id))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error adding dividend: %s", e)
+            logger.warning("Validation error adding dividend: %s", sanitize_log_input(str(e)))
             return redirect(url_for("dividends.add_dividend"))
 
         except NotFoundError as e:
             flash(str(e), "error")
-            logger.warning("Investment not found when adding dividend: %s", e)
+            logger.warning(
+                "Investment not found when adding dividend: %s", sanitize_log_input(str(e))
+            )
             return redirect(url_for("dividends.add_dividend"))
 
     investments = investment_service.get_all_investments()
@@ -118,7 +122,9 @@ def edit_dividend(dividend_id: int):
         amount_str = request.form.get("amount", "")
         frequency = request.form.get("frequency", "")
         notes = request.form.get("notes", "").strip() or None
-        investment_amount_at_time_str = request.form.get("investment_amount_at_time", "").strip() or None
+        investment_amount_at_time_str = (
+            request.form.get("investment_amount_at_time", "").strip() or None
+        )
         period_month_str = request.form.get("period_month", "").strip() or None
         period_year_str = request.form.get("period_year", "").strip() or None
 
@@ -133,19 +139,25 @@ def edit_dividend(dividend_id: int):
                 period_year_str=period_year_str,
             )
 
-            period_info = f" for {updated_dividend.period_label}" if updated_dividend.period_label else ""
+            period_info = (
+                f" for {updated_dividend.period_label}" if updated_dividend.period_label else ""
+            )
             flash(
-                f"Updated {frequency} dividend{period_info} to {format_currency(updated_dividend.amount)}",
+                f"Updated {frequency} dividend{period_info} "
+                f"to {format_currency(updated_dividend.amount)}",
                 "success",
             )
             logger.info("Dividend updated (ID: %d)", dividend_id)
             return redirect(
-                url_for("investments.view_investment", investment_id=updated_dividend.investment_id)
+                url_for(
+                    "investments.view_investment",
+                    investment_id=updated_dividend.investment_id,
+                )
             )
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error updating dividend: %s", e)
+            logger.warning("Validation error updating dividend: %s", sanitize_log_input(str(e)))
 
     current_year = datetime.now().year
 
