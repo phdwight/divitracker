@@ -26,6 +26,7 @@ class DividendFrequency(Enum):
 
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
+    SEMI_ANNUAL = "semi-annual"
     YEARLY = "yearly"
 
     @property
@@ -34,6 +35,7 @@ class DividendFrequency(Enum):
         multipliers = {
             DividendFrequency.MONTHLY: 12,
             DividendFrequency.QUARTERLY: 4,
+            DividendFrequency.SEMI_ANNUAL: 2,
             DividendFrequency.YEARLY: 1,
         }
         return multipliers[self]
@@ -98,20 +100,129 @@ class Investment(db.Model):
         
         return total
 
-    def calculate_dividend_yield(self, year: int | None = None) -> float:
+    def calculate_projected_annual_dividends(self, year: int | None = None) -> float:
+        """
+        Calculate projected annual dividends for a specific year.
+
+        For past/completed years, returns actual total.
+        For current year, projects based on dividend frequency and entries received.
+
+        Args:
+            year: The year to calculate for. If None, uses current year.
+
+        Returns:
+            Projected annual dividend amount.
+        """
+        if year is None:
+            year = datetime.now(timezone.utc).year
+
+        actual_total = self.calculate_annual_dividends(year)
+        current_year = datetime.now(timezone.utc).year
+
+        # For past years, return actual total
+        if year < current_year:
+            return actual_total
+
+        # For current year, project based on dividend entries
+        if actual_total == 0:
+            return 0.0
+
+        # Get dividends for this year
+        year_dividends = [d for d in self.dividends.all() if d.period_year == year]
+
+        if not year_dividends:
+            return actual_total
+
+        # Group by frequency and calculate projection for each
+        # Use the most common frequency to determine projection method
+        frequency_totals: dict[str, tuple[float, int]] = {}  # frequency -> (total_amount, count)
+        for div in year_dividends:
+            freq = div.frequency
+            if freq not in frequency_totals:
+                frequency_totals[freq] = (0.0, 0)
+            current_total, current_count = frequency_totals[freq]
+            frequency_totals[freq] = (current_total + div.amount, current_count + 1)
+
+        # Calculate projection for each frequency type
+        projected_total = 0.0
+        for freq, (total_amount, count) in frequency_totals.items():
+            try:
+                frequency_enum = DividendFrequency(freq)
+                expected_per_year = frequency_enum.annual_multiplier  # 12 for monthly, 4 for quarterly, 1 for yearly
+                
+                if count >= expected_per_year:
+                    # Full year of data, use actual
+                    projected_total += total_amount
+                else:
+                    # Partial year, project based on entries received
+                    avg_per_entry = total_amount / count
+                    projected_total += avg_per_entry * expected_per_year
+            except ValueError:
+                # Unknown frequency, just use actual
+                projected_total += total_amount
+
+        return projected_total
+
+    def get_investment_amount_for_year(self, year: int | None = None) -> float:
+        """
+        Get the investment amount to use for yield calculation for a specific year.
+
+        Uses investment_amount_at_time from the most recent dividend in that year,
+        falling back to current total_invested if not available.
+
+        Args:
+            year: The year to get investment amount for. If None, uses current year.
+
+        Returns:
+            Investment amount to use for yield calculation.
+        """
+        if year is None:
+            year = datetime.now(timezone.utc).year
+
+        # Get dividends for this year, sorted by period_month descending
+        year_dividends = [
+            d for d in self.dividends.all()
+            if d.period_year == year
+        ]
+
+        if not year_dividends:
+            return self.total_invested
+
+        # Sort by period_month descending to get most recent
+        year_dividends.sort(
+            key=lambda d: (d.period_month or 0, d.date_received),
+            reverse=True
+        )
+
+        # Use investment_amount_at_time from most recent dividend if available
+        most_recent = year_dividends[0]
+        if most_recent.investment_amount_at_time and most_recent.investment_amount_at_time > 0:
+            return most_recent.investment_amount_at_time
+
+        return self.total_invested
+
+    def calculate_dividend_yield(self, year: int | None = None, projected: bool = False) -> float:
         """
         Calculate dividend yield percentage for a specific year.
 
+        Uses investment_amount_at_time from the most recent dividend in that year
+        for more accurate yield calculation.
+
         Args:
             year: The year to calculate yield for. If None, uses current year.
+            projected: If True, uses projected annual dividends for current year.
 
         Returns:
             Dividend yield as a percentage (0.0 if no investment).
         """
-        if self.total_invested <= 0:
+        investment_amount = self.get_investment_amount_for_year(year)
+        if investment_amount <= 0:
             return 0.0
-        annual_dividends = self.calculate_annual_dividends(year)
-        return (annual_dividends / self.total_invested) * 100
+        if projected:
+            annual_dividends = self.calculate_projected_annual_dividends(year)
+        else:
+            annual_dividends = self.calculate_annual_dividends(year)
+        return (annual_dividends / investment_amount) * 100
 
     def get_years_with_dividends(self) -> list[int]:
         """

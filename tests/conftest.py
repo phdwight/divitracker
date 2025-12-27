@@ -51,8 +51,10 @@ def sample_investment(app) -> Generator[Investment, None, None]:
 
 @pytest.fixture(scope="function")
 def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
-    """Create a sample investment with a dividend for testing."""
+    """Create a sample investment with dividends for testing."""
+    from datetime import datetime, timezone
     with app.app_context():
+        current_year = datetime.now(timezone.utc).year
         investment = Investment(
             name="Dividend Test Investment",
             ticker="DIV",
@@ -61,13 +63,17 @@ def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
         db.session.add(investment)
         db.session.commit()
         
-        dividend = Dividend(
-            investment_id=investment.id,
-            amount=50.0,
-            frequency="quarterly",
-            notes="Test dividend",
-        )
-        db.session.add(dividend)
+        # Add 4 quarterly dividends for current year
+        for quarter, month in enumerate([3, 6, 9, 12], start=1):
+            dividend = Dividend(
+                investment_id=investment.id,
+                amount=50.0,
+                frequency="quarterly",
+                notes="Test dividend",
+                period_month=month,
+                period_year=current_year,
+            )
+            db.session.add(dividend)
         db.session.commit()
         
         db.session.refresh(investment)

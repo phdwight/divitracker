@@ -78,6 +78,13 @@
                         </span>
                     </label>
                     <label class="radio-option">
+                        <input type="radio" name="frequency" value="semi-annual" {% if dividend.frequency == 'semi-annual' %}checked{% endif %}>
+                        <span class="radio-label">
+                            <strong>Semi-Annual</strong>
+                            <small>Paid every 6 months (×2 annually)</small>
+                        </span>
+                    </label>
+                    <label class="radio-option">
                         <input type="radio" name="frequency" value="yearly" {% if dividend.frequency == 'yearly' %}checked{% endif %}>
                         <span class="radio-label">
                             <strong>Yearly</strong>

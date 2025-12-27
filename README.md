@@ -5,10 +5,11 @@ A Flask application for tracking dividend income from your investments. Calculat
 ## Features
 
 - **Investment Management**: Add, edit, and delete investments with ticker symbols
-- **Dividend Tracking**: Record dividends with monthly, quarterly, or yearly frequency
-- **Yield Calculation**: Automatic computation of annualized dividend yield
-- **Portfolio Dashboard**: Overview of total invested, annual dividends, and overall yield
+- **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency
+- **Yield Calculation**: Automatic computation of actual and projected annualized dividend yields
+- **Portfolio Dashboard**: Overview of total invested, annual dividends, and overall yield with year filtering
 - **Real-time Preview**: See yield calculations before recording dividends
+- **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
 
 ## Architecture
 
@@ -36,7 +37,8 @@ divitracker/
 │   ├── conftest.py         # Test fixtures
 │   ├── test_models.py      # Model tests
 │   ├── test_services.py    # Service tests
-│   └── test_routes.py      # Route tests
+│   ├── test_routes.py      # Route tests
+│   └── test_settings.py    # Settings tests
 ├── instance/               # Instance-specific data (SQLite DB)
 ├── run.py                  # Application entry point
 └── requirements.txt        # Python dependencies
@@ -92,16 +94,19 @@ divitracker/
 4. Select the frequency:
    - **Monthly**: Paid every month (×12 annually)
    - **Quarterly**: Paid every 3 months (×4 annually)
+   - **Semi-Annual**: Paid every 6 months (×2 annually)
    - **Yearly**: Paid once per year
-5. Click **"Record Dividend"**
+5. Optionally specify the period (month/year) and investment amount at time
+6. Click **"Record Dividend"**
 
 ### Viewing Portfolio
 
 The dashboard displays:
 - Total amount invested across all holdings
-- Total annualized dividends
-- Overall portfolio yield percentage
-- List of all investments with individual yields
+- Total annualized dividends (actual and projected)
+- Overall portfolio yield percentage (actual and projected)
+- Year filter to view dividends for specific years
+- List of all investments with individual yields (actual | projected format)
 
 ## Dividend Yield Calculation
 
@@ -114,7 +119,15 @@ Yield (%) = (Annual Dividends / Total Invested) × 100
 Where **Annual Dividends** is computed based on frequency:
 - Monthly dividends × 12
 - Quarterly dividends × 4
+- Semi-annual dividends × 2
 - Yearly dividends × 1
+
+### Actual vs Projected Yield
+
+- **Actual Yield**: Based on dividends actually received during the selected year
+- **Projected Yield**: Based on the most recent dividend, projected to a full year
+
+The dashboard shows both values in "actual | projected" format for transparency.
 
 ## Running Tests
 
@@ -210,6 +223,8 @@ The application supports multiple environments:
 | GET | `/investment/api/list` | JSON list of investments |
 | GET | `/dividend/add` | Add dividend form |
 | POST | `/dividend/add` | Create dividend record |
+| GET | `/dividend/<id>/edit` | Edit dividend form |
+| POST | `/dividend/<id>/edit` | Update dividend record |
 | POST | `/dividend/<id>/delete` | Delete dividend record |
 
 ## Technology Stack
@@ -217,7 +232,7 @@ The application supports multiple environments:
 - **Framework**: Flask 3.0
 - **Database**: SQLite with SQLAlchemy ORM
 - **Migrations**: Flask-Migrate
-- **Testing**: pytest
+- **Testing**: pytest with pytest-cov (95% coverage)
 - **Styling**: Custom CSS (no external dependencies)
 
 ## License

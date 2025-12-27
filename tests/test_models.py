@@ -56,8 +56,10 @@ class TestInvestmentModel:
             assert repr(investment) == "<Investment Test (N/A)>"
 
     def test_calculate_annual_dividends_monthly(self, app):
-        """Test annual dividend calculation for monthly dividends."""
+        """Test annual dividend calculation sums dividends for the year."""
+        from datetime import datetime, timezone
         with app.app_context():
+            current_year = datetime.now(timezone.utc).year
             investment = Investment(
                 name="Test",
                 ticker="TST",
@@ -66,19 +68,25 @@ class TestInvestmentModel:
             db.session.add(investment)
             db.session.commit()
 
-            dividend = Dividend(
-                investment_id=investment.id,
-                amount=100.0,
-                frequency="monthly",
-            )
-            db.session.add(dividend)
+            # Add 12 monthly dividends for current year
+            for month in range(1, 13):
+                dividend = Dividend(
+                    investment_id=investment.id,
+                    amount=100.0,
+                    frequency="monthly",
+                    period_month=month,
+                    period_year=current_year,
+                )
+                db.session.add(dividend)
             db.session.commit()
 
-            assert investment.calculate_annual_dividends() == 1200.0  # 100 * 12
+            assert investment.calculate_annual_dividends() == 1200.0  # 100 * 12 months
 
     def test_calculate_annual_dividends_quarterly(self, app):
-        """Test annual dividend calculation for quarterly dividends."""
+        """Test annual dividend calculation sums quarterly dividends."""
+        from datetime import datetime, timezone
         with app.app_context():
+            current_year = datetime.now(timezone.utc).year
             investment = Investment(
                 name="Test",
                 ticker="TST",
@@ -87,19 +95,25 @@ class TestInvestmentModel:
             db.session.add(investment)
             db.session.commit()
 
-            dividend = Dividend(
-                investment_id=investment.id,
-                amount=250.0,
-                frequency="quarterly",
-            )
-            db.session.add(dividend)
+            # Add 4 quarterly dividends for current year
+            for quarter, month in enumerate([3, 6, 9, 12], start=1):
+                dividend = Dividend(
+                    investment_id=investment.id,
+                    amount=250.0,
+                    frequency="quarterly",
+                    period_month=month,
+                    period_year=current_year,
+                )
+                db.session.add(dividend)
             db.session.commit()
 
-            assert investment.calculate_annual_dividends() == 1000.0  # 250 * 4
+            assert investment.calculate_annual_dividends() == 1000.0  # 250 * 4 quarters
 
     def test_calculate_dividend_yield(self, app):
         """Test dividend yield calculation."""
+        from datetime import datetime, timezone
         with app.app_context():
+            current_year = datetime.now(timezone.utc).year
             investment = Investment(
                 name="Test",
                 ticker="TST",
@@ -108,15 +122,19 @@ class TestInvestmentModel:
             db.session.add(investment)
             db.session.commit()
 
-            dividend = Dividend(
-                investment_id=investment.id,
-                amount=100.0,
-                frequency="quarterly",
-            )
-            db.session.add(dividend)
+            # Add 4 quarterly dividends for current year
+            for quarter, month in enumerate([3, 6, 9, 12], start=1):
+                dividend = Dividend(
+                    investment_id=investment.id,
+                    amount=100.0,
+                    frequency="quarterly",
+                    period_month=month,
+                    period_year=current_year,
+                )
+                db.session.add(dividend)
             db.session.commit()
 
-            # Yield = (100 * 4) / 10000 * 100 = 4%
+            # Yield = 400 / 10000 * 100 = 4%
             assert investment.calculate_dividend_yield() == 4.0
 
     def test_calculate_dividend_yield_zero_invested(self, app):
@@ -179,17 +197,20 @@ class TestInvestmentModel:
                     amount=100.0,
                     frequency="monthly",
                     date_received=base_date + timedelta(days=30 * i),
+                    period_month=i + 1,
+                    period_year=2024,
                 )
                 db.session.add(dividend)
             db.session.commit()
 
-            # With 12 monthly dividends of 100 each, should sum to 1200
-            assert investment.calculate_annual_dividends() == 1200.0
+            # With 12 monthly dividends of 100 each, should sum to 1200 for year 2024
+            assert investment.calculate_annual_dividends(year=2024) == 1200.0
 
     def test_calculate_annual_dividends_partial_year(self, app):
-        """Test annual dividends projects from partial data."""
+        """Test annual dividends returns actual for partial year."""
         with app.app_context():
-            from datetime import datetime
+            from datetime import datetime, timezone
+            current_year = datetime.now(timezone.utc).year
 
             investment = Investment(
                 name="Test",
@@ -199,19 +220,23 @@ class TestInvestmentModel:
             db.session.add(investment)
             db.session.commit()
 
-            # Only 2 monthly dividends
+            # Only 2 monthly dividends for current year (Jan, Feb)
             for i in range(2):
                 dividend = Dividend(
                     investment_id=investment.id,
                     amount=100.0,
                     frequency="monthly",
-                    date_received=datetime(2024, i + 1, 1),
+                    date_received=datetime(current_year, i + 1, 1),
+                    period_month=i + 1,
+                    period_year=current_year,
                 )
                 db.session.add(dividend)
             db.session.commit()
 
-            # With less than 12 monthly dividends, should project: avg(100) * 12 = 1200
-            assert investment.calculate_annual_dividends() == 1200.0
+            # calculate_annual_dividends returns actual total: 200
+            assert investment.calculate_annual_dividends() == 200.0
+            # calculate_projected_annual_dividends projects for current year: avg(100) * 12 = 1200
+            assert investment.calculate_projected_annual_dividends() == 1200.0
 
     def test_calculate_annual_dividends_varying_amounts(self, app):
         """Test annual dividends with varying dividend amounts."""
@@ -235,16 +260,20 @@ class TestInvestmentModel:
                     amount=amount,
                     frequency="monthly",
                     date_received=base_date + timedelta(days=30 * i),
+                    period_month=i + 1,
+                    period_year=2024,
                 )
                 db.session.add(dividend)
             db.session.commit()
 
-            # Should sum the 12 most recent (all of them): 1475
-            assert investment.calculate_annual_dividends() == sum(amounts)
+            # Should sum all dividends for 2024: 1475
+            assert investment.calculate_annual_dividends(year=2024) == sum(amounts)
 
     def test_get_summary(self, app):
         """Test investment summary generation."""
+        from datetime import datetime, timezone
         with app.app_context():
+            current_year = datetime.now(timezone.utc).year
             investment = Investment(
                 name="Test",
                 ticker="TST",
@@ -253,21 +282,25 @@ class TestInvestmentModel:
             db.session.add(investment)
             db.session.commit()
 
-            dividend = Dividend(
-                investment_id=investment.id,
-                amount=100.0,
-                frequency="quarterly",
-            )
-            db.session.add(dividend)
+            # Add 4 quarterly dividends for current year
+            for quarter, month in enumerate([3, 6, 9, 12], start=1):
+                dividend = Dividend(
+                    investment_id=investment.id,
+                    amount=100.0,
+                    frequency="quarterly",
+                    period_month=month,
+                    period_year=current_year,
+                )
+                db.session.add(dividend)
             db.session.commit()
 
             summary = investment.get_summary()
 
             assert isinstance(summary, InvestmentSummary)
             assert summary.total_invested == 10000.0
-            assert summary.annual_dividends == 400.0
+            assert summary.annual_dividends == 400.0  # 100 * 4
             assert summary.dividend_yield == 4.0
-            assert summary.total_received == 100.0
+            assert summary.total_received == 400.0
 
     def test_to_dict(self, app):
         """Test investment dictionary conversion."""

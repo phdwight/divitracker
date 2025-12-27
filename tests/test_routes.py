@@ -252,3 +252,115 @@ class TestDividendRoutes:
 
         with app.app_context():
             assert db.session.get(Dividend, div_id) is None
+
+    def test_delete_dividend_not_found(self, client):
+        """Test deleting non-existent dividend shows error."""
+        response = client.post(
+            "/dividend/99999/delete",
+            follow_redirects=True,
+        )
+
+        assert response.status_code == 200
+        assert b"not found" in response.data.lower()
+
+    def test_edit_dividend_page_loads(self, client, app, sample_investment_with_dividend):
+        """Test edit dividend page loads correctly."""
+        with app.app_context():
+            dividend = Dividend.query.filter_by(
+                investment_id=sample_investment_with_dividend.id
+            ).first()
+            div_id = dividend.id
+            div_amount = dividend.amount
+
+        response = client.get(f"/dividend/{div_id}/edit")
+        assert response.status_code == 200
+        assert b"Edit Dividend" in response.data
+        assert str(div_amount).encode() in response.data
+
+    def test_edit_dividend_page_not_found(self, client):
+        """Test edit dividend page with non-existent dividend shows error."""
+        response = client.get(
+            "/dividend/99999/edit",
+            follow_redirects=True,
+        )
+
+        assert response.status_code == 200
+        assert b"not found" in response.data.lower()
+
+    def test_edit_dividend_post_success(self, client, app, sample_investment_with_dividend):
+        """Test updating a dividend via POST."""
+        with app.app_context():
+            dividend = Dividend.query.filter_by(
+                investment_id=sample_investment_with_dividend.id
+            ).first()
+            div_id = dividend.id
+
+        response = client.post(
+            f"/dividend/{div_id}/edit",
+            data={
+                "amount": "75",
+                "frequency": "monthly",
+                "notes": "Updated dividend",
+                "period_month": "6",
+                "period_year": "2025",
+            },
+            follow_redirects=True,
+        )
+
+        assert response.status_code == 200
+        assert b"Updated monthly dividend" in response.data
+
+        with app.app_context():
+            updated_dividend = db.session.get(Dividend, div_id)
+            assert updated_dividend.amount == 75.0
+            assert updated_dividend.frequency == "monthly"
+            assert updated_dividend.notes == "Updated dividend"
+            assert updated_dividend.period_month == 6
+            assert updated_dividend.period_year == 2025
+
+    def test_edit_dividend_post_validation_error(self, client, app, sample_investment_with_dividend):
+        """Test updating dividend with invalid data shows error."""
+        with app.app_context():
+            dividend = Dividend.query.filter_by(
+                investment_id=sample_investment_with_dividend.id
+            ).first()
+            div_id = dividend.id
+
+        response = client.post(
+            f"/dividend/{div_id}/edit",
+            data={
+                "amount": "invalid",
+                "frequency": "monthly",
+            },
+            follow_redirects=True,
+        )
+
+        assert response.status_code == 200
+        assert b"invalid" in response.data.lower()
+
+    def test_edit_dividend_with_investment_amount_at_time(self, client, app, sample_investment_with_dividend):
+        """Test updating dividend with investment amount at time."""
+        with app.app_context():
+            dividend = Dividend.query.filter_by(
+                investment_id=sample_investment_with_dividend.id
+            ).first()
+            div_id = dividend.id
+
+        response = client.post(
+            f"/dividend/{div_id}/edit",
+            data={
+                "amount": "100",
+                "frequency": "quarterly",
+                "investment_amount_at_time": "8000",
+                "period_month": "3",
+                "period_year": "2025",
+            },
+            follow_redirects=True,
+        )
+
+        assert response.status_code == 200
+        assert b"Updated quarterly dividend" in response.data
+
+        with app.app_context():
+            updated_dividend = db.session.get(Dividend, div_id)
+            assert updated_dividend.investment_amount_at_time == 8000.0
