@@ -22,6 +22,10 @@ DEFAULT_SETTINGS: dict[str, Any] = {
         "decimal_separator": ".",
         "decimal_places": 2,
     },
+    "timezone": {
+        "offset_hours": 8,
+        "name": "GMT+8",
+    },
 }
 
 # Common currency presets
@@ -64,11 +68,20 @@ class FormattingSettings:
 
 
 @dataclass
+class TimezoneSettings:
+    """Timezone configuration."""
+
+    offset_hours: int
+    name: str
+
+
+@dataclass
 class UserSettings:
     """Complete user settings."""
 
     currency: CurrencySettings
     formatting: FormattingSettings
+    timezone: TimezoneSettings
 
     def format_currency(self, amount: float) -> str:
         """
@@ -155,6 +168,7 @@ class SettingsManager:
         return UserSettings(
             currency=CurrencySettings(**settings_dict["currency"]),
             formatting=FormattingSettings(**settings_dict["formatting"]),
+            timezone=TimezoneSettings(**settings_dict["timezone"]),
         )
 
     def save_settings(self, settings: UserSettings) -> None:
@@ -174,6 +188,10 @@ class SettingsManager:
                 "thousands_separator": settings.formatting.thousands_separator,
                 "decimal_separator": settings.formatting.decimal_separator,
                 "decimal_places": settings.formatting.decimal_places,
+            },
+            "timezone": {
+                "offset_hours": settings.timezone.offset_hours,
+                "name": settings.timezone.name,
             },
         }
 
