@@ -12,6 +12,7 @@ A Flask application for tracking dividend income from your investments. Calculat
 - **Real-time Preview**: See yield calculations before recording dividends
 - **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
 - **Timezone Support**: Configurable timezone for accurate local time display (default: GMT+8)
+- **Admin Settings**: Configure currency, formatting, and timezone; download/upload database backups
 
 ## Architecture
 
@@ -27,7 +28,8 @@ divitracker/
 │   │   ├── __init__.py
 │   │   ├── main.py          # Dashboard routes
 │   │   ├── investments.py   # Investment CRUD routes
-│   │   └── dividends.py     # Dividend CRUD routes
+│   │   ├── dividends.py     # Dividend CRUD routes
+│   │   └── admin.py         # Admin settings & DB management
 │   └── services/            # Business logic layer
 │       ├── __init__.py
 │       ├── investment_service.py
@@ -247,6 +249,10 @@ The application supports multiple environments:
 | GET | `/dividend/<id>/edit` | Edit dividend form |
 | POST | `/dividend/<id>/edit` | Update dividend record |
 | POST | `/dividend/<id>/delete` | Delete dividend record |
+| GET | `/admin/` | Admin settings page |
+| POST | `/admin/save-settings` | Save configuration settings |
+| GET | `/admin/download-db` | Download database backup |
+| POST | `/admin/upload-db` | Upload/restore database |
 
 ## Technology Stack
 

@@ -8,6 +8,7 @@ from flask import Flask
 
 from app.config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
 from app.extensions import db, migrate
+from app.routes.admin import admin_bp
 from app.routes.dividends import dividends_bp
 from app.routes.investments import investments_bp
 from app.routes.main import main_bp
@@ -50,6 +51,7 @@ def create_app(config_name: str = "development") -> Flask:
     app.register_blueprint(main_bp)
     app.register_blueprint(investments_bp, url_prefix="/investment")
     app.register_blueprint(dividends_bp, url_prefix="/dividend")
+    app.register_blueprint(admin_bp)
 
     # Register template context processors for currency formatting
     @app.context_processor
