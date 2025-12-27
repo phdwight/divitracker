@@ -2,11 +2,11 @@
 
 import logging
 
-from flask import (Blueprint, flash, jsonify, redirect, render_template,
-                   request, url_for)
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from app.exceptions import NotFoundError, ValidationError
 from app.services.investment_service import InvestmentService
+from app.utils import sanitize_log_input
 
 investments_bp = Blueprint("investments", __name__)
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ def add_investment():
             logger.info(
                 "Investment %s: %s (amount: %s)",
                 "created" if created else "updated",
-                investment.name,
+                sanitize_log_input(investment.name),
                 amount_str,
             )
             return redirect(url_for("main.index"))
@@ -105,9 +105,7 @@ def view_investment(investment_id: int):
             if current_year in years_with_dividends:
                 selected_year = current_year
             elif years_with_dividends:
-                selected_year = years_with_dividends[
-                    0
-                ]  # Most recent year (list is desc sorted)
+                selected_year = years_with_dividends[0]  # Most recent year (list is desc sorted)
             else:
                 selected_year = current_year  # No dividends yet, show current year
 
@@ -156,16 +154,12 @@ def edit_investment(investment_id: int):
                 total_invested_str=amount_str,
             )
             flash("Investment updated successfully!", "success")
-            logger.info("Investment updated: %s (ID: %d)", name, investment_id)
-            return redirect(
-                url_for("investments.view_investment", investment_id=investment_id)
-            )
+            logger.info("Investment updated: %s (ID: %d)", sanitize_log_input(name), investment_id)
+            return redirect(url_for("investments.view_investment", investment_id=investment_id))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning(
-                "Validation error updating investment %d: %s", investment_id, e
-            )
+            logger.warning("Validation error updating investment %d: %s", investment_id, e)
 
     return render_template("edit_investment.html", investment=investment)
 
@@ -186,7 +180,9 @@ def delete_investment(investment_id: int):
     try:
         investment_name = investment_service.delete_investment(investment_id)
         flash(f'Investment "{investment_name}" deleted successfully!', "success")
-        logger.info("Investment deleted: %s (ID: %d)", investment_name, investment_id)
+        logger.info(
+            "Investment deleted: %s (ID: %d)", sanitize_log_input(investment_name), investment_id
+        )
     except NotFoundError:
         flash("Investment not found", "error")
 

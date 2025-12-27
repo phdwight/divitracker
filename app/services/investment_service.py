@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
 from app.models import Investment
+from app.utils import sanitize_log_input
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -93,7 +94,7 @@ class InvestmentService:
             if ticker:
                 existing.ticker = ticker
             db.session.commit()
-            logger.info("Updated investment %s with amount %.2f", name, amount)
+            logger.info("Updated investment %s with amount %.2f", sanitize_log_input(name), amount)
             return existing, False
 
         # Create new investment
@@ -104,7 +105,7 @@ class InvestmentService:
         )
         db.session.add(investment)
         db.session.commit()
-        logger.info("Created new investment: %s", name)
+        logger.info("Created new investment: %s", sanitize_log_input(name))
         return investment, True
 
     def update_investment(
@@ -140,7 +141,7 @@ class InvestmentService:
         investment.total_invested = total_invested
 
         db.session.commit()
-        logger.info("Updated investment ID %d: %s", investment_id, name)
+        logger.info("Updated investment ID %d: %s", investment_id, sanitize_log_input(name))
         return investment
 
     def delete_investment(self, investment_id: int) -> str:

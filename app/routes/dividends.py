@@ -9,6 +9,7 @@ from app.exceptions import NotFoundError, ValidationError
 from app.services.dividend_service import DividendService
 from app.services.investment_service import InvestmentService
 from app.settings import format_currency
+from app.utils import sanitize_log_input
 
 dividends_bp = Blueprint("dividends", __name__)
 logger = logging.getLogger(__name__)
@@ -52,9 +53,7 @@ def add_dividend():
             )
 
             # Calculate annualized yield for the message
-            period_info = (
-                f" for {dividend.period_label}" if dividend.period_label else ""
-            )
+            period_info = f" for {dividend.period_label}" if dividend.period_label else ""
             flash(
                 f"Added {frequency} dividend of {format_currency(dividend.amount)}"
                 f"{period_info} to {investment.name}. "
@@ -64,13 +63,11 @@ def add_dividend():
             )
             logger.info(
                 "Dividend added to %s: $%.2f (%s)",
-                investment.name,
+                sanitize_log_input(investment.name),
                 dividend.amount,
                 frequency,
             )
-            return redirect(
-                url_for("investments.view_investment", investment_id=investment.id)
-            )
+            return redirect(url_for("investments.view_investment", investment_id=investment.id))
 
         except ValidationError as e:
             flash(str(e), "error")
@@ -141,9 +138,7 @@ def edit_dividend(dividend_id: int):
             )
 
             period_info = (
-                f" for {updated_dividend.period_label}"
-                if updated_dividend.period_label
-                else ""
+                f" for {updated_dividend.period_label}" if updated_dividend.period_label else ""
             )
             flash(
                 f"Updated {frequency} dividend{period_info} "
@@ -188,9 +183,7 @@ def delete_dividend(dividend_id: int):
         investment_id = dividend_service.delete_dividend(dividend_id)
         flash("Dividend record deleted successfully!", "success")
         logger.info("Dividend deleted (ID: %d)", dividend_id)
-        return redirect(
-            url_for("investments.view_investment", investment_id=investment_id)
-        )
+        return redirect(url_for("investments.view_investment", investment_id=investment_id))
 
     except NotFoundError:
         flash("Dividend not found", "error")

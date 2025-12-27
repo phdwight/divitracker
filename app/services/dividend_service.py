@@ -22,9 +22,7 @@ class DividendService:
     Follows Single Responsibility Principle - handles only dividend operations.
     """
 
-    VALID_FREQUENCIES: frozenset[str] = frozenset(
-        freq.value for freq in DividendFrequency
-    )
+    VALID_FREQUENCIES: frozenset[str] = frozenset(freq.value for freq in DividendFrequency)
 
     def get_dividend_by_id(self, dividend_id: int) -> Dividend:
         """
@@ -181,9 +179,7 @@ class DividendService:
 
         db.session.commit()
 
-        logger.info(
-            "Updated dividend ID %d: $%.2f (%s)", dividend_id, amount, frequency
-        )
+        logger.info("Updated dividend ID %d: $%.2f (%s)", dividend_id, amount, frequency)
         return dividend
 
     def get_dividends_for_investment(self, investment_id: int) -> list[Dividend]:
@@ -263,9 +259,7 @@ class DividendService:
             raise ValidationError("Dividend frequency is required")
         if frequency not in self.VALID_FREQUENCIES:
             valid = ", ".join(sorted(self.VALID_FREQUENCIES))
-            raise ValidationError(
-                f"Invalid frequency '{frequency}'. Must be one of: {valid}"
-            )
+            raise ValidationError(f"Invalid frequency '{frequency}'. Must be one of: {valid}")
 
     @staticmethod
     def _validate_investment_amount_at_time(

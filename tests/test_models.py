@@ -3,8 +3,7 @@
 import pytest
 
 from app.extensions import db
-from app.models import (Dividend, DividendFrequency, Investment,
-                        InvestmentSummary)
+from app.models import Dividend, DividendFrequency, Investment, InvestmentSummary
 
 
 class TestDividendFrequency:
@@ -449,9 +448,7 @@ class TestDividendModel:
             )
             assert dividend.yield_at_time is None
 
-    def test_yield_at_time_none_when_investment_amount_is_zero(
-        self, app, sample_investment
-    ):
+    def test_yield_at_time_none_when_investment_amount_is_zero(self, app, sample_investment):
         """Test yield_at_time returns None when investment_amount_at_time is zero."""
         with app.app_context():
             dividend = Dividend(

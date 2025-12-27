@@ -7,9 +7,7 @@ from pathlib import Path
 class Config:
     """Base configuration class."""
 
-    SECRET_KEY: str = os.environ.get(
-        "SECRET_KEY", "dev-secret-key-change-in-production"
-    )
+    SECRET_KEY: str = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
 
     # Base directory for the application
@@ -51,6 +49,4 @@ class ProductionConfig(Config):
     def init_app(cls, app) -> None:
         """Production-specific initialization."""
         if not cls.SECRET_KEY:
-            raise ValueError(
-                "SECRET_KEY environment variable must be set in production"
-            )
+            raise ValueError("SECRET_KEY environment variable must be set in production")

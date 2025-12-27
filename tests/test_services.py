@@ -175,9 +175,7 @@ class TestDividendService:
             assert dividend.notes == "Q1 dividend"
             assert investment.id == sample_investment.id
 
-    def test_create_dividend_with_investment_amount_at_time(
-        self, app, sample_investment
-    ):
+    def test_create_dividend_with_investment_amount_at_time(self, app, sample_investment):
         """Test creating a dividend with investment amount at time."""
         with app.app_context():
             service = DividendService()
@@ -192,13 +190,9 @@ class TestDividendService:
             assert dividend.amount == 100.0
             assert dividend.frequency == "monthly"
             assert dividend.investment_amount_at_time == 5000.0
-            assert dividend.yield_at_time == pytest.approx(
-                24.0
-            )  # (100 * 12 / 5000) * 100
+            assert dividend.yield_at_time == pytest.approx(24.0)  # (100 * 12 / 5000) * 100
 
-    def test_create_dividend_with_empty_investment_amount_at_time(
-        self, app, sample_investment
-    ):
+    def test_create_dividend_with_empty_investment_amount_at_time(self, app, sample_investment):
         """Test creating a dividend with empty investment amount at time."""
         with app.app_context():
             service = DividendService()
@@ -212,9 +206,7 @@ class TestDividendService:
             assert dividend.investment_amount_at_time is None
             assert dividend.yield_at_time is None
 
-    def test_create_dividend_with_zero_investment_amount_at_time(
-        self, app, sample_investment
-    ):
+    def test_create_dividend_with_zero_investment_amount_at_time(self, app, sample_investment):
         """Test creating a dividend with zero investment amount at time stores None."""
         with app.app_context():
             service = DividendService()
@@ -228,9 +220,7 @@ class TestDividendService:
             assert dividend.investment_amount_at_time is None
             assert dividend.yield_at_time is None
 
-    def test_create_dividend_invalid_investment_amount_at_time(
-        self, app, sample_investment
-    ):
+    def test_create_dividend_invalid_investment_amount_at_time(self, app, sample_investment):
         """Test creating dividend with invalid investment amount at time raises ValidationError."""
         with app.app_context():
             service = DividendService()
@@ -243,9 +233,7 @@ class TestDividendService:
                 )
             assert "invalid" in str(exc_info.value).lower()
 
-    def test_create_dividend_negative_investment_amount_at_time(
-        self, app, sample_investment
-    ):
+    def test_create_dividend_negative_investment_amount_at_time(self, app, sample_investment):
         """Test creating dividend with negative investment amount at time raises ValidationError."""
         with app.app_context():
             service = DividendService()
@@ -389,9 +377,7 @@ class TestDividendService:
                 )
             assert "invalid" in str(exc_info.value).lower()
 
-    def test_update_dividend_invalid_frequency(
-        self, app, sample_investment_with_dividend
-    ):
+    def test_update_dividend_invalid_frequency(self, app, sample_investment_with_dividend):
         """Test updating dividend with invalid frequency raises ValidationError."""
         with app.app_context():
             service = DividendService()
@@ -471,9 +457,7 @@ class TestDividendService:
         """Test getting dividends for an investment."""
         with app.app_context():
             service = DividendService()
-            dividends = service.get_dividends_for_investment(
-                sample_investment_with_dividend.id
-            )
+            dividends = service.get_dividends_for_investment(sample_investment_with_dividend.id)
 
             assert len(dividends) == 4  # 4 quarterly dividends from fixture
             assert all(d.amount == 50.0 for d in dividends)
@@ -498,9 +482,7 @@ class TestPortfolioService:
             assert summary.projected_yield == 0.0
             assert summary.investment_count == 0
 
-    def test_get_portfolio_summary_with_investments(
-        self, app, sample_investment_with_dividend
-    ):
+    def test_get_portfolio_summary_with_investments(self, app, sample_investment_with_dividend):
         """Test portfolio summary with investments and dividends."""
         with app.app_context():
             investment_service = InvestmentService()

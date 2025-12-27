@@ -4,10 +4,17 @@ import json
 import tempfile
 from pathlib import Path
 
-from app.settings import (CURRENCY_PRESETS, DEFAULT_SETTINGS, CurrencySettings,
-                          FormattingSettings, SettingsManager,
-                          TimezoneSettings, UserSettings, format_currency,
-                          get_user_settings)
+from app.settings import (
+    CURRENCY_PRESETS,
+    DEFAULT_SETTINGS,
+    CurrencySettings,
+    FormattingSettings,
+    SettingsManager,
+    TimezoneSettings,
+    UserSettings,
+    format_currency,
+    get_user_settings,
+)
 
 
 class TestCurrencySettings:

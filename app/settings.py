@@ -108,9 +108,7 @@ class UserSettings:
                 "DECIMAL", self.formatting.decimal_separator
             )
         elif self.formatting.decimal_separator != ".":
-            formatted_number = formatted_number.replace(
-                ".", self.formatting.decimal_separator
-            )
+            formatted_number = formatted_number.replace(".", self.formatting.decimal_separator)
 
         return f"{self.currency.symbol}{formatted_number}"
 

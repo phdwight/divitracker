@@ -54,9 +54,7 @@ class PortfolioService:
         investments = self._investment_service.get_all_investments()
 
         total_invested = sum(inv.total_invested for inv in investments)
-        total_annual_dividends = sum(
-            inv.calculate_annual_dividends(year) for inv in investments
-        )
+        total_annual_dividends = sum(inv.calculate_annual_dividends(year) for inv in investments)
         projected_annual_dividends = sum(
             inv.calculate_projected_annual_dividends(year) for inv in investments
         )
@@ -70,9 +68,7 @@ class PortfolioService:
         projected_yield = 0.0
         if total_investment_for_yield > 0:
             overall_yield = (total_annual_dividends / total_investment_for_yield) * 100
-            projected_yield = (
-                projected_annual_dividends / total_investment_for_yield
-            ) * 100
+            projected_yield = (projected_annual_dividends / total_investment_for_yield) * 100
 
         return PortfolioSummary(
             total_invested=total_invested,

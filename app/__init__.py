@@ -6,8 +6,7 @@ from pathlib import Path
 
 from flask import Flask
 
-from app.config import (Config, DevelopmentConfig, ProductionConfig,
-                        TestingConfig)
+from app.config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
 from app.extensions import db, migrate
 from app.routes.dividends import dividends_bp
 from app.routes.investments import investments_bp

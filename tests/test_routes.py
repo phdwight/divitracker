@@ -219,9 +219,7 @@ class TestDividendRoutes:
         assert b"Added quarterly dividend" in response.data
 
         with app.app_context():
-            dividend = Dividend.query.filter_by(
-                investment_id=sample_investment.id
-            ).first()
+            dividend = Dividend.query.filter_by(investment_id=sample_investment.id).first()
             assert dividend is not None
             assert dividend.amount == 100.0
             assert dividend.frequency == "quarterly"
@@ -286,9 +284,7 @@ class TestDividendRoutes:
         assert response.status_code == 200
         assert b"not found" in response.data.lower()
 
-    def test_edit_dividend_page_loads(
-        self, client, app, sample_investment_with_dividend
-    ):
+    def test_edit_dividend_page_loads(self, client, app, sample_investment_with_dividend):
         """Test edit dividend page loads correctly."""
         with app.app_context():
             dividend = Dividend.query.filter_by(
@@ -312,9 +308,7 @@ class TestDividendRoutes:
         assert response.status_code == 200
         assert b"not found" in response.data.lower()
 
-    def test_edit_dividend_post_success(
-        self, client, app, sample_investment_with_dividend
-    ):
+    def test_edit_dividend_post_success(self, client, app, sample_investment_with_dividend):
         """Test updating a dividend via POST."""
         with app.app_context():
             dividend = Dividend.query.filter_by(
