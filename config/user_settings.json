@@ -1,0 +1,12 @@
+{
+    "currency": {
+        "code": "PHP",
+        "symbol": "₱",
+        "name": "Philippine Peso"
+    },
+    "formatting": {
+        "thousands_separator": ",",
+        "decimal_separator": ".",
+        "decimal_places": 2
+    }
+}

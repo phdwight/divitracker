@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Dividend - DiviTracker{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1>Record Dividend</h1>
+    
+    <div class="form-container">
+        {% if investments %}
+        <form method="POST" action="{{ url_for('dividends.add_dividend') }}">
+            <div class="form-group">
+                <label for="investment_id">Select Investment *</label>
+                <select id="investment_id" name="investment_id" required>
+                    <option value="">-- Select an investment --</option>
+                    {% for inv in investments %}
+                    <option value="{{ inv.id }}" {% if selected_investment_id and selected_investment_id|int == inv.id %}selected{% endif %}>
+                        {{ inv.name }} {% if inv.ticker %}({{ inv.ticker }}){% endif %} - {{ format_currency(inv.total_invested) }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Dividend Amount ({{ currency_symbol }}) *</label>
+                <input type="number" 
+                       id="amount" 
+                       name="amount" 
+                       step="0.01" 
+                       min="0.01"
+                       placeholder="0.00"
+                       required>
+                <small class="form-help">Enter the dividend amount you received</small>
+            </div>
+
+            <div class="form-group">
+                <label>Dividend Frequency *</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="frequency" value="monthly" required>
+                        <span class="radio-label">
+                            <strong>Monthly</strong>
+                            <small>Paid every month (×12 annually)</small>
+                        </span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="frequency" value="quarterly">
+                        <span class="radio-label">
+                            <strong>Quarterly</strong>
+                            <small>Paid every 3 months (×4 annually)</small>
+                        </span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="frequency" value="yearly">
+                        <span class="radio-label">
+                            <strong>Yearly</strong>
+                            <small>Paid once per year (×1 annually)</small>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notes (Optional)</label>
+                <textarea id="notes" name="notes" rows="2" placeholder="Any additional notes..."></textarea>
+            </div>
+
+            <div id="yield-preview" class="yield-preview" style="display: none;">
+                <h4>📊 Yield Preview</h4>
+                <p>Annualized Dividend: <span id="annual-amount">{{ currency_symbol }}0.00</span></p>
+                <p>Estimated Yield: <span id="estimated-yield">0.00%</span></p>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Record Dividend</button>
+            </div>
+        </form>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No investments found</h3>
+            <p>You need to add an investment before recording dividends.</p>
+            <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">Add Investment First</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const investments = {{ investments_json|tojson|safe if investments_json else '[]' }};
+const currencySymbol = '{{ currency_symbol }}';
+const thousandsSeparator = '{{ thousands_separator }}';
+const decimalSeparator = '{{ decimal_separator }}';
+const decimalPlaces = {{ decimal_places }};
+
+function formatNumber(num) {
+    const parts = num.toFixed(decimalPlaces).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
+    return parts.join(decimalSeparator);
+}
+
+function updateYieldPreview() {
+    const investmentId = document.getElementById('investment_id').value;
+    const amount = parseFloat(document.getElementById('amount').value) || 0;
+    const frequency = document.querySelector('input[name="frequency"]:checked');
+    
+    if (investmentId && amount > 0 && frequency) {
+        const investment = investments.find(i => i.id == investmentId);
+        if (investment && investment.total_invested > 0) {
+            let multiplier = 1;
+            if (frequency.value === 'monthly') multiplier = 12;
+            else if (frequency.value === 'quarterly') multiplier = 4;
+            
+            const annualAmount = amount * multiplier;
+            const yieldPercent = (annualAmount / investment.total_invested) * 100;
+            
+            document.getElementById('annual-amount').textContent = currencySymbol + formatNumber(annualAmount);
+            document.getElementById('estimated-yield').textContent = yieldPercent.toFixed(2) + '%';
+            document.getElementById('yield-preview').style.display = 'block';
+            return;
+        }
+    }
+    document.getElementById('yield-preview').style.display = 'none';
+}
+
+document.getElementById('investment_id').addEventListener('change', updateYieldPreview);
+document.getElementById('amount').addEventListener('input', updateYieldPreview);
+document.querySelectorAll('input[name="frequency"]').forEach(radio => {
+    radio.addEventListener('change', updateYieldPreview);
+});
+</script>
+{% endblock %}

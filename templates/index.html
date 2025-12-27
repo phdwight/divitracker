@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - DiviTracker{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Dividend Dashboard</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>Total Invested</h3>
+                <p class="stat-value">{{ format_currency(total_invested) }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💵</div>
+            <div class="stat-content">
+                <h3>Annual Dividends</h3>
+                <p class="stat-value">{{ format_currency(total_annual_dividends) }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+                <h3>Overall Yield</h3>
+                <p class="stat-value">{{ "%.2f"|format(overall_yield) }}%</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏦</div>
+            <div class="stat-content">
+                <h3>Investments</h3>
+                <p class="stat-value">{{ investments|length }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h2>Your Investments</h2>
+            <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">+ Add Investment</a>
+        </div>
+
+        {% if investments %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Investment</th>
+                        <th>Ticker</th>
+                        <th>Invested</th>
+                        <th>Annual Dividends</th>
+                        <th>Yield</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for investment in investments %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}">
+                                {{ investment.name }}
+                            </a>
+                        </td>
+                        <td>{{ investment.ticker or '-' }}</td>
+                        <td>{{ format_currency(investment.total_invested) }}</td>
+                        <td>{{ format_currency(investment.calculate_annual_dividends()) }}</td>
+                        <td>
+                            <span class="yield-badge {% if investment.calculate_dividend_yield() >= 5 %}yield-high{% elif investment.calculate_dividend_yield() >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                {{ "%.2f"|format(investment.calculate_dividend_yield()) }}%
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="btn btn-sm btn-success" title="Add Dividend">+💵</a>
+                                <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="btn btn-sm btn-info" title="View Details">👁️</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No investments yet</h3>
+            <p>Start tracking your dividends by adding your first investment.</p>
+            <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">Add Your First Investment</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

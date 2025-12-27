@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit {{ investment.name }} - DiviTracker{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1>Edit Investment</h1>
+    
+    <div class="form-container">
+        <form method="POST" action="{{ url_for('investments.edit_investment', investment_id=investment.id) }}">
+            <div class="form-group">
+                <label for="name">Investment Name *</label>
+                <input type="text" 
+                       id="name" 
+                       name="name" 
+                       value="{{ investment.name }}"
+                       placeholder="e.g., Apple Inc., Vanguard S&amp;P 500 ETF"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="ticker">Ticker Symbol (Optional)</label>
+                <input type="text" 
+                       id="ticker" 
+                       name="ticker" 
+                       value="{{ investment.ticker or '' }}"
+                       placeholder="e.g., AAPL, VOO"
+                       maxlength="20">
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Total Investment Amount ({{ currency_symbol }}) *</label>
+                <input type="number" 
+                       id="amount" 
+                       name="amount" 
+                       value="{{ investment.total_invested }}"
+                       step="0.01" 
+                       min="0"
+                       required>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
