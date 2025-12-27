@@ -175,6 +175,77 @@ class TestDividendService:
             assert dividend.notes == "Q1 dividend"
             assert investment.id == sample_investment.id
 
+    def test_create_dividend_with_investment_amount_at_time(self, app, sample_investment):
+        """Test creating a dividend with investment amount at time."""
+        with app.app_context():
+            service = DividendService()
+            dividend, investment = service.create_dividend(
+                investment_id_str=str(sample_investment.id),
+                amount_str="100",
+                frequency="monthly",
+                notes="Historical dividend",
+                investment_amount_at_time_str="5000",
+            )
+
+            assert dividend.amount == 100.0
+            assert dividend.frequency == "monthly"
+            assert dividend.investment_amount_at_time == 5000.0
+            assert dividend.yield_at_time == pytest.approx(24.0)  # (100 * 12 / 5000) * 100
+
+    def test_create_dividend_with_empty_investment_amount_at_time(self, app, sample_investment):
+        """Test creating a dividend with empty investment amount at time."""
+        with app.app_context():
+            service = DividendService()
+            dividend, investment = service.create_dividend(
+                investment_id_str=str(sample_investment.id),
+                amount_str="100",
+                frequency="quarterly",
+                investment_amount_at_time_str="",
+            )
+
+            assert dividend.investment_amount_at_time is None
+            assert dividend.yield_at_time is None
+
+    def test_create_dividend_with_zero_investment_amount_at_time(self, app, sample_investment):
+        """Test creating a dividend with zero investment amount at time stores None."""
+        with app.app_context():
+            service = DividendService()
+            dividend, investment = service.create_dividend(
+                investment_id_str=str(sample_investment.id),
+                amount_str="100",
+                frequency="quarterly",
+                investment_amount_at_time_str="0",
+            )
+
+            assert dividend.investment_amount_at_time is None
+            assert dividend.yield_at_time is None
+
+    def test_create_dividend_invalid_investment_amount_at_time(self, app, sample_investment):
+        """Test creating dividend with invalid investment amount at time raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            with pytest.raises(ValidationError) as exc_info:
+                service.create_dividend(
+                    investment_id_str=str(sample_investment.id),
+                    amount_str="100",
+                    frequency="monthly",
+                    investment_amount_at_time_str="not_a_number",
+                )
+            assert "invalid" in str(exc_info.value).lower()
+
+    def test_create_dividend_negative_investment_amount_at_time(self, app, sample_investment):
+        """Test creating dividend with negative investment amount at time raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            with pytest.raises(ValidationError) as exc_info:
+                service.create_dividend(
+                    investment_id_str=str(sample_investment.id),
+                    amount_str="100",
+                    frequency="monthly",
+                    investment_amount_at_time_str="-5000",
+                )
+            assert "negative" in str(exc_info.value).lower()
+
     def test_create_dividend_missing_investment_id(self, app):
         """Test creating dividend without investment ID raises ValidationError."""
         with app.app_context():

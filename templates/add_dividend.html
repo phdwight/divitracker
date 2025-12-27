@@ -34,6 +34,45 @@
             </div>
 
             <div class="form-group">
+                <label>Dividend Period *</label>
+                <div class="period-inputs">
+                    <select id="period_month" name="period_month" required>
+                        <option value="">-- Month --</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <select id="period_year" name="period_year" required>
+                        <option value="">-- Year --</option>
+                        {% for year in range(2020, 2031) %}
+                        <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <small class="form-help">Select the month and year this dividend is for</small>
+            </div>
+
+            <div class="form-group">
+                <label for="investment_amount_at_time">Investment Amount at Time ({{ currency_symbol }})</label>
+                <input type="number" 
+                       id="investment_amount_at_time" 
+                       name="investment_amount_at_time" 
+                       step="0.01" 
+                       min="0"
+                       placeholder="0.00">
+                <small class="form-help">Optional: Enter the investment value when this dividend was received (for historical tracking)</small>
+            </div>
+
+            <div class="form-group">
                 <label>Dividend Frequency *</label>
                 <div class="radio-group">
                     <label class="radio-option">
@@ -106,16 +145,20 @@ function updateYieldPreview() {
     const investmentId = document.getElementById('investment_id').value;
     const amount = parseFloat(document.getElementById('amount').value) || 0;
     const frequency = document.querySelector('input[name="frequency"]:checked');
+    const investmentAmountAtTime = parseFloat(document.getElementById('investment_amount_at_time').value) || 0;
     
     if (investmentId && amount > 0 && frequency) {
         const investment = investments.find(i => i.id == investmentId);
-        if (investment && investment.total_invested > 0) {
+        // Use investment_amount_at_time if provided, otherwise use current total_invested
+        const investmentAmount = investmentAmountAtTime > 0 ? investmentAmountAtTime : (investment ? investment.total_invested : 0);
+        
+        if (investmentAmount > 0) {
             let multiplier = 1;
             if (frequency.value === 'monthly') multiplier = 12;
             else if (frequency.value === 'quarterly') multiplier = 4;
             
             const annualAmount = amount * multiplier;
-            const yieldPercent = (annualAmount / investment.total_invested) * 100;
+            const yieldPercent = (annualAmount / investmentAmount) * 100;
             
             document.getElementById('annual-amount').textContent = currencySymbol + formatNumber(annualAmount);
             document.getElementById('estimated-yield').textContent = yieldPercent.toFixed(2) + '%';
@@ -126,10 +169,30 @@ function updateYieldPreview() {
     document.getElementById('yield-preview').style.display = 'none';
 }
 
-document.getElementById('investment_id').addEventListener('change', updateYieldPreview);
+// Pre-fill investment amount when investment is selected
+function prefillInvestmentAmount() {
+    const investmentId = document.getElementById('investment_id').value;
+    const investmentAmountField = document.getElementById('investment_amount_at_time');
+    
+    if (investmentId && !investmentAmountField.value) {
+        const investment = investments.find(i => i.id == investmentId);
+        if (investment && investment.total_invested > 0) {
+            investmentAmountField.placeholder = investment.total_invested.toFixed(2) + ' (current)';
+        }
+    }
+}
+
+document.getElementById('investment_id').addEventListener('change', function() {
+    prefillInvestmentAmount();
+    updateYieldPreview();
+});
 document.getElementById('amount').addEventListener('input', updateYieldPreview);
+document.getElementById('investment_amount_at_time').addEventListener('input', updateYieldPreview);
 document.querySelectorAll('input[name="frequency"]').forEach(radio => {
     radio.addEventListener('change', updateYieldPreview);
 });
+
+// Initialize on page load
+prefillInvestmentAmount();
 </script>
 {% endblock %}

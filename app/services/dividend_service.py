@@ -50,6 +50,9 @@ class DividendService:
         amount_str: str,
         frequency: str,
         notes: str | None = None,
+        investment_amount_at_time_str: str | None = None,
+        period_month_str: str | None = None,
+        period_year_str: str | None = None,
     ) -> tuple[Dividend, Investment]:
         """
         Create a new dividend record.
@@ -59,6 +62,9 @@ class DividendService:
             amount_str: Dividend amount as string.
             frequency: Payment frequency (monthly, quarterly, yearly).
             notes: Optional notes.
+            investment_amount_at_time_str: Optional investment amount at time of dividend.
+            period_month_str: Optional month the dividend is for (1-12).
+            period_year_str: Optional year the dividend is for.
 
         Returns:
             Tuple of (Dividend, Investment).
@@ -71,6 +77,11 @@ class DividendService:
         investment_id = self._validate_investment_id(investment_id_str)
         amount = self._validate_amount(amount_str)
         self._validate_frequency(frequency)
+        investment_amount_at_time = self._validate_investment_amount_at_time(
+            investment_amount_at_time_str
+        )
+        period_month = self._validate_period_month(period_month_str)
+        period_year = self._validate_period_year(period_year_str)
 
         # Get investment
         investment = db.session.get(Investment, investment_id)
@@ -83,6 +94,9 @@ class DividendService:
             amount=amount,
             frequency=frequency,
             notes=notes,
+            investment_amount_at_time=investment_amount_at_time,
+            period_month=period_month,
+            period_year=period_year,
         )
         db.session.add(dividend)
         db.session.commit()
@@ -116,6 +130,59 @@ class DividendService:
 
         logger.info("Deleted dividend ID %d", dividend_id)
         return investment_id
+
+    def update_dividend(
+        self,
+        dividend_id: int,
+        amount_str: str,
+        frequency: str,
+        notes: str | None = None,
+        investment_amount_at_time_str: str | None = None,
+        period_month_str: str | None = None,
+        period_year_str: str | None = None,
+    ) -> Dividend:
+        """
+        Update an existing dividend record.
+
+        Args:
+            dividend_id: ID of the dividend to update.
+            amount_str: Dividend amount as string.
+            frequency: Payment frequency (monthly, quarterly, yearly).
+            notes: Optional notes.
+            investment_amount_at_time_str: Optional investment amount at time of dividend.
+            period_month_str: Optional month the dividend is for (1-12).
+            period_year_str: Optional year the dividend is for.
+
+        Returns:
+            Updated Dividend object.
+
+        Raises:
+            ValidationError: If validation fails.
+            NotFoundError: If dividend not found.
+        """
+        dividend = self.get_dividend_by_id(dividend_id)
+
+        # Validate inputs
+        amount = self._validate_amount(amount_str)
+        self._validate_frequency(frequency)
+        investment_amount_at_time = self._validate_investment_amount_at_time(
+            investment_amount_at_time_str
+        )
+        period_month = self._validate_period_month(period_month_str)
+        period_year = self._validate_period_year(period_year_str)
+
+        # Update dividend
+        dividend.amount = amount
+        dividend.frequency = frequency
+        dividend.notes = notes
+        dividend.investment_amount_at_time = investment_amount_at_time
+        dividend.period_month = period_month
+        dividend.period_year = period_year
+
+        db.session.commit()
+
+        logger.info("Updated dividend ID %d: $%.2f (%s)", dividend_id, amount, frequency)
+        return dividend
 
     def get_dividends_for_investment(self, investment_id: int) -> list[Dividend]:
         """
@@ -197,3 +264,89 @@ class DividendService:
             raise ValidationError(
                 f"Invalid frequency '{frequency}'. Must be one of: {valid}"
             )
+
+    @staticmethod
+    def _validate_investment_amount_at_time(
+        investment_amount_at_time_str: str | None,
+    ) -> float | None:
+        """
+        Validate and parse investment amount at time of dividend.
+
+        Args:
+            investment_amount_at_time_str: Amount as string or None.
+
+        Returns:
+            Parsed float amount or None.
+
+        Raises:
+            ValidationError: If amount is invalid or negative.
+        """
+        if not investment_amount_at_time_str:
+            return None
+        try:
+            amount = float(investment_amount_at_time_str)
+        except ValueError as e:
+            raise ValidationError(
+                f"Invalid investment amount: {investment_amount_at_time_str}"
+            ) from e
+
+        if amount < 0:
+            raise ValidationError("Investment amount cannot be negative")
+
+        return amount if amount > 0 else None
+
+    @staticmethod
+    def _validate_period_month(period_month_str: str | None) -> int | None:
+        """
+        Validate and parse period month.
+
+        Args:
+            period_month_str: Month as string (1-12) or None.
+
+        Returns:
+            Parsed integer month or None.
+
+        Raises:
+            ValidationError: If month is invalid.
+        """
+        if not period_month_str:
+            return None
+        try:
+            month = int(period_month_str)
+        except ValueError as e:
+            raise ValidationError(
+                f"Invalid period month: {period_month_str}"
+            ) from e
+
+        if month < 1 or month > 12:
+            raise ValidationError("Period month must be between 1 and 12")
+
+        return month
+
+    @staticmethod
+    def _validate_period_year(period_year_str: str | None) -> int | None:
+        """
+        Validate and parse period year.
+
+        Args:
+            period_year_str: Year as string or None.
+
+        Returns:
+            Parsed integer year or None.
+
+        Raises:
+            ValidationError: If year is invalid.
+        """
+        if not period_year_str:
+            return None
+        try:
+            year = int(period_year_str)
+        except ValueError as e:
+            raise ValidationError(
+                f"Invalid period year: {period_year_str}"
+            ) from e
+
+        if year < 1900 or year > 2100:
+            raise ValidationError("Period year must be between 1900 and 2100")
+
+        return year
