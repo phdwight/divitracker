@@ -7,7 +7,7 @@ A Flask application for tracking dividend income from your investments. Calculat
 - **Investment Management**: Add, edit, and delete investments with ticker symbols
 - **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency
 - **Yield Calculation**: Automatic computation of actual and projected annualized dividend yields
-- **Portfolio Dashboard**: Overview of total invested, annual dividends, and overall yield with year filtering
+- **Portfolio Dashboard**: Overview of currently invested, annual dividends, and overall yield with year filtering
 - **Real-time Preview**: See yield calculations before recording dividends
 - **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
 
@@ -113,7 +113,7 @@ The dashboard displays:
 The annualized dividend yield is calculated as:
 
 ```
-Yield (%) = (Annual Dividends / Total Invested) × 100
+Yield (%) = (Annual Dividends / Currently Invested) × 100
 ```
 
 Where **Annual Dividends** is computed based on frequency:

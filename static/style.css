@@ -154,6 +154,33 @@ main {
     margin-bottom: 0;
 }
 
+.dashboard-filters {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.filter-checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+}
+
 /* Stats Grid */
 .stats-grid {
     display: grid;
