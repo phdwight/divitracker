@@ -151,10 +151,11 @@ def download_db() -> Response | WerkzeugResponse:
         return redirect(url_for("admin.admin_index"))
 
     logger.info("Database downloaded by user")
+    backup_filename = f"dividends_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
     return send_file(
         db_path,
         as_attachment=True,
-        download_name=f"dividends_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",  # type: ignore[call-arg]
+        download_name=backup_filename,  # type: ignore[call-arg]
     )
 
 
