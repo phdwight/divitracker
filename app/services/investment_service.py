@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
 from app.models import Investment
-from app.exceptions import ValidationError, NotFoundError
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

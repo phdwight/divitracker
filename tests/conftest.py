@@ -1,18 +1,19 @@
 """Pytest configuration and fixtures."""
 
-import pytest
 from typing import Generator
+
+import pytest
 
 from app import create_app
 from app.extensions import db
-from app.models import Investment, Dividend
+from app.models import Dividend, Investment
 
 
 @pytest.fixture(scope="function")
 def app():
     """Create and configure a test application instance."""
     app = create_app("testing")
-    
+
     with app.app_context():
         db.create_all()
         yield app
@@ -43,7 +44,7 @@ def sample_investment(app) -> Generator[Investment, None, None]:
         )
         db.session.add(investment)
         db.session.commit()
-        
+
         # Refresh to get the ID
         db.session.refresh(investment)
         yield investment
@@ -53,6 +54,7 @@ def sample_investment(app) -> Generator[Investment, None, None]:
 def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
     """Create a sample investment with dividends for testing."""
     from datetime import datetime, timezone
+
     with app.app_context():
         current_year = datetime.now(timezone.utc).year
         investment = Investment(
@@ -62,7 +64,7 @@ def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
         )
         db.session.add(investment)
         db.session.commit()
-        
+
         # Add 4 quarterly dividends for current year
         for quarter, month in enumerate([3, 6, 9, 12], start=1):
             dividend = Dividend(
@@ -75,6 +77,6 @@ def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
             )
             db.session.add(dividend)
         db.session.commit()
-        
+
         db.session.refresh(investment)
         yield investment

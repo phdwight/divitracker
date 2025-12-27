@@ -6,10 +6,12 @@ A Flask application for tracking dividend income from your investments. Calculat
 
 - **Investment Management**: Add, edit, and delete investments with ticker symbols
 - **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency
-- **Yield Calculation**: Automatic computation of actual and projected annualized dividend yields
+- **Yield Calculation**: Automatic computation of annualized dividend yields
+- **Yield Breakdown Page**: Detailed, printable computation breakdown for yield calculations
 - **Portfolio Dashboard**: Overview of currently invested, annual dividends, and overall yield with year filtering
 - **Real-time Preview**: See yield calculations before recording dividends
 - **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
+- **Timezone Support**: Configurable timezone for accurate local time display (default: GMT+8)
 
 ## Architecture
 
@@ -103,10 +105,18 @@ divitracker/
 
 The dashboard displays:
 - Total amount invested across all holdings
-- Total annualized dividends (actual and projected)
-- Overall portfolio yield percentage (actual and projected)
+- Total dividends received for the selected year
+- Overall annualized portfolio yield percentage (clickable for detailed breakdown)
 - Year filter to view dividends for specific years
 - List of all investments with individual yields (actual | projected format)
+
+### Yield Breakdown Page
+
+Click on the "Annualized Yield" card in the dashboard to view:
+- The complete yield calculation formula
+- Step-by-step computation with actual values
+- Per-investment breakdown showing contribution to overall yield
+- Print-friendly format for record keeping
 
 ## Dividend Yield Calculation
 
@@ -164,9 +174,19 @@ The application supports customizable currency and number formatting through a c
         "thousands_separator": ",",
         "decimal_separator": ".",
         "decimal_places": 2
+    },
+    "timezone": {
+        "offset_hours": 8,
+        "name": "GMT+8"
     }
 }
 ```
+
+#### Timezone Configuration
+
+The `timezone` setting controls the local time displayed in reports:
+- `offset_hours`: Hours offset from UTC (e.g., 8 for GMT+8, -5 for EST)
+- `name`: Display name shown in the UI (e.g., "GMT+8", "EST")
 
 #### Available Currency Presets
 
@@ -214,6 +234,7 @@ The application supports multiple environments:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | Dashboard |
+| GET | `/yield-breakdown` | Yield calculation breakdown (printable) |
 | GET | `/investment/add` | Add investment form |
 | POST | `/investment/add` | Create/update investment |
 | GET | `/investment/<id>` | View investment details |

@@ -5,9 +5,9 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
-from app.models import Dividend, Investment, DividendFrequency
-from app.exceptions import ValidationError, NotFoundError
+from app.models import Dividend, DividendFrequency, Investment
 
 if TYPE_CHECKING:
     pass
@@ -181,7 +181,9 @@ class DividendService:
 
         db.session.commit()
 
-        logger.info("Updated dividend ID %d: $%.2f (%s)", dividend_id, amount, frequency)
+        logger.info(
+            "Updated dividend ID %d: $%.2f (%s)", dividend_id, amount, frequency
+        )
         return dividend
 
     def get_dividends_for_investment(self, investment_id: int) -> list[Dividend]:
@@ -314,9 +316,7 @@ class DividendService:
         try:
             month = int(period_month_str)
         except ValueError as e:
-            raise ValidationError(
-                f"Invalid period month: {period_month_str}"
-            ) from e
+            raise ValidationError(f"Invalid period month: {period_month_str}") from e
 
         if month < 1 or month > 12:
             raise ValidationError("Period month must be between 1 and 12")
@@ -342,9 +342,7 @@ class DividendService:
         try:
             year = int(period_year_str)
         except ValueError as e:
-            raise ValidationError(
-                f"Invalid period year: {period_year_str}"
-            ) from e
+            raise ValidationError(f"Invalid period year: {period_year_str}") from e
 
         if year < 1900 or year > 2100:
             raise ValidationError("Period year must be between 1900 and 2100")

@@ -24,28 +24,28 @@ def index():
 
     investments = investment_service.get_all_investments()
     current_year = datetime.now(timezone.utc).year
-    
+
     # Get all years with dividend data across all investments
     all_years = set()
     for inv in investments:
         all_years.update(inv.get_years_with_dividends())
-    
+
     # Always include current year
     all_years.add(current_year)
     years_with_dividends = sorted(all_years, reverse=True)
-    
+
     # Get selected year from query params
-    selected_year = request.args.get('year', type=int)
+    selected_year = request.args.get("year", type=int)
     if selected_year is None or selected_year not in years_with_dividends:
         selected_year = current_year
-    
+
     # Filter to hide zero-amount investments
-    hide_zero = request.args.get('hide_zero', type=str, default='true') == 'true'
+    hide_zero = request.args.get("hide_zero", type=str, default="true") == "true"
     if hide_zero:
         filtered_investments = [inv for inv in investments if inv.total_invested > 0]
     else:
         filtered_investments = list(investments)
-    
+
     # Get portfolio summary for selected year
     portfolio_summary = portfolio_service.get_portfolio_summary(year=selected_year)
 

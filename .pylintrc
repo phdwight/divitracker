@@ -1,0 +1,26 @@
+[MAIN]
+# Python version
+py-version=3.12
+
+# Disable specific messages
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    R0903,  # too-few-public-methods
+    W0511,  # fixme/todo comments
+
+[FORMAT]
+# Maximum line length
+max-line-length=100
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args=8
+
+# Maximum number of local variables
+max-locals=20
+
+[MESSAGES CONTROL]
+# Minimum score to pass
+fail-under=8.0

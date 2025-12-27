@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import String, Float, Integer, DateTime, ForeignKey, Text
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.extensions import db
@@ -57,10 +57,14 @@ class Investment(db.Model):
     __tablename__ = "investments"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
+    name: Mapped[str] = mapped_column(
+        String(100), unique=True, nullable=False, index=True
+    )
     ticker: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     total_invested: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
@@ -91,13 +95,13 @@ class Investment(db.Model):
             year = datetime.now(timezone.utc).year
 
         all_dividends = self.dividends.all()
-        
+
         # Sum dividends for the specified year based on period_year
         total = 0.0
         for dividend in all_dividends:
             if dividend.period_year == year:
                 total += dividend.amount
-        
+
         return total
 
     def calculate_projected_annual_dividends(self, year: int | None = None) -> float:
@@ -135,7 +139,9 @@ class Investment(db.Model):
 
         # Group by frequency and calculate projection for each
         # Use the most common frequency to determine projection method
-        frequency_totals: dict[str, tuple[float, int]] = {}  # frequency -> (total_amount, count)
+        frequency_totals: dict[str, tuple[float, int]] = (
+            {}
+        )  # frequency -> (total_amount, count)
         for div in year_dividends:
             freq = div.frequency
             if freq not in frequency_totals:
@@ -148,8 +154,10 @@ class Investment(db.Model):
         for freq, (total_amount, count) in frequency_totals.items():
             try:
                 frequency_enum = DividendFrequency(freq)
-                expected_per_year = frequency_enum.annual_multiplier  # 12 for monthly, 4 for quarterly, 1 for yearly
-                
+                expected_per_year = (
+                    frequency_enum.annual_multiplier
+                )  # 12 for monthly, 4 for quarterly, 1 for yearly
+
                 if count >= expected_per_year:
                     # Full year of data, use actual
                     projected_total += total_amount
@@ -180,28 +188,29 @@ class Investment(db.Model):
             year = datetime.now(timezone.utc).year
 
         # Get dividends for this year, sorted by period_month descending
-        year_dividends = [
-            d for d in self.dividends.all()
-            if d.period_year == year
-        ]
+        year_dividends = [d for d in self.dividends.all() if d.period_year == year]
 
         if not year_dividends:
             return self.total_invested
 
         # Sort by period_month descending to get most recent
         year_dividends.sort(
-            key=lambda d: (d.period_month or 0, d.date_received),
-            reverse=True
+            key=lambda d: (d.period_month or 0, d.date_received), reverse=True
         )
 
         # Use investment_amount_at_time from most recent dividend if available
         most_recent = year_dividends[0]
-        if most_recent.investment_amount_at_time and most_recent.investment_amount_at_time > 0:
+        if (
+            most_recent.investment_amount_at_time
+            and most_recent.investment_amount_at_time > 0
+        ):
             return most_recent.investment_amount_at_time
 
         return self.total_invested
 
-    def calculate_dividend_yield(self, year: int | None = None, projected: bool = False) -> float:
+    def calculate_dividend_yield(
+        self, year: int | None = None, projected: bool = False
+    ) -> float:
         """
         Calculate dividend yield percentage for a specific year.
 
@@ -290,12 +299,8 @@ class Dividend(db.Model):
     investment_amount_at_time: Mapped[Optional[float]] = mapped_column(
         Float, nullable=True
     )
-    period_month: Mapped[Optional[int]] = mapped_column(
-        Integer, nullable=True
-    )
-    period_year: Mapped[Optional[int]] = mapped_column(
-        Integer, nullable=True
-    )
+    period_month: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    period_year: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     date_received: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, nullable=False
     )
@@ -345,16 +350,26 @@ class Dividend(db.Model):
             return None
 
         month_names = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
         ]
 
-        if self.frequency == 'monthly' and self.period_month:
+        if self.frequency == "monthly" and self.period_month:
             return f"{month_names[self.period_month - 1]} {self.period_year}"
-        elif self.frequency == 'quarterly' and self.period_month:
+        elif self.frequency == "quarterly" and self.period_month:
             quarter = (self.period_month - 1) // 3 + 1
             return f"Q{quarter} {self.period_year}"
-        elif self.frequency == 'yearly':
+        elif self.frequency == "yearly":
             return str(self.period_year)
         elif self.period_month:
             return f"{month_names[self.period_month - 1]} {self.period_year}"
@@ -377,7 +392,9 @@ class Dividend(db.Model):
             "period_month": self.period_month,
             "period_year": self.period_year,
             "period_label": self.period_label,
-            "date_received": self.date_received.isoformat() if self.date_received else None,
+            "date_received": (
+                self.date_received.isoformat() if self.date_received else None
+            ),
             "notes": self.notes,
             "annualized_amount": self.annualized_amount,
             "yield_at_time": self.yield_at_time,

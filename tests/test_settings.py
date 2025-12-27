@@ -4,18 +4,10 @@ import json
 import tempfile
 from pathlib import Path
 
-import pytest
-
-from app.settings import (
-    CURRENCY_PRESETS,
-    DEFAULT_SETTINGS,
-    CurrencySettings,
-    FormattingSettings,
-    SettingsManager,
-    UserSettings,
-    format_currency,
-    get_user_settings,
-)
+from app.settings import (CURRENCY_PRESETS, DEFAULT_SETTINGS, CurrencySettings,
+                          FormattingSettings, SettingsManager,
+                          TimezoneSettings, UserSettings, format_currency,
+                          get_user_settings)
 
 
 class TestCurrencySettings:
@@ -44,6 +36,22 @@ class TestFormattingSettings:
         assert settings.decimal_places == 2
 
 
+class TestTimezoneSettings:
+    """Tests for TimezoneSettings dataclass."""
+
+    def test_create_timezone_settings(self) -> None:
+        """Test creating timezone settings."""
+        settings = TimezoneSettings(offset_hours=8, name="GMT+8")
+        assert settings.offset_hours == 8
+        assert settings.name == "GMT+8"
+
+    def test_create_negative_offset(self) -> None:
+        """Test creating timezone with negative offset."""
+        settings = TimezoneSettings(offset_hours=-5, name="EST")
+        assert settings.offset_hours == -5
+        assert settings.name == "EST"
+
+
 class TestUserSettings:
     """Tests for UserSettings dataclass."""
 
@@ -56,6 +64,7 @@ class TestUserSettings:
                 decimal_separator=".",
                 decimal_places=2,
             ),
+            timezone=TimezoneSettings(offset_hours=8, name="GMT+8"),
         )
         assert settings.format_currency(1234.56) == "₱1,234.56"
         assert settings.format_currency(0) == "₱0.00"
@@ -70,6 +79,7 @@ class TestUserSettings:
                 decimal_separator=".",
                 decimal_places=2,
             ),
+            timezone=TimezoneSettings(offset_hours=-5, name="EST"),
         )
         assert settings.format_currency(1234.56) == "$1,234.56"
 
@@ -82,6 +92,7 @@ class TestUserSettings:
                 decimal_separator=",",
                 decimal_places=2,
             ),
+            timezone=TimezoneSettings(offset_hours=1, name="CET"),
         )
         assert settings.format_currency(1234.56) == "€1 234,56"
 
@@ -94,6 +105,7 @@ class TestUserSettings:
                 decimal_separator=".",
                 decimal_places=0,
             ),
+            timezone=TimezoneSettings(offset_hours=9, name="JST"),
         )
         assert settings.format_currency(1234) == "¥1,234"
 
@@ -150,6 +162,7 @@ class TestSettingsManager:
                     decimal_separator=",",
                     decimal_places=2,
                 ),
+                timezone=TimezoneSettings(offset_hours=1, name="CET"),
             )
             manager.save_settings(new_settings)
 
@@ -161,6 +174,8 @@ class TestSettingsManager:
             assert saved_data["currency"]["code"] == "EUR"
             assert saved_data["currency"]["symbol"] == "€"
             assert saved_data["formatting"]["thousands_separator"] == " "
+            assert saved_data["timezone"]["offset_hours"] == 1
+            assert saved_data["timezone"]["name"] == "CET"
 
     def test_reload_settings(self) -> None:
         """Test reloading settings from file."""

@@ -1,10 +1,10 @@
 """Tests for Investment and Dividend models."""
 
 import pytest
-from datetime import datetime
 
 from app.extensions import db
-from app.models import Investment, Dividend, DividendFrequency, InvestmentSummary
+from app.models import (Dividend, DividendFrequency, Investment,
+                        InvestmentSummary)
 
 
 class TestDividendFrequency:
@@ -58,6 +58,7 @@ class TestInvestmentModel:
     def test_calculate_annual_dividends_monthly(self, app):
         """Test annual dividend calculation sums dividends for the year."""
         from datetime import datetime, timezone
+
         with app.app_context():
             current_year = datetime.now(timezone.utc).year
             investment = Investment(
@@ -85,6 +86,7 @@ class TestInvestmentModel:
     def test_calculate_annual_dividends_quarterly(self, app):
         """Test annual dividend calculation sums quarterly dividends."""
         from datetime import datetime, timezone
+
         with app.app_context():
             current_year = datetime.now(timezone.utc).year
             investment = Investment(
@@ -112,6 +114,7 @@ class TestInvestmentModel:
     def test_calculate_dividend_yield(self, app):
         """Test dividend yield calculation."""
         from datetime import datetime, timezone
+
         with app.app_context():
             current_year = datetime.now(timezone.utc).year
             investment = Investment(
@@ -210,6 +213,7 @@ class TestInvestmentModel:
         """Test annual dividends returns actual for partial year."""
         with app.app_context():
             from datetime import datetime, timezone
+
             current_year = datetime.now(timezone.utc).year
 
             investment = Investment(
@@ -272,6 +276,7 @@ class TestInvestmentModel:
     def test_get_summary(self, app):
         """Test investment summary generation."""
         from datetime import datetime, timezone
+
         with app.app_context():
             current_year = datetime.now(timezone.utc).year
             investment = Investment(
@@ -444,7 +449,9 @@ class TestDividendModel:
             )
             assert dividend.yield_at_time is None
 
-    def test_yield_at_time_none_when_investment_amount_is_zero(self, app, sample_investment):
+    def test_yield_at_time_none_when_investment_amount_is_zero(
+        self, app, sample_investment
+    ):
         """Test yield_at_time returns None when investment_amount_at_time is zero."""
         with app.app_context():
             dividend = Dividend(

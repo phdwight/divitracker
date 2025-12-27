@@ -2,12 +2,12 @@
 
 import pytest
 
+from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
-from app.models import Investment, Dividend
-from app.services.investment_service import InvestmentService
+from app.models import Dividend, Investment
 from app.services.dividend_service import DividendService
+from app.services.investment_service import InvestmentService
 from app.services.portfolio_service import PortfolioService, PortfolioSummary
-from app.exceptions import ValidationError, NotFoundError
 
 
 class TestInvestmentService:
@@ -175,7 +175,9 @@ class TestDividendService:
             assert dividend.notes == "Q1 dividend"
             assert investment.id == sample_investment.id
 
-    def test_create_dividend_with_investment_amount_at_time(self, app, sample_investment):
+    def test_create_dividend_with_investment_amount_at_time(
+        self, app, sample_investment
+    ):
         """Test creating a dividend with investment amount at time."""
         with app.app_context():
             service = DividendService()
@@ -190,9 +192,13 @@ class TestDividendService:
             assert dividend.amount == 100.0
             assert dividend.frequency == "monthly"
             assert dividend.investment_amount_at_time == 5000.0
-            assert dividend.yield_at_time == pytest.approx(24.0)  # (100 * 12 / 5000) * 100
+            assert dividend.yield_at_time == pytest.approx(
+                24.0
+            )  # (100 * 12 / 5000) * 100
 
-    def test_create_dividend_with_empty_investment_amount_at_time(self, app, sample_investment):
+    def test_create_dividend_with_empty_investment_amount_at_time(
+        self, app, sample_investment
+    ):
         """Test creating a dividend with empty investment amount at time."""
         with app.app_context():
             service = DividendService()
@@ -206,7 +212,9 @@ class TestDividendService:
             assert dividend.investment_amount_at_time is None
             assert dividend.yield_at_time is None
 
-    def test_create_dividend_with_zero_investment_amount_at_time(self, app, sample_investment):
+    def test_create_dividend_with_zero_investment_amount_at_time(
+        self, app, sample_investment
+    ):
         """Test creating a dividend with zero investment amount at time stores None."""
         with app.app_context():
             service = DividendService()
@@ -220,7 +228,9 @@ class TestDividendService:
             assert dividend.investment_amount_at_time is None
             assert dividend.yield_at_time is None
 
-    def test_create_dividend_invalid_investment_amount_at_time(self, app, sample_investment):
+    def test_create_dividend_invalid_investment_amount_at_time(
+        self, app, sample_investment
+    ):
         """Test creating dividend with invalid investment amount at time raises ValidationError."""
         with app.app_context():
             service = DividendService()
@@ -233,7 +243,9 @@ class TestDividendService:
                 )
             assert "invalid" in str(exc_info.value).lower()
 
-    def test_create_dividend_negative_investment_amount_at_time(self, app, sample_investment):
+    def test_create_dividend_negative_investment_amount_at_time(
+        self, app, sample_investment
+    ):
         """Test creating dividend with negative investment amount at time raises ValidationError."""
         with app.app_context():
             service = DividendService()
@@ -377,7 +389,9 @@ class TestDividendService:
                 )
             assert "invalid" in str(exc_info.value).lower()
 
-    def test_update_dividend_invalid_frequency(self, app, sample_investment_with_dividend):
+    def test_update_dividend_invalid_frequency(
+        self, app, sample_investment_with_dividend
+    ):
         """Test updating dividend with invalid frequency raises ValidationError."""
         with app.app_context():
             service = DividendService()
@@ -502,6 +516,7 @@ class TestPortfolioService:
     def test_get_portfolio_summary_multiple_investments(self, app):
         """Test portfolio summary with multiple investments."""
         from datetime import datetime, timezone
+
         with app.app_context():
             current_year = datetime.now(timezone.utc).year
             # Create multiple investments
@@ -520,7 +535,7 @@ class TestPortfolioService:
                     period_year=current_year,
                 )
                 db.session.add(div)
-            
+
             # Add 12 monthly dividends for inv2 (50 * 12 = 600)
             for month in range(1, 13):
                 div = Dividend(
