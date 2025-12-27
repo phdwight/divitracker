@@ -65,18 +65,20 @@ def add_dividend():
                 "Dividend added to %s: $%.2f (%s)",
                 sanitize_log_input(investment.name),
                 dividend.amount,
-                frequency,
+                sanitize_log_input(frequency),
             )
             return redirect(url_for("investments.view_investment", investment_id=investment.id))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error adding dividend: %s", e)
+            logger.warning("Validation error adding dividend: %s", sanitize_log_input(str(e)))
             return redirect(url_for("dividends.add_dividend"))
 
         except NotFoundError as e:
             flash(str(e), "error")
-            logger.warning("Investment not found when adding dividend: %s", e)
+            logger.warning(
+                "Investment not found when adding dividend: %s", sanitize_log_input(str(e))
+            )
             return redirect(url_for("dividends.add_dividend"))
 
     investments = investment_service.get_all_investments()
@@ -155,7 +157,7 @@ def edit_dividend(dividend_id: int):
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error updating dividend: %s", e)
+            logger.warning("Validation error updating dividend: %s", sanitize_log_input(str(e)))
 
     current_year = datetime.now().year
 

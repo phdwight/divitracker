@@ -54,13 +54,13 @@ def add_investment():
                 "Investment %s: %s (amount: %s)",
                 "created" if created else "updated",
                 sanitize_log_input(investment.name),
-                amount_str,
+                sanitize_log_input(amount_str),
             )
             return redirect(url_for("main.index"))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error adding investment: %s", e)
+            logger.warning("Validation error adding investment: %s", sanitize_log_input(str(e)))
             return redirect(url_for("investments.add_investment"))
 
     investments = investment_service.get_all_investments()
@@ -159,7 +159,11 @@ def edit_investment(investment_id: int):
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error updating investment %d: %s", investment_id, e)
+            logger.warning(
+                "Validation error updating investment %d: %s",
+                investment_id,
+                sanitize_log_input(str(e)),
+            )
 
     return render_template("edit_investment.html", investment=investment)
 

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
 from app.models import Dividend, DividendFrequency, Investment
+from app.utils import sanitize_log_input
 
 if TYPE_CHECKING:
     pass
@@ -101,9 +102,9 @@ class DividendService:
 
         logger.info(
             "Created dividend for investment %s: $%.2f (%s)",
-            investment.name,
+            sanitize_log_input(investment.name),
             amount,
-            frequency,
+            sanitize_log_input(frequency),
         )
         return dividend, investment
 
@@ -179,7 +180,12 @@ class DividendService:
 
         db.session.commit()
 
-        logger.info("Updated dividend ID %d: $%.2f (%s)", dividend_id, amount, frequency)
+        logger.info(
+            "Updated dividend ID %d: $%.2f (%s)",
+            dividend_id,
+            amount,
+            sanitize_log_input(frequency),
+        )
         return dividend
 
     def get_dividends_for_investment(self, investment_id: int) -> list[Dividend]:
