@@ -4,7 +4,19 @@
 
 {% block content %}
 <div class="dashboard">
-    <h1>Dividend Dashboard</h1>
+    <div class="dashboard-header">
+        <h1>Dividend Dashboard</h1>
+        {% if years_with_dividends %}
+        <div class="year-selector">
+            <label for="year-select">Year:</label>
+            <select id="year-select" onchange="window.location.href='?year=' + this.value">
+                {% for y in years_with_dividends %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+    </div>
     
     <div class="stats-grid">
         <div class="stat-card">
@@ -17,22 +29,22 @@
         <div class="stat-card">
             <div class="stat-icon">💵</div>
             <div class="stat-content">
-                <h3>Annual Dividends</h3>
+                <h3>Dividends Received ({{ selected_year }})</h3>
                 <p class="stat-value">{{ format_currency(total_annual_dividends) }}</p>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">📈</div>
             <div class="stat-content">
-                <h3>Overall Yield</h3>
-                <p class="stat-value">{{ "%.2f"|format(overall_yield) }}%</p>
+                <h3>Projected Annual ({{ selected_year }})</h3>
+                <p class="stat-value">{{ format_currency(projected_annual_dividends) }}</p>
             </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon">🏦</div>
+        <div class="stat-card highlight">
+            <div class="stat-icon">📉</div>
             <div class="stat-content">
-                <h3>Investments</h3>
-                <p class="stat-value">{{ investments|length }}</p>
+                <h3>Projected Yield ({{ selected_year }})</h3>
+                <p class="stat-value">{{ "%.2f"|format(projected_yield) }}%</p>
             </div>
         </div>
     </div>
@@ -51,8 +63,9 @@
                         <th>Investment</th>
                         <th>Ticker</th>
                         <th>Invested</th>
-                        <th>Annual Dividends</th>
-                        <th>Yield</th>
+                        <th>Received ({{ selected_year }})</th>
+                        <th>Projected Annual</th>
+                        <th>Yield <small>(actual | projected)</small></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -66,10 +79,17 @@
                         </td>
                         <td>{{ investment.ticker or '-' }}</td>
                         <td>{{ format_currency(investment.total_invested) }}</td>
-                        <td>{{ format_currency(investment.calculate_annual_dividends()) }}</td>
+                        <td>{{ format_currency(investment.calculate_annual_dividends(selected_year)) }}</td>
+                        <td>{{ format_currency(investment.calculate_projected_annual_dividends(selected_year)) }}</td>
                         <td>
-                            <span class="yield-badge {% if investment.calculate_dividend_yield() >= 5 %}yield-high{% elif investment.calculate_dividend_yield() >= 2 %}yield-medium{% else %}yield-low{% endif %}">
-                                {{ "%.2f"|format(investment.calculate_dividend_yield()) }}%
+                            <span class="yield-dual">
+                                <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                    {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year)) }}%
+                                </span>
+                                <span class="yield-separator">|</span>
+                                <span class="yield-badge yield-projected {% if investment.calculate_dividend_yield(selected_year, projected=True) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year, projected=True) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                    {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year, projected=True)) }}%
+                                </span>
                             </span>
                         </td>
                         <td>

@@ -325,6 +325,134 @@ class TestDividendService:
             with pytest.raises(NotFoundError):
                 service.delete_dividend(99999)
 
+    def test_update_dividend_success(self, app, sample_investment_with_dividend):
+        """Test updating a dividend successfully."""
+        with app.app_context():
+            service = DividendService()
+            dividend = Dividend.query.filter_by(
+                investment_id=sample_investment_with_dividend.id
+            ).first()
+
+            updated = service.update_dividend(
+                dividend_id=dividend.id,
+                amount_str="150",
+                frequency="monthly",
+                notes="Updated notes",
+                investment_amount_at_time_str="10000",
+                period_month_str="8",
+                period_year_str="2025",
+            )
+
+            assert updated.amount == 150.0
+            assert updated.frequency == "monthly"
+            assert updated.notes == "Updated notes"
+            assert updated.investment_amount_at_time == 10000.0
+            assert updated.period_month == 8
+            assert updated.period_year == 2025
+
+    def test_update_dividend_not_found(self, app):
+        """Test updating non-existent dividend raises NotFoundError."""
+        with app.app_context():
+            service = DividendService()
+            with pytest.raises(NotFoundError):
+                service.update_dividend(
+                    dividend_id=99999,
+                    amount_str="100",
+                    frequency="monthly",
+                )
+
+    def test_update_dividend_invalid_amount(self, app, sample_investment_with_dividend):
+        """Test updating dividend with invalid amount raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            dividend = Dividend.query.filter_by(
+                investment_id=sample_investment_with_dividend.id
+            ).first()
+
+            with pytest.raises(ValidationError) as exc_info:
+                service.update_dividend(
+                    dividend_id=dividend.id,
+                    amount_str="not_a_number",
+                    frequency="monthly",
+                )
+            assert "invalid" in str(exc_info.value).lower()
+
+    def test_update_dividend_invalid_frequency(self, app, sample_investment_with_dividend):
+        """Test updating dividend with invalid frequency raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            dividend = Dividend.query.filter_by(
+                investment_id=sample_investment_with_dividend.id
+            ).first()
+
+            with pytest.raises(ValidationError) as exc_info:
+                service.update_dividend(
+                    dividend_id=dividend.id,
+                    amount_str="100",
+                    frequency="weekly",
+                )
+            assert "invalid frequency" in str(exc_info.value).lower()
+
+    def test_validate_period_month_valid(self, app):
+        """Test validating valid period months."""
+        with app.app_context():
+            service = DividendService()
+            assert service._validate_period_month("1") == 1
+            assert service._validate_period_month("6") == 6
+            assert service._validate_period_month("12") == 12
+            assert service._validate_period_month(None) is None
+            assert service._validate_period_month("") is None
+
+    def test_validate_period_month_invalid_string(self, app):
+        """Test validating invalid period month string raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            with pytest.raises(ValidationError) as exc_info:
+                service._validate_period_month("invalid")
+            assert "invalid period month" in str(exc_info.value).lower()
+
+    def test_validate_period_month_out_of_range(self, app):
+        """Test validating out-of-range period month raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            with pytest.raises(ValidationError) as exc_info:
+                service._validate_period_month("0")
+            assert "between 1 and 12" in str(exc_info.value).lower()
+
+            with pytest.raises(ValidationError) as exc_info:
+                service._validate_period_month("13")
+            assert "between 1 and 12" in str(exc_info.value).lower()
+
+    def test_validate_period_year_valid(self, app):
+        """Test validating valid period years."""
+        with app.app_context():
+            service = DividendService()
+            assert service._validate_period_year("2025") == 2025
+            assert service._validate_period_year("1900") == 1900
+            assert service._validate_period_year("2100") == 2100
+            assert service._validate_period_year(None) is None
+            assert service._validate_period_year("") is None
+
+    def test_validate_period_year_invalid_string(self, app):
+        """Test validating invalid period year string raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            with pytest.raises(ValidationError) as exc_info:
+                service._validate_period_year("invalid")
+            assert "invalid period year" in str(exc_info.value).lower()
+
+    def test_validate_period_year_out_of_range(self, app):
+        """Test validating out-of-range period year raises ValidationError."""
+        with app.app_context():
+            service = DividendService()
+            with pytest.raises(ValidationError) as exc_info:
+                service._validate_period_year("1899")
+            assert "between 1900 and 2100" in str(exc_info.value).lower()
+
+            with pytest.raises(ValidationError) as exc_info:
+                service._validate_period_year("2101")
+            assert "between 1900 and 2100" in str(exc_info.value).lower()
+
     def test_get_dividends_for_investment(self, app, sample_investment_with_dividend):
         """Test getting dividends for an investment."""
         with app.app_context():
@@ -333,8 +461,8 @@ class TestDividendService:
                 sample_investment_with_dividend.id
             )
 
-            assert len(dividends) == 1
-            assert dividends[0].amount == 50.0
+            assert len(dividends) == 4  # 4 quarterly dividends from fixture
+            assert all(d.amount == 50.0 for d in dividends)
 
 
 class TestPortfolioService:
@@ -351,7 +479,9 @@ class TestPortfolioService:
             assert isinstance(summary, PortfolioSummary)
             assert summary.total_invested == 0.0
             assert summary.total_annual_dividends == 0.0
+            assert summary.projected_annual_dividends == 0.0
             assert summary.overall_yield == 0.0
+            assert summary.projected_yield == 0.0
             assert summary.investment_count == 0
 
     def test_get_portfolio_summary_with_investments(
@@ -371,16 +501,36 @@ class TestPortfolioService:
 
     def test_get_portfolio_summary_multiple_investments(self, app):
         """Test portfolio summary with multiple investments."""
+        from datetime import datetime, timezone
         with app.app_context():
+            current_year = datetime.now(timezone.utc).year
             # Create multiple investments
             inv1 = Investment(name="Inv1", total_invested=10000.0)
             inv2 = Investment(name="Inv2", total_invested=5000.0)
             db.session.add_all([inv1, inv2])
             db.session.commit()
 
-            div1 = Dividend(investment_id=inv1.id, amount=100.0, frequency="quarterly")
-            div2 = Dividend(investment_id=inv2.id, amount=50.0, frequency="monthly")
-            db.session.add_all([div1, div2])
+            # Add 4 quarterly dividends for inv1 (100 * 4 = 400)
+            for month in [3, 6, 9, 12]:
+                div = Dividend(
+                    investment_id=inv1.id,
+                    amount=100.0,
+                    frequency="quarterly",
+                    period_month=month,
+                    period_year=current_year,
+                )
+                db.session.add(div)
+            
+            # Add 12 monthly dividends for inv2 (50 * 12 = 600)
+            for month in range(1, 13):
+                div = Dividend(
+                    investment_id=inv2.id,
+                    amount=50.0,
+                    frequency="monthly",
+                    period_month=month,
+                    period_year=current_year,
+                )
+                db.session.add(div)
             db.session.commit()
 
             investment_service = InvestmentService()
@@ -389,7 +539,7 @@ class TestPortfolioService:
             summary = service.get_portfolio_summary()
 
             assert summary.total_invested == 15000.0
-            # 100*4 + 50*12 = 400 + 600 = 1000
+            # 400 + 600 = 1000
             assert summary.total_annual_dividends == 1000.0
             # 1000 / 15000 * 100 = 6.666...
             assert abs(summary.overall_yield - 6.666666666666667) < 0.001

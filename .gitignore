@@ -3,3 +3,8 @@
 *.pyc
 *.pyc
 *.pyc
+*.pyc
+*.pyc
+*.pyc
+/tests/__pycache__
+/app/__pycache__

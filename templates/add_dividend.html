@@ -90,6 +90,13 @@
                         </span>
                     </label>
                     <label class="radio-option">
+                        <input type="radio" name="frequency" value="semi-annual">
+                        <span class="radio-label">
+                            <strong>Semi-Annual</strong>
+                            <small>Paid every 6 months (×2 annually)</small>
+                        </span>
+                    </label>
+                    <label class="radio-option">
                         <input type="radio" name="frequency" value="yearly">
                         <span class="radio-label">
                             <strong>Yearly</strong>
@@ -156,6 +163,7 @@ function updateYieldPreview() {
             let multiplier = 1;
             if (frequency.value === 'monthly') multiplier = 12;
             else if (frequency.value === 'quarterly') multiplier = 4;
+            else if (frequency.value === 'semi-annual') multiplier = 2;
             
             const annualAmount = amount * multiplier;
             const yieldPercent = (annualAmount / investmentAmount) * 100;
