@@ -7,7 +7,7 @@ from pathlib import Path
 
 from flask import (
     Blueprint,
-    current_app,
+    Response,
     flash,
     redirect,
     render_template,
@@ -16,6 +16,7 @@ from flask import (
     url_for,
 )
 from werkzeug.utils import secure_filename
+from werkzeug.wrappers import Response as WerkzeugResponse
 
 from app.settings import (
     CURRENCY_PRESETS,
@@ -38,7 +39,7 @@ def get_db_path() -> Path:
 
 
 @admin_bp.route("/")
-def admin_index():
+def admin_index() -> str:
     """
     Render the admin settings page.
 
@@ -53,9 +54,7 @@ def admin_index():
     db_exists = db_path.exists()
     db_size = db_path.stat().st_size if db_exists else 0
     db_modified = (
-        datetime.fromtimestamp(db_path.stat().st_mtime, tz=timezone.utc)
-        if db_exists
-        else None
+        datetime.fromtimestamp(db_path.stat().st_mtime, tz=timezone.utc) if db_exists else None
     )
 
     return render_template(
@@ -69,7 +68,7 @@ def admin_index():
 
 
 @admin_bp.route("/save-settings", methods=["POST"])
-def save_settings():
+def save_settings() -> WerkzeugResponse:
     """
     Save user settings from form submission.
 
@@ -138,7 +137,7 @@ def save_settings():
 
 
 @admin_bp.route("/download-db")
-def download_db():
+def download_db() -> Response | WerkzeugResponse:
     """
     Download the database file.
 
@@ -155,12 +154,12 @@ def download_db():
     return send_file(
         db_path,
         as_attachment=True,
-        download_name=f"dividends_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",
+        download_name=f"dividends_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db",  # type: ignore[call-arg]
     )
 
 
 @admin_bp.route("/upload-db", methods=["POST"])
-def upload_db():
+def upload_db() -> WerkzeugResponse:
     """
     Upload and replace the database file.
 
