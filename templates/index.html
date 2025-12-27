@@ -6,23 +6,39 @@
 <div class="dashboard">
     <div class="dashboard-header">
         <h1>Dividend Dashboard</h1>
-        {% if years_with_dividends %}
-        <div class="year-selector">
-            <label for="year-select">Year:</label>
-            <select id="year-select" onchange="window.location.href='?year=' + this.value">
-                {% for y in years_with_dividends %}
-                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
+        <div class="dashboard-filters">
+            {% if years_with_dividends %}
+            <div class="year-selector">
+                <label for="year-select">Year:</label>
+                <select id="year-select" onchange="updateFilters()">
+                    {% for y in years_with_dividends %}
+                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+            <div class="filter-checkbox">
+                <label>
+                    <input type="checkbox" id="hide-zero" {% if hide_zero %}checked{% endif %} onchange="updateFilters()">
+                    Hide zero investments
+                </label>
+            </div>
         </div>
-        {% endif %}
     </div>
+    
+    <script>
+        function updateFilters() {
+            const year = document.getElementById('year-select')?.value || {{ selected_year }};
+            const hideZero = document.getElementById('hide-zero').checked;
+            window.location.href = '?year=' + year + '&hide_zero=' + hideZero;
+        }
+    </script>
     
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon">📊</div>
             <div class="stat-content">
-                <h3>Total Invested</h3>
+                <h3>Currently Invested</h3>
                 <p class="stat-value">{{ format_currency(total_invested) }}</p>
             </div>
         </div>

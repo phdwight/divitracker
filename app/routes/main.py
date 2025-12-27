@@ -38,12 +38,19 @@ def index():
     if selected_year is None or selected_year not in years_with_dividends:
         selected_year = current_year
     
+    # Filter to hide zero-amount investments
+    hide_zero = request.args.get('hide_zero', type=str, default='true') == 'true'
+    if hide_zero:
+        filtered_investments = [inv for inv in investments if inv.total_invested > 0]
+    else:
+        filtered_investments = list(investments)
+    
     # Get portfolio summary for selected year
     portfolio_summary = portfolio_service.get_portfolio_summary(year=selected_year)
 
     return render_template(
         "index.html",
-        investments=investments,
+        investments=filtered_investments,
         total_invested=portfolio_summary.total_invested,
         total_annual_dividends=portfolio_summary.total_annual_dividends,
         projected_annual_dividends=portfolio_summary.projected_annual_dividends,
@@ -51,4 +58,5 @@ def index():
         projected_yield=portfolio_summary.projected_yield,
         selected_year=selected_year,
         years_with_dividends=years_with_dividends,
+        hide_zero=hide_zero,
     )
