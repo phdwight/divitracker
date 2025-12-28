@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  divitracker:
+    image: ghcr.io/${GITHUB_REPOSITORY:-divitracker}:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: divitracker
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY is required}
+      - DATABASE_URL=sqlite:////app/instance/dividends.db
+    volumes:
+      # Persist SQLite database across container restarts
+      - divitracker_data:/app/instance
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  divitracker_data:
+    driver: local

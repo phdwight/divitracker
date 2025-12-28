@@ -55,7 +55,11 @@ divitracker/
 - Python 3.10+
 - pip
 
-### Installation
+**Or for Docker deployment:**
+- Docker 20.10+
+- Docker Compose 2.0+
+
+### Installation (Local)
 
 1. **Clone the repository**:
    ```bash
@@ -79,6 +83,58 @@ divitracker/
    ```
 
 5. **Open your browser** and navigate to `http://127.0.0.1:5000`
+
+### Installation (Docker)
+
+1. **Clone the repository**:
+   ```bash
+   cd divitracker
+   ```
+
+2. **Create environment file**:
+   ```bash
+   cp .env.example .env
+   # Edit .env and set a strong SECRET_KEY
+   ```
+
+3. **Build and run with Docker Compose**:
+   ```bash
+   docker-compose up -d --build
+   ```
+
+4. **Open your browser** and navigate to `http://127.0.0.1:5000`
+
+#### Docker Commands
+
+```bash
+# Start the application
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+
+# View container status
+docker-compose ps
+```
+
+#### Data Persistence
+
+The SQLite database is stored in a Docker volume (`divitracker_data`) that persists across container restarts. To backup your data:
+
+```bash
+# Create a backup
+docker cp divitracker:/app/instance/dividends.db ./backup_dividends.db
+
+# Restore from backup
+docker cp ./backup_dividends.db divitracker:/app/instance/dividends.db
+docker-compose restart
+```
 
 ## Usage
 
@@ -155,6 +211,17 @@ pytest tests/test_models.py
 
 # Run with verbose output
 pytest -v
+```
+
+### Running Tests with Docker
+
+```bash
+# Build test image and run tests
+docker build -t divitracker-test .
+docker run --rm divitracker-test pytest tests/ -v
+
+# Run tests with coverage
+docker run --rm divitracker-test pytest tests/ -v --cov=app --cov-report=term-missing
 ```
 
 ## Configuration
@@ -261,6 +328,54 @@ The application supports multiple environments:
 - **Migrations**: Flask-Migrate
 - **Testing**: pytest with pytest-cov (95% coverage)
 - **Styling**: Custom CSS (no external dependencies)
+- **Containerization**: Docker with multi-stage builds
+- **CI/CD**: GitHub Actions (automated builds to GHCR)
+- **Production Server**: Gunicorn WSGI
+
+## Docker Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│  Docker Container (divitracker)                 │
+│  ┌───────────────────────────────────────────┐  │
+│  │  Gunicorn (2 workers, 4 threads)          │  │
+│  │  └── Flask Application                    │  │
+│  │      └── SQLAlchemy ORM                   │  │
+│  └───────────────────────────────────────────┘  │
+│                      │                          │
+│                      ▼                          │
+│  ┌───────────────────────────────────────────┐  │
+│  │  /app/instance/dividends.db               │  │
+│  └───────────────────────────────────────────┘  │
+└──────────────────────┬──────────────────────────┘
+                       │ Volume Mount
+                       ▼
+┌─────────────────────────────────────────────────┐
+│  Docker Volume: divitracker_data                │
+│  (Persists across container restarts)           │
+└─────────────────────────────────────────────────┘
+```
+
+## CI/CD Pipeline
+
+The GitHub Actions workflow automatically:
+
+1. **On Pull Request**: Runs tests and builds Docker image (no push)
+2. **On Push to main/master**: 
+   - Runs test suite
+   - Builds multi-platform image (amd64, arm64)
+   - Pushes to GitHub Container Registry (ghcr.io)
+   - Tags with: `latest`, branch name, git SHA, semver (if tagged)
+
+### Pulling Pre-built Images
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/YOUR_USERNAME/divitracker:latest
+
+# Or use a specific version
+docker pull ghcr.io/YOUR_USERNAME/divitracker:v1.0.0
+```
 
 ## License
 
