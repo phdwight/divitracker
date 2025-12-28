@@ -24,6 +24,8 @@ divitracker/
 │   ├── extensions.py        # Flask extensions
 │   ├── exceptions.py        # Custom exceptions
 │   ├── models.py            # SQLAlchemy models
+│   ├── settings.py          # User settings management
+│   ├── utils.py             # Utility functions
 │   ├── routes/              # Blueprint routes
 │   │   ├── __init__.py
 │   │   ├── main.py          # Dashboard routes
@@ -39,10 +41,12 @@ divitracker/
 ├── static/                  # CSS and static files
 ├── tests/                   # Pytest test suite
 │   ├── conftest.py         # Test fixtures
+│   ├── test_admin.py       # Admin route tests
 │   ├── test_models.py      # Model tests
-│   ├── test_services.py    # Service tests
 │   ├── test_routes.py      # Route tests
-│   └── test_settings.py    # Settings tests
+│   ├── test_services.py    # Service tests
+│   ├── test_settings.py    # Settings tests
+│   └── test_utils.py       # Utility function tests
 ├── instance/               # Instance-specific data (SQLite DB)
 ├── run.py                  # Application entry point
 └── requirements.txt        # Python dependencies
@@ -166,6 +170,7 @@ The dashboard displays:
 - Total dividends received for the selected year
 - Overall annualized portfolio yield percentage (clickable for detailed breakdown)
 - Year filter to view dividends for specific years
+- Toggle to hide investments with zero balance
 - List of all investments with individual yields (actual | projected format)
 
 ### Yield Breakdown Page
