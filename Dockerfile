@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.12-slim AS builder
+FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir gunicorn
 
 # Production stage
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
