@@ -73,7 +73,6 @@
                         <th>Date Received</th>
                         <th>Amount</th>
                         <th>Frequency</th>
-                        <th>Annualized</th>
                         <th>Investment at Time</th>
                         <th>Yield at Time</th>
                         <th>Notes</th>
@@ -91,7 +90,6 @@
                                 {{ dividend.frequency|capitalize }}
                             </span>
                         </td>
-                        <td>{{ format_currency(dividend.annualized_amount) }}</td>
                         <td>{{ format_currency(dividend.investment_amount_at_time) if dividend.investment_amount_at_time else '-' }}</td>
                         <td>{{ "%.2f"|format(dividend.yield_at_time) ~ '%' if dividend.yield_at_time else '-' }}</td>
                         <td>{{ dividend.notes or '-' }}</td>
