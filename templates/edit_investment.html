@@ -1,13 +1,13 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Edit {{ investment.name }} - DiviTracker{% endblock %}
+{% block title %}Edit {{ investment.name }} - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="form-page">
     <h1>Edit Investment</h1>
     
     <div class="form-container">
-        <form method="POST" action="{{ url_for('investments.edit_investment', investment_id=investment.id) }}">
+        <form method="post" action="{{ url_for('investments.edit_investment', investment_id=investment.id) }}">
             <div class="form-group">
                 <label for="name">Investment Name *</label>
                 <input type="text" 
@@ -46,4 +46,4 @@
         </form>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

@@ -8,13 +8,14 @@ A Flask application for tracking dividend income from your investments. Calculat
 - **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency
 - **Yield Calculation**: Automatic computation of annualized dividend yields
 - **Yield Breakdown Page**: Detailed, printable computation breakdown for yield calculations
-- **Dividend Graph**: Visual bar chart representation of dividends with cumulative line graph, filters by year and investment
+- **Dividend Graph**: Visual bar chart representation of dividends with cumulative line graph and data table, filters by year and investment
 - **Portfolio Dashboard**: Overview of currently invested, annual dividends, and overall yield with year filtering
 - **Pagination**: Configurable items per page for dashboard and dividend history views
 - **Real-time Preview**: See yield calculations before recording dividends
 - **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
 - **Timezone Support**: Configurable timezone for accurate local time display (default: GMT+8)
 - **Admin Settings**: Configure currency, formatting, pagination, and timezone; download/upload database backups
+- **Code Quality**: Templates pass djlint (Jinja2-aware HTML linter) with zero errors
 
 ## Architecture
 
@@ -183,9 +184,9 @@ Access the graph page via the "📈 Graph" link in the navigation to view:
 - Bar chart visualization of dividend income by month
 - Cumulative line graph showing total earnings growth over time (toggle on/off)
 - Filter by year to see monthly breakdown or view all years
-- Filter by specific investment
-- Summary statistics: total, average, and highest dividend amounts
-- Data table with all values
+- Filter by specific investment (dropdown limited to prevent overflow with long names)
+- Summary statistics: Total Displayed and Highest dividend amounts
+- Data table with Period, Amount, and Cumulative Total columns
 
 ### Yield Breakdown Page
 
@@ -242,6 +243,25 @@ docker run --rm divitracker-test pytest tests/ -v
 # Run tests with coverage
 docker run --rm divitracker-test pytest tests/ -v --cov=app --cov-report=term-missing
 ```
+
+## Linting
+
+### Template Linting (HTML/Jinja2)
+
+The project uses [djlint](https://djlint.com/) for Jinja2-aware HTML template linting:
+
+```bash
+# Install djlint
+pip install djlint
+
+# Run linting on templates
+djlint templates/ --profile=jinja --lint
+
+# Auto-format templates (optional)
+djlint templates/ --profile=jinja --reformat
+```
+
+All templates pass djlint with zero errors.
 
 ## Configuration
 

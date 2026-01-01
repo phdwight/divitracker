@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Dividend Graph - DiviTracker{% endblock %}
+{% block title %}Dividend Graph - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="dividend-graph-page">
@@ -58,16 +58,6 @@
                 <p class="summary-value" id="totalValue">{{ format_currency(chart_data | sum(attribute='value')) }}</p>
             </div>
             <div class="summary-card">
-                <h3>Average</h3>
-                <p class="summary-value" id="avgValue">
-                    {% if chart_data %}
-                    {{ format_currency((chart_data | sum(attribute='value')) / (chart_data | length)) }}
-                    {% else %}
-                    {{ format_currency(0) }}
-                    {% endif %}
-                </p>
-            </div>
-            <div class="summary-card">
                 <h3>Highest</h3>
                 <p class="summary-value" id="maxValue">
                     {% if chart_data %}
@@ -88,13 +78,17 @@
                     <tr>
                         <th>Period</th>
                         <th>Amount</th>
+                        <th>Cumulative Total</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% set cumulative = namespace(total=0) %}
                     {% for item in chart_data %}
+                    {% set cumulative.total = cumulative.total + item.value %}
                     <tr>
                         <td>{{ item.label }}</td>
                         <td>{{ format_currency(item.value) }}</td>
+                        <td>{{ format_currency(cumulative.total) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -102,6 +96,7 @@
                     <tr>
                         <th>Total</th>
                         <th>{{ format_currency(chart_data | sum(attribute='value')) }}</th>
+                        <th></th>
                     </tr>
                 </tfoot>
             </table>
@@ -109,10 +104,10 @@
     </div>
 
     <div class="back-link">
-        <a href="{{ url_for('main.index') }}">&larr; Back to Dashboard</a>
+        <a href="{{ url_for('main.index') }}">← Back to Dashboard</a>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -241,4 +236,4 @@
         dividendChart.update();
     }
 </script>
-{% endblock %}
+{% endblock scripts %}

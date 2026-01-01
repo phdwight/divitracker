@@ -1,13 +1,13 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Add Investment - DiviTracker{% endblock %}
+{% block title %}Add Investment - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="form-page">
     <h1>Add Investment</h1>
     
     <div class="form-container">
-        <form method="POST" action="{{ url_for('investments.add_investment') }}">
+        <form method="post" action="{{ url_for('investments.add_investment') }}">
             <div class="form-group">
                 <label for="name">Investment Name *</label>
                 <input type="text" 
@@ -19,7 +19,7 @@
                        autocomplete="off">
                 <datalist id="investment-list">
                     {% for inv in investments %}
-                    <option value="{{ inv.name }}" data-ticker="{{ inv.ticker }}">
+                    <option value="{{ inv.name }}">{{ inv.ticker }}</option>
                     {% endfor %}
                 </datalist>
                 <small class="form-help">Select an existing investment or type a new name</small>
@@ -66,7 +66,7 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
 <script>
@@ -86,4 +86,4 @@ document.getElementById('name').addEventListener('change', function() {
     });
 });
 </script>
-{% endblock %}
+{% endblock scripts %}

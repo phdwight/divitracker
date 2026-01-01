@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Edit Dividend - DiviTracker{% endblock %}
+{% block title %}Edit Dividend - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="form-page">
@@ -8,7 +8,7 @@
     <p class="subtitle">Update dividend record for {{ dividend.investment.name }}</p>
     
     <div class="form-container">
-        <form method="POST" action="{{ url_for('dividends.edit_dividend', dividend_id=dividend.id) }}">
+        <form method="post" action="{{ url_for('dividends.edit_dividend', dividend_id=dividend.id) }}">
             <div class="form-group">
                 <label for="amount">Dividend Amount ({{ currency_symbol }}) *</label>
                 <input type="number" 
@@ -106,4 +106,4 @@
         </form>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

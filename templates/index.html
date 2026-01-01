@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Dashboard - DiviTracker{% endblock %}
+{% block title %}Dashboard - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="dashboard">
@@ -125,29 +125,29 @@
             <span class="pagination-info">Showing {{ ((page - 1) * items_per_page) + 1 }}-{{ [page * items_per_page, total_items] | min }} of {{ total_items }}</span>
             
             {% if page > 1 %}
-            <a href="javascript:goToPage(1)" class="pagination-btn" title="First page">&laquo;</a>
-            <a href="javascript:goToPage({{ page - 1 }})" class="pagination-btn" title="Previous page">&lsaquo;</a>
+            <a href="#" onclick="goToPage(1); return false;" class="pagination-btn" title="First page">«</a>
+            <a href="#" onclick="goToPage({{ page - 1 }}); return false;" class="pagination-btn" title="Previous page">‹</a>
             {% else %}
-            <span class="pagination-btn disabled">&laquo;</span>
-            <span class="pagination-btn disabled">&lsaquo;</span>
+            <span class="pagination-btn disabled">«</span>
+            <span class="pagination-btn disabled">‹</span>
             {% endif %}
             
             {% for p in range(1, total_pages + 1) %}
                 {% if p == page %}
                 <span class="pagination-btn active">{{ p }}</span>
                 {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
-                <a href="javascript:goToPage({{ p }})" class="pagination-btn">{{ p }}</a>
+                <a href="#" onclick="goToPage({{ p }}); return false;" class="pagination-btn">{{ p }}</a>
                 {% elif p == page - 3 or p == page + 3 %}
                 <span class="pagination-ellipsis">...</span>
                 {% endif %}
             {% endfor %}
             
             {% if page < total_pages %}
-            <a href="javascript:goToPage({{ page + 1 }})" class="pagination-btn" title="Next page">&rsaquo;</a>
-            <a href="javascript:goToPage({{ total_pages }})" class="pagination-btn" title="Last page">&raquo;</a>
+            <a href="#" onclick="goToPage({{ page + 1 }}); return false;" class="pagination-btn" title="Next page">›</a>
+            <a href="#" onclick="goToPage({{ total_pages }}); return false;" class="pagination-btn" title="Last page">»</a>
             {% else %}
-            <span class="pagination-btn disabled">&rsaquo;</span>
-            <span class="pagination-btn disabled">&raquo;</span>
+            <span class="pagination-btn disabled">›</span>
+            <span class="pagination-btn disabled">»</span>
             {% endif %}
             
             <div class="items-per-page">
@@ -173,4 +173,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
