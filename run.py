@@ -4,7 +4,7 @@
 import os
 from pathlib import Path
 
-from app import create_app
+from app.factory import create_app
 
 # Ensure instance folder exists for SQLite database
 instance_path = Path(__file__).parent / "instance"

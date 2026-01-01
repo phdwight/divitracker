@@ -21,7 +21,8 @@ A Flask application for tracking dividend income from your investments. Calculat
 ```
 divitracker/
 ├── app/                      # Application package
-│   ├── __init__.py          # Application factory
+│   ├── __init__.py          # Package marker
+│   ├── factory.py           # Application factory (create_app)
 │   ├── config.py            # Configuration classes
 │   ├── extensions.py        # Flask extensions
 │   ├── exceptions.py        # Custom exceptions
@@ -29,13 +30,13 @@ divitracker/
 │   ├── settings.py          # User settings management
 │   ├── utils.py             # Utility functions
 │   ├── routes/              # Blueprint routes
-│   │   ├── __init__.py
+│   │   ├── __init__.py      # Package marker
 │   │   ├── main.py          # Dashboard routes
 │   │   ├── investments.py   # Investment CRUD routes
 │   │   ├── dividends.py     # Dividend CRUD routes
 │   │   └── admin.py         # Admin settings & DB management
 │   └── services/            # Business logic layer
-│       ├── __init__.py
+│       ├── __init__.py      # Package marker
 │       ├── investment_service.py
 │       ├── dividend_service.py
 │       └── portfolio_service.py
