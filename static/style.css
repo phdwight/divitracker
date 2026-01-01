@@ -13,6 +13,11 @@
     --bg-color: #f3f4f6;
     --card-bg: #ffffff;
     --border-color: #e5e7eb;
+
+/* Utility classes */
+.hidden {
+    display: none;
+}
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
     --radius: 8px;

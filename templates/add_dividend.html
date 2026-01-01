@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Add Dividend - DiviTracker{% endblock %}
+{% block title %}Add Dividend - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="form-page">
@@ -8,7 +8,7 @@
     
     <div class="form-container">
         {% if investments %}
-        <form method="POST" action="{{ url_for('dividends.add_dividend') }}">
+        <form method="post" action="{{ url_for('dividends.add_dividend') }}">
             <div class="form-group">
                 <label for="investment_id">Select Investment *</label>
                 <select id="investment_id" name="investment_id" required>
@@ -111,7 +111,7 @@
                 <textarea id="notes" name="notes" rows="2" placeholder="Any additional notes..."></textarea>
             </div>
 
-            <div id="yield-preview" class="yield-preview" style="display: none;">
+            <div id="yield-preview" class="yield-preview hidden">
                 <h4>📊 Yield Preview</h4>
                 <p>Annualized Dividend: <span id="annual-amount">{{ currency_symbol }}0.00</span></p>
                 <p>Estimated Yield: <span id="estimated-yield">0.00%</span></p>
@@ -132,7 +132,7 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
 <script>
@@ -170,11 +170,11 @@ function updateYieldPreview() {
             
             document.getElementById('annual-amount').textContent = currencySymbol + formatNumber(annualAmount);
             document.getElementById('estimated-yield').textContent = yieldPercent.toFixed(2) + '%';
-            document.getElementById('yield-preview').style.display = 'block';
+            document.getElementById('yield-preview').classList.remove('hidden');
             return;
         }
     }
-    document.getElementById('yield-preview').style.display = 'none';
+    document.getElementById('yield-preview').classList.add('hidden');
 }
 
 // Pre-fill investment amount when investment is selected
@@ -203,4 +203,4 @@ document.querySelectorAll('input[name="frequency"]').forEach(radio => {
 // Initialize on page load
 prefillInvestmentAmount();
 </script>
-{% endblock %}
+{% endblock scripts %}

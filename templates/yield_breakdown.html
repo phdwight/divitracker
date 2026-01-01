@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Yield Calculation Breakdown - DiviTracker{% endblock %}
+{% block title %}Yield Calculation Breakdown - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="yield-breakdown">
@@ -112,4 +112,4 @@
         <p class="print-date">Generated on {{ now().strftime('%B %d, %Y at %I:%M %p') }} ({{ timezone_name }})</p>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

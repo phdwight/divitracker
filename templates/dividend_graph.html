@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}Dividend Graph - DiviTracker{% endblock %}
+{% block title %}Dividend Graph - DiviTracker{% endblock title %}
 
 {% block content %}
 <div class="dividend-graph-page">
@@ -104,10 +104,10 @@
     </div>
 
     <div class="back-link">
-        <a href="{{ url_for('main.index') }}">&larr; Back to Dashboard</a>
+        <a href="{{ url_for('main.index') }}">← Back to Dashboard</a>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -236,4 +236,4 @@
         dividendChart.update();
     }
 </script>
-{% endblock %}
+{% endblock scripts %}

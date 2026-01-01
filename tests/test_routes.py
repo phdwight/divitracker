@@ -99,6 +99,15 @@ class TestDividendGraphRoutes:
         assert b"Cumulative Total" in response.data
         assert b"toggleCumulative" in response.data
 
+    def test_dividend_graph_summary_cards(self, client):
+        """Test that dividend graph shows Total Displayed and Highest summary cards."""
+        response = client.get("/dividend-graph")
+        assert response.status_code == 200
+        assert b"Total Displayed" in response.data
+        assert b"Highest" in response.data
+        # Average should not be present (removed)
+        assert b">Average<" not in response.data
+
 
 class TestPagination:
     """Tests for pagination functionality."""
@@ -126,6 +135,17 @@ class TestPagination:
         response = client.get(f"/investment/{sample_investment_with_dividend.id}")
         assert response.status_code == 200
         # Should show dividend history
+
+    def test_view_investment_dividend_table_columns(self, client, sample_investment_with_dividend):
+        """Test that dividend history table has correct columns (Date Received removed)."""
+        response = client.get(f"/investment/{sample_investment_with_dividend.id}")
+        assert response.status_code == 200
+        # Should have these columns
+        assert b"Period" in response.data
+        assert b"Amount" in response.data
+        assert b"Frequency" in response.data
+        # Date Received column should NOT be present
+        assert b">Date Received<" not in response.data
 
     def test_view_investment_pagination_with_params(self, client, sample_investment_with_dividend):
         """Test view investment page with pagination parameters."""
