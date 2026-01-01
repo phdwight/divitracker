@@ -8,11 +8,13 @@ A Flask application for tracking dividend income from your investments. Calculat
 - **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency
 - **Yield Calculation**: Automatic computation of annualized dividend yields
 - **Yield Breakdown Page**: Detailed, printable computation breakdown for yield calculations
+- **Dividend Graph**: Visual bar chart representation of dividends with filters by year and investment
 - **Portfolio Dashboard**: Overview of currently invested, annual dividends, and overall yield with year filtering
+- **Pagination**: Configurable items per page for dashboard and dividend history views
 - **Real-time Preview**: See yield calculations before recording dividends
 - **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
 - **Timezone Support**: Configurable timezone for accurate local time display (default: GMT+8)
-- **Admin Settings**: Configure currency, formatting, and timezone; download/upload database backups
+- **Admin Settings**: Configure currency, formatting, pagination, and timezone; download/upload database backups
 
 ## Architecture
 
@@ -170,8 +172,18 @@ The dashboard displays:
 - Total dividends received for the selected year
 - Overall annualized portfolio yield percentage (clickable for detailed breakdown)
 - Year filter to view dividends for specific years
-- Toggle to hide investments with zero balance
-- List of all investments with individual yields (actual | projected format)
+- Toggle to hide investments with zero dividends received (for selected year)
+- Paginated list of all investments with individual yields (actual | projected format)
+- Configurable items per page selector
+
+### Dividend Graph
+
+Access the graph page via the "📈 Graph" link in the navigation to view:
+- Bar chart visualization of dividend income
+- Filter by year to see monthly breakdown or view all years
+- Filter by specific investment
+- Summary statistics: total, average, and highest dividend amounts
+- Data table with all values
 
 ### Yield Breakdown Page
 
@@ -252,9 +264,18 @@ The application supports customizable currency and number formatting through a c
     "timezone": {
         "offset_hours": 8,
         "name": "GMT+8"
+    },
+    "pagination": {
+        "items_per_page": 10
     }
 }
 ```
+
+#### Pagination Configuration
+
+The `pagination` setting controls the default number of items per page:
+- `items_per_page`: Number of items to show per page (5-100, default: 10)
+- Can be overridden per-request using the page selector dropdown
 
 #### Timezone Configuration
 
@@ -307,11 +328,12 @@ The application supports multiple environments:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | Dashboard |
+| GET | `/` | Dashboard (paginated) |
 | GET | `/yield-breakdown` | Yield calculation breakdown (printable) |
+| GET | `/dividend-graph` | Dividend visualization with charts |
 | GET | `/investment/add` | Add investment form |
 | POST | `/investment/add` | Create/update investment |
-| GET | `/investment/<id>` | View investment details |
+| GET | `/investment/<id>` | View investment details (paginated dividend history) |
 | GET | `/investment/<id>/edit` | Edit investment form |
 | POST | `/investment/<id>/edit` | Update investment |
 | POST | `/investment/<id>/delete` | Delete investment |

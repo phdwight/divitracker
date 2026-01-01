@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Dividend Graph - DiviTracker{% endblock %}
+
+{% block content %}
+<div class="dividend-graph-page">
+    <div class="page-header">
+        <h1>📈 Dividend Graph</h1>
+        <p class="text-muted">Visual representation of your dividend income</p>
+    </div>
+
+    <div class="graph-filters">
+        <div class="filter-group">
+            <label for="year-filter">Year:</label>
+            <select id="year-filter" onchange="updateGraphFilters()">
+                <option value="">All Years</option>
+                {% for y in years_with_dividends %}
+                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="investment-filter">Investment:</label>
+            <select id="investment-filter" onchange="updateGraphFilters()">
+                <option value="">All Investments</option>
+                {% for inv in investments %}
+                <option value="{{ inv.id }}" {% if inv.id == selected_investment_id %}selected{% endif %}>{{ inv.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <script>
+        function updateGraphFilters() {
+            const year = document.getElementById('year-filter').value;
+            const investmentId = document.getElementById('investment-filter').value;
+            let url = '{{ url_for("main.dividend_graph") }}?';
+            if (year) url += 'year=' + year + '&';
+            if (investmentId) url += 'investment_id=' + investmentId;
+            window.location.href = url;
+        }
+    </script>
+
+    <div class="graph-container">
+        <div class="chart-wrapper">
+            <canvas id="dividendChart"></canvas>
+        </div>
+        
+        <div class="chart-summary">
+            <div class="summary-card">
+                <h3>Total Displayed</h3>
+                <p class="summary-value" id="totalValue">{{ format_currency(chart_data | sum(attribute='value')) }}</p>
+            </div>
+            <div class="summary-card">
+                <h3>Average</h3>
+                <p class="summary-value" id="avgValue">
+                    {% if chart_data %}
+                    {{ format_currency((chart_data | sum(attribute='value')) / (chart_data | length)) }}
+                    {% else %}
+                    {{ format_currency(0) }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="summary-card">
+                <h3>Highest</h3>
+                <p class="summary-value" id="maxValue">
+                    {% if chart_data %}
+                    {{ format_currency(chart_data | map(attribute='value') | max) }}
+                    {% else %}
+                    {{ format_currency(0) }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="data-table-section">
+        <h2>Data Table</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in chart_data %}
+                    <tr>
+                        <td>{{ item.label }}</td>
+                        <td>{{ format_currency(item.value) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Total</th>
+                        <th>{{ format_currency(chart_data | sum(attribute='value')) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="back-link">
+        <a href="{{ url_for('main.index') }}">&larr; Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = {{ chart_data | tojson }};
+    const labels = chartData.map(d => d.label);
+    const values = chartData.map(d => d.value);
+    
+    const ctx = document.getElementById('dividendChart').getContext('2d');
+    
+    // Calculate gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.8)');
+    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.1)');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Dividend Amount',
+                data: values,
+                backgroundColor: gradient,
+                borderColor: 'rgba(37, 99, 235, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '{{ settings.currency.symbol if settings else "₱" }}' + context.raw.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '{{ settings.currency.symbol if settings else "₱" }}' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

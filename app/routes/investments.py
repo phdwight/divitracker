@@ -79,15 +79,18 @@ def view_investment(investment_id: int):
         Rendered view_investment template or 404 error.
     """
     from datetime import datetime
+    from math import ceil
 
     from app.models import Dividend
+    from app.settings import get_user_settings
 
     investment_service = InvestmentService()
+    user_settings = get_user_settings()
 
     try:
         investment = investment_service.get_investment_by_id(investment_id)
         # Get dividends sorted by date descending
-        dividends = (
+        all_dividends = (
             Dividend.query.filter_by(investment_id=investment_id)
             .order_by(Dividend.date_received.desc())
             .all()
@@ -109,12 +112,36 @@ def view_investment(investment_id: int):
             else:
                 selected_year = current_year  # No dividends yet, show current year
 
+        # Pagination for dividends
+        items_per_page = request.args.get(
+            "per_page", type=int, default=user_settings.pagination.items_per_page
+        )
+        page = request.args.get("page", type=int, default=1)
+        total_items = len(all_dividends)
+        total_pages = ceil(total_items / items_per_page) if total_items > 0 else 1
+
+        # Ensure page is within bounds
+        if page < 1:
+            page = 1
+        elif page > total_pages:
+            page = total_pages
+
+        # Slice dividends for current page
+        start_idx = (page - 1) * items_per_page
+        end_idx = start_idx + items_per_page
+        dividends = all_dividends[start_idx:end_idx]
+
         return render_template(
             "view_investment.html",
             investment=investment,
             dividends=dividends,
             years_with_dividends=years_with_dividends,
             selected_year=selected_year,
+            # Pagination data
+            page=page,
+            total_pages=total_pages,
+            total_items=total_items,
+            items_per_page=items_per_page,
         )
     except NotFoundError:
         flash("Investment not found", "error")

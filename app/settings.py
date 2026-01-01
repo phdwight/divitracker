@@ -26,6 +26,9 @@ DEFAULT_SETTINGS: dict[str, Any] = {
         "offset_hours": 8,
         "name": "GMT+8",
     },
+    "pagination": {
+        "items_per_page": 10,
+    },
 }
 
 # Common currency presets
@@ -76,12 +79,20 @@ class TimezoneSettings:
 
 
 @dataclass
+class PaginationSettings:
+    """Pagination configuration."""
+
+    items_per_page: int
+
+
+@dataclass
 class UserSettings:
     """Complete user settings."""
 
     currency: CurrencySettings
     formatting: FormattingSettings
     timezone: TimezoneSettings
+    pagination: PaginationSettings
 
     def format_currency(self, amount: float) -> str:
         """
@@ -170,6 +181,7 @@ class SettingsManager:
             currency=CurrencySettings(**settings_dict["currency"]),
             formatting=FormattingSettings(**settings_dict["formatting"]),
             timezone=TimezoneSettings(**settings_dict["timezone"]),
+            pagination=PaginationSettings(**settings_dict["pagination"]),
         )
 
     def save_settings(self, settings: UserSettings) -> None:
@@ -193,6 +205,9 @@ class SettingsManager:
             "timezone": {
                 "offset_hours": settings.timezone.offset_hours,
                 "name": settings.timezone.name,
+            },
+            "pagination": {
+                "items_per_page": settings.pagination.items_per_page,
             },
         }
 
