@@ -9,6 +9,7 @@ from app.settings import (
     DEFAULT_SETTINGS,
     CurrencySettings,
     FormattingSettings,
+    PaginationSettings,
     SettingsManager,
     TimezoneSettings,
     UserSettings,
@@ -59,6 +60,20 @@ class TestTimezoneSettings:
         assert settings.name == "EST"
 
 
+class TestPaginationSettings:
+    """Tests for PaginationSettings dataclass."""
+
+    def test_create_pagination_settings(self) -> None:
+        """Test creating pagination settings."""
+        settings = PaginationSettings(items_per_page=10)
+        assert settings.items_per_page == 10
+
+    def test_create_pagination_settings_custom_value(self) -> None:
+        """Test creating pagination settings with custom value."""
+        settings = PaginationSettings(items_per_page=25)
+        assert settings.items_per_page == 25
+
+
 class TestUserSettings:
     """Tests for UserSettings dataclass."""
 
@@ -72,6 +87,7 @@ class TestUserSettings:
                 decimal_places=2,
             ),
             timezone=TimezoneSettings(offset_hours=8, name="GMT+8"),
+            pagination=PaginationSettings(items_per_page=10),
         )
         assert settings.format_currency(1234.56) == "₱1,234.56"
         assert settings.format_currency(0) == "₱0.00"
@@ -87,6 +103,7 @@ class TestUserSettings:
                 decimal_places=2,
             ),
             timezone=TimezoneSettings(offset_hours=-5, name="EST"),
+            pagination=PaginationSettings(items_per_page=10),
         )
         assert settings.format_currency(1234.56) == "$1,234.56"
 
@@ -100,6 +117,7 @@ class TestUserSettings:
                 decimal_places=2,
             ),
             timezone=TimezoneSettings(offset_hours=1, name="CET"),
+            pagination=PaginationSettings(items_per_page=10),
         )
         assert settings.format_currency(1234.56) == "€1 234,56"
 
@@ -113,8 +131,23 @@ class TestUserSettings:
                 decimal_places=0,
             ),
             timezone=TimezoneSettings(offset_hours=9, name="JST"),
+            pagination=PaginationSettings(items_per_page=10),
         )
         assert settings.format_currency(1234) == "¥1,234"
+
+    def test_user_settings_has_pagination(self) -> None:
+        """Test that UserSettings includes pagination settings."""
+        settings = UserSettings(
+            currency=CurrencySettings(code="PHP", symbol="₱", name="Philippine Peso"),
+            formatting=FormattingSettings(
+                thousands_separator=",",
+                decimal_separator=".",
+                decimal_places=2,
+            ),
+            timezone=TimezoneSettings(offset_hours=8, name="GMT+8"),
+            pagination=PaginationSettings(items_per_page=15),
+        )
+        assert settings.pagination.items_per_page == 15
 
 
 class TestSettingsManager:
@@ -170,6 +203,7 @@ class TestSettingsManager:
                     decimal_places=2,
                 ),
                 timezone=TimezoneSettings(offset_hours=1, name="CET"),
+                pagination=PaginationSettings(items_per_page=20),
             )
             manager.save_settings(new_settings)
 

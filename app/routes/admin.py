@@ -22,6 +22,7 @@ from app.settings import (
     CURRENCY_PRESETS,
     CurrencySettings,
     FormattingSettings,
+    PaginationSettings,
     TimezoneSettings,
     UserSettings,
     get_settings_manager,
@@ -88,6 +89,8 @@ def save_settings() -> WerkzeugResponse:
         timezone_offset = int(request.form.get("timezone_offset", "8"))
         timezone_name = request.form.get("timezone_name", "GMT+8")
 
+        items_per_page = int(request.form.get("items_per_page", "10"))
+
         # Validate
         if decimal_places < 0 or decimal_places > 4:
             flash("Decimal places must be between 0 and 4", "error")
@@ -95,6 +98,10 @@ def save_settings() -> WerkzeugResponse:
 
         if timezone_offset < -12 or timezone_offset > 14:
             flash("Timezone offset must be between -12 and +14", "error")
+            return redirect(url_for("admin.admin_index"))
+
+        if items_per_page < 5 or items_per_page > 100:
+            flash("Items per page must be between 5 and 100", "error")
             return redirect(url_for("admin.admin_index"))
 
         # Create settings object
@@ -112,6 +119,9 @@ def save_settings() -> WerkzeugResponse:
             timezone=TimezoneSettings(
                 offset_hours=timezone_offset,
                 name=timezone_name,
+            ),
+            pagination=PaginationSettings(
+                items_per_page=items_per_page,
             ),
         )
 

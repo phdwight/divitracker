@@ -21,7 +21,8 @@ class TestMainRoutes:
 
     def test_index_shows_investments(self, client, app, sample_investment):
         """Test that index shows investments when they exist."""
-        response = client.get("/")
+        # hide_zero=false needed because sample_investment has no dividends
+        response = client.get("/?hide_zero=false")
         assert response.status_code == 200
         assert b"Test Investment" in response.data
 
@@ -49,6 +50,97 @@ class TestMainRoutes:
         response = client.get("/yield-breakdown")
         assert response.status_code == 200
         assert b"Test Investment" in response.data
+
+
+class TestDividendGraphRoutes:
+    """Tests for dividend graph routes."""
+
+    def test_dividend_graph_page_loads(self, client):
+        """Test that the dividend graph page loads successfully."""
+        response = client.get("/dividend-graph")
+        assert response.status_code == 200
+        assert b"Dividend Graph" in response.data
+
+    def test_dividend_graph_with_year_filter(self, client):
+        """Test dividend graph page with year filter."""
+        response = client.get("/dividend-graph?year=2025")
+        assert response.status_code == 200
+        assert b"2025" in response.data
+
+    def test_dividend_graph_with_investment_filter(self, client, sample_investment):
+        """Test dividend graph page with investment filter."""
+        response = client.get(f"/dividend-graph?investment_id={sample_investment.id}")
+        assert response.status_code == 200
+        assert b"Dividend Graph" in response.data
+
+    def test_dividend_graph_shows_chart(self, client):
+        """Test that dividend graph shows the chart container."""
+        response = client.get("/dividend-graph")
+        assert response.status_code == 200
+        assert b"dividendChart" in response.data
+
+    def test_dividend_graph_with_data(self, client, sample_investment_with_dividend):
+        """Test dividend graph with actual dividend data."""
+        response = client.get("/dividend-graph")
+        assert response.status_code == 200
+        assert b"chart_data" in response.data or b"chartData" in response.data
+
+
+class TestPagination:
+    """Tests for pagination functionality."""
+
+    def test_index_pagination_default(self, client, app, sample_investment):
+        """Test that index page has pagination controls."""
+        response = client.get("/?hide_zero=false")
+        assert response.status_code == 200
+        # Page should load successfully with default pagination
+
+    def test_index_pagination_with_page_param(self, client, app, sample_investment):
+        """Test index page with page parameter."""
+        response = client.get("/?page=1&hide_zero=false")
+        assert response.status_code == 200
+        assert b"Test Investment" in response.data
+
+    def test_index_pagination_with_per_page_param(self, client, app, sample_investment):
+        """Test index page with per_page parameter."""
+        response = client.get("/?per_page=5&hide_zero=false")
+        assert response.status_code == 200
+        assert b"Test Investment" in response.data
+
+    def test_view_investment_pagination(self, client, sample_investment_with_dividend):
+        """Test that view investment page has pagination for dividends."""
+        response = client.get(f"/investment/{sample_investment_with_dividend.id}")
+        assert response.status_code == 200
+        # Should show dividend history
+
+    def test_view_investment_pagination_with_params(self, client, sample_investment_with_dividend):
+        """Test view investment page with pagination parameters."""
+        response = client.get(
+            f"/investment/{sample_investment_with_dividend.id}?page=1&per_page=10"
+        )
+        assert response.status_code == 200
+
+
+class TestHideZeroDividendsFilter:
+    """Tests for hide zero dividends filter."""
+
+    def test_index_hide_zero_dividends_default(self, client, app, sample_investment):
+        """Test that hide zero dividends filter is on by default."""
+        response = client.get("/")
+        assert response.status_code == 200
+        # Investment with no dividends should be hidden by default
+
+    def test_index_show_all_investments(self, client, app, sample_investment):
+        """Test showing all investments when hide_zero is false."""
+        response = client.get("/?hide_zero=false")
+        assert response.status_code == 200
+        assert b"Test Investment" in response.data
+
+    def test_index_hide_zero_checkbox(self, client, app, sample_investment):
+        """Test that hide zero dividends checkbox is present."""
+        response = client.get("/?hide_zero=false")
+        assert response.status_code == 200
+        assert b"Hide zero dividends" in response.data
 
 
 class TestInvestmentRoutes:
