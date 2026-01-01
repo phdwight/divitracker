@@ -1286,6 +1286,10 @@ main {
     font-size: 1rem;
     background-color: var(--card-bg);
     cursor: pointer;
+    max-width: 250px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .filter-group select:focus {

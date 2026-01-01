@@ -84,7 +84,6 @@
                 <thead>
                     <tr>
                         <th>Period</th>
-                        <th>Date Received</th>
                         <th>Amount</th>
                         <th>Frequency</th>
                         <th>Investment at Time</th>
@@ -97,7 +96,6 @@
                     {% for dividend in dividends %}
                     <tr>
                         <td>{{ dividend.period_label or '-' }}</td>
-                        <td>{{ dividend.date_received.strftime('%Y-%m-%d') }}</td>
                         <td>{{ format_currency(dividend.amount) }}</td>
                         <td>
                             <span class="frequency-badge frequency-{{ dividend.frequency }}">
