@@ -112,12 +112,18 @@ def view_investment(investment_id: int):
             else:
                 selected_year = current_year  # No dividends yet, show current year
 
+        # Filter dividends by selected year
+        filtered_dividends = [
+            d for d in all_dividends
+            if d.period_year == selected_year
+        ]
+
         # Pagination for dividends
         items_per_page = request.args.get(
             "per_page", type=int, default=user_settings.pagination.items_per_page
         )
         page = request.args.get("page", type=int, default=1)
-        total_items = len(all_dividends)
+        total_items = len(filtered_dividends)
         total_pages = ceil(total_items / items_per_page) if total_items > 0 else 1
 
         # Ensure page is within bounds
@@ -129,7 +135,7 @@ def view_investment(investment_id: int):
         # Slice dividends for current page
         start_idx = (page - 1) * items_per_page
         end_idx = start_idx + items_per_page
-        dividends = all_dividends[start_idx:end_idx]
+        dividends = filtered_dividends[start_idx:end_idx]
 
         return render_template(
             "view_investment.html",
