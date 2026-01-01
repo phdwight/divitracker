@@ -113,10 +113,7 @@ def view_investment(investment_id: int):
                 selected_year = current_year  # No dividends yet, show current year
 
         # Filter dividends by selected year
-        filtered_dividends = [
-            d for d in all_dividends
-            if d.period_year == selected_year
-        ]
+        filtered_dividends = [d for d in all_dividends if d.period_year == selected_year]
 
         # Pagination for dividends
         items_per_page = request.args.get(
