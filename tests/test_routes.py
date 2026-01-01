@@ -85,6 +85,20 @@ class TestDividendGraphRoutes:
         assert response.status_code == 200
         assert b"chart_data" in response.data or b"chartData" in response.data
 
+    def test_dividend_graph_has_cumulative_toggle(self, client):
+        """Test that dividend graph has cumulative line toggle."""
+        response = client.get("/dividend-graph")
+        assert response.status_code == 200
+        assert b"Show Cumulative Line" in response.data
+        assert b"showCumulative" in response.data
+
+    def test_dividend_graph_cumulative_chart_elements(self, client):
+        """Test that dividend graph has cumulative chart configuration."""
+        response = client.get("/dividend-graph")
+        assert response.status_code == 200
+        assert b"Cumulative Total" in response.data
+        assert b"toggleCumulative" in response.data
+
 
 class TestPagination:
     """Tests for pagination functionality."""

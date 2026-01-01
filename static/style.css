@@ -1435,6 +1435,23 @@ main {
     cursor: pointer;
 }
 
+/* Checkbox label in filters */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-color);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
 @media (max-width: 640px) {
     .graph-filters {
         flex-direction: column;

@@ -28,6 +28,12 @@
                 {% endfor %}
             </select>
         </div>
+        <div class="filter-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="show-cumulative" onchange="toggleCumulative()" checked>
+                Show Cumulative Line
+            </label>
+        </div>
     </div>
 
     <script>
@@ -115,52 +121,124 @@
     const labels = chartData.map(d => d.label);
     const values = chartData.map(d => d.value);
     
+    // Calculate cumulative values
+    let cumulative = 0;
+    const cumulativeValues = values.map(v => {
+        cumulative += v;
+        return cumulative;
+    });
+    
     const ctx = document.getElementById('dividendChart').getContext('2d');
     
-    // Calculate gradient
+    // Calculate gradient for bars
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
     gradient.addColorStop(0, 'rgba(37, 99, 235, 0.8)');
     gradient.addColorStop(1, 'rgba(37, 99, 235, 0.1)');
     
-    new Chart(ctx, {
+    const currencySymbol = '{{ settings.currency.symbol if settings else "₱" }}';
+    
+    const dividendChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Dividend Amount',
-                data: values,
-                backgroundColor: gradient,
-                borderColor: 'rgba(37, 99, 235, 1)',
-                borderWidth: 1,
-                borderRadius: 4,
-            }]
+            datasets: [
+                {
+                    label: 'Dividend Amount',
+                    data: values,
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    order: 2,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Cumulative Total',
+                    data: cumulativeValues,
+                    type: 'line',
+                    borderColor: 'rgba(22, 163, 74, 1)',
+                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(22, 163, 74, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.3,
+                    order: 1,
+                    yAxisID: 'y1',
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
-                    display: false
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                    }
                 },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return '{{ settings.currency.symbol if settings else "₱" }}' + context.raw.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            return context.dataset.label + ': ' + currencySymbol + context.raw.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         }
                     }
                 }
             },
             scales: {
                 y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Dividend Amount'
+                    },
                     ticks: {
                         callback: function(value) {
-                            return '{{ settings.currency.symbol if settings else "₱" }}' + value.toLocaleString();
+                            return currencySymbol + value.toLocaleString();
                         }
                     }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Cumulative Total'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return currencySymbol + value.toLocaleString();
+                        }
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
                 }
             }
         }
     });
+    
+    // Toggle cumulative line visibility
+    function toggleCumulative() {
+        const showCumulative = document.getElementById('show-cumulative').checked;
+        dividendChart.data.datasets[1].hidden = !showCumulative;
+        dividendChart.options.scales.y1.display = showCumulative;
+        dividendChart.update();
+    }
 </script>
 {% endblock %}
