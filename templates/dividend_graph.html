@@ -106,6 +106,36 @@
     <div class="back-link">
         <a href="{{ url_for('main.index') }}">← Back to Dashboard</a>
     </div>
+
+    <!-- Modal for dividend details -->
+    <div id="dividendModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Dividend Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Investment</th>
+                            <th>Amount</th>
+                            <th>Frequency</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody">
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>Total</th>
+                            <th id="modalTotal"></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock content %}
 
@@ -131,6 +161,10 @@
     gradient.addColorStop(1, 'rgba(37, 99, 235, 0.1)');
     
     const currencySymbol = '{{ settings.currency.symbol if settings else "₱" }}';
+    
+    function formatCurrency(value) {
+        return currencySymbol + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
     
     const dividendChart = new Chart(ctx, {
         type: 'bar',
@@ -173,6 +207,15 @@
                 mode: 'index',
                 intersect: false,
             },
+            onClick: function(event, elements) {
+                if (elements.length > 0) {
+                    const index = elements[0].index;
+                    const data = chartData[index];
+                    if (data.details && data.details.length > 0) {
+                        showDividendDetails(data.label, data.details, data.value);
+                    }
+                }
+            },
             plugins: {
                 legend: {
                     display: true,
@@ -186,6 +229,14 @@
                     callbacks: {
                         label: function(context) {
                             return context.dataset.label + ': ' + currencySymbol + context.raw.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        },
+                        afterBody: function(context) {
+                            const index = context[0].dataIndex;
+                            const data = chartData[index];
+                            if (data.details && data.details.length > 0) {
+                                return '\nClick to view breakdown';
+                            }
+                            return '';
                         }
                     }
                 }
@@ -235,5 +286,45 @@
         dividendChart.options.scales.y1.display = showCumulative;
         dividendChart.update();
     }
+    
+    // Modal functions
+    function showDividendDetails(period, details, total) {
+        const modal = document.getElementById('dividendModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalTableBody = document.getElementById('modalTableBody');
+        const modalTotal = document.getElementById('modalTotal');
+        
+        modalTitle.textContent = 'Dividend Details - ' + period;
+        modalTotal.textContent = formatCurrency(total);
+        
+        // Build table rows
+        modalTableBody.innerHTML = details.map(d => `
+            <tr>
+                <td><a href="/investments/${d.investment_id}">${d.investment_name}</a></td>
+                <td>${formatCurrency(d.amount)}</td>
+                <td>${d.frequency}</td>
+            </tr>
+        `).join('');
+        
+        modal.style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('dividendModal').style.display = 'none';
+    }
+    
+    // Close modal when clicking outside
+    document.getElementById('dividendModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+    
+    // Close modal on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
 </script>
 {% endblock scripts %}
