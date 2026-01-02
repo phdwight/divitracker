@@ -1,15 +1,11 @@
 """Investment routes blueprint."""
 
-import logging
-
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from app.exceptions import NotFoundError, ValidationError
 from app.services.investment_service import InvestmentService
-from app.utils import sanitize_log_input
 
 investments_bp = Blueprint("investments", __name__, url_prefix="/investments")
-logger = logging.getLogger(__name__)
 
 
 @investments_bp.route("/new", methods=["GET", "POST"])
@@ -50,17 +46,10 @@ def add_investment():
                     "success",
                 )
 
-            logger.info(
-                "Investment %s: %s (amount: %s)",
-                "created" if created else "updated",
-                sanitize_log_input(investment.name),
-                sanitize_log_input(amount_str),
-            )
             return redirect(url_for("main.index"))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error adding investment: %s", sanitize_log_input(str(e)))
             return redirect(url_for("investments.add_investment"))
 
     investments = investment_service.get_all_investments()
@@ -91,9 +80,7 @@ def view_investment(id: int):
         investment = investment_service.get_investment_by_id(id)
         # Get dividends sorted by date descending
         all_dividends = (
-            Dividend.query.filter_by(investment_id=id)
-            .order_by(Dividend.date_received.desc())
-            .all()
+            Dividend.query.filter_by(investment_id=id).order_by(Dividend.date_received.desc()).all()
         )
 
         # Get years with dividends for the year selector
@@ -184,16 +171,10 @@ def edit_investment(id: int):
                 total_invested_str=amount_str,
             )
             flash("Investment updated successfully!", "success")
-            logger.info("Investment updated: %s (ID: %d)", sanitize_log_input(name), id)
             return redirect(url_for("investments.view_investment", id=id))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning(
-                "Validation error updating investment %d: %s",
-                id,
-                sanitize_log_input(str(e)),
-            )
 
     return render_template("edit_investment.html", investment=investment)
 
@@ -214,9 +195,6 @@ def delete_investment(id: int):
     try:
         investment_name = investment_service.delete_investment(id)
         flash(f'Investment "{investment_name}" deleted successfully!', "success")
-        logger.info(
-            "Investment deleted: %s (ID: %d)", sanitize_log_input(investment_name), id
-        )
     except NotFoundError:
         flash("Investment not found", "error")
 

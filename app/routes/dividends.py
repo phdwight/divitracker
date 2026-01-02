@@ -1,6 +1,5 @@
 """Dividend routes blueprint."""
 
-import logging
 from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -9,10 +8,8 @@ from app.exceptions import NotFoundError, ValidationError
 from app.services.dividend_service import DividendService
 from app.services.investment_service import InvestmentService
 from app.settings import format_currency
-from app.utils import sanitize_log_input
 
 dividends_bp = Blueprint("dividends", __name__, url_prefix="/dividends")
-logger = logging.getLogger(__name__)
 
 
 @dividends_bp.route("/new", methods=["GET", "POST"])
@@ -61,24 +58,14 @@ def add_dividend():
                 f"({investment.calculate_dividend_yield():.2f}% yield)",
                 "success",
             )
-            logger.info(
-                "Dividend added to %s: $%.2f (%s)",
-                sanitize_log_input(investment.name),
-                dividend.amount,
-                sanitize_log_input(frequency),
-            )
             return redirect(url_for("investments.view_investment", id=investment.id))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error adding dividend: %s", sanitize_log_input(str(e)))
             return redirect(url_for("dividends.add_dividend"))
 
         except NotFoundError as e:
             flash(str(e), "error")
-            logger.warning(
-                "Investment not found when adding dividend: %s", sanitize_log_input(str(e))
-            )
             return redirect(url_for("dividends.add_dividend"))
 
     investments = investment_service.get_all_investments()
@@ -147,7 +134,6 @@ def edit_dividend(id: int):
                 f"to {format_currency(updated_dividend.amount)}",
                 "success",
             )
-            logger.info("Dividend updated (ID: %d)", id)
             return redirect(
                 url_for(
                     "investments.view_investment",
@@ -157,7 +143,6 @@ def edit_dividend(id: int):
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error updating dividend: %s", sanitize_log_input(str(e)))
 
     current_year = datetime.now().year
 
@@ -184,7 +169,6 @@ def delete_dividend(id: int):
     try:
         investment_id = dividend_service.delete_dividend(id)
         flash("Dividend record deleted successfully!", "success")
-        logger.info("Dividend deleted (ID: %d)", id)
         return redirect(url_for("investments.view_investment", id=investment_id))
 
     except NotFoundError:
