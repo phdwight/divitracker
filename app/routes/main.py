@@ -185,26 +185,27 @@ def dividend_graph():
     selected_year = request.args.get("year", type=int)
     selected_investment_id = request.args.get("investment_id", type=int)
 
-    # Build chart data
+    # Build chart data with detailed dividend breakdown
     chart_data = []
 
     if selected_year:
         # Monthly breakdown for a specific year
         months = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
+            "January",
+            "February",
+            "March",
+            "April",
             "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
         ]
-        monthly_totals = {i: 0.0 for i in range(1, 13)}
+        monthly_totals: dict[int, float] = {i: 0.0 for i in range(1, 13)}
+        monthly_details: dict[int, list[dict]] = {i: [] for i in range(1, 13)}
 
         for inv in investments:
             if selected_investment_id and inv.id != selected_investment_id:
@@ -212,17 +213,45 @@ def dividend_graph():
             for div in inv.dividends.all():
                 if div.period_year == selected_year and div.period_month:
                     monthly_totals[div.period_month] += div.amount
+                    monthly_details[div.period_month].append(
+                        {
+                            "investment_name": inv.name,
+                            "investment_id": inv.id,
+                            "amount": div.amount,
+                            "frequency": div.frequency,
+                            "date_received": div.date_received.strftime("%Y-%m-%d"),
+                        }
+                    )
 
-        chart_data = [{"label": months[i - 1], "value": monthly_totals[i]} for i in range(1, 13)]
+        chart_data = [
+            {
+                "label": months[i - 1],
+                "value": monthly_totals[i],
+                "details": monthly_details[i],
+            }
+            for i in range(1, 13)
+        ]
     else:
-        # Yearly totals
+        # Yearly totals with details
         for year in sorted(years_with_dividends):
             year_total = 0.0
+            year_details: list[dict] = []
             for inv in investments:
                 if selected_investment_id and inv.id != selected_investment_id:
                     continue
-                year_total += inv.calculate_annual_dividends(year)
-            chart_data.append({"label": str(year), "value": year_total})
+                inv_year_total = inv.calculate_annual_dividends(year)
+                if inv_year_total > 0:
+                    year_total += inv_year_total
+                    year_details.append(
+                        {
+                            "investment_name": inv.name,
+                            "investment_id": inv.id,
+                            "amount": inv_year_total,
+                            "frequency": "Annual Total",
+                            "date_received": str(year),
+                        }
+                    )
+            chart_data.append({"label": str(year), "value": year_total, "details": year_details})
 
     # Get investment list for filter dropdown
     investment_list = [{"id": inv.id, "name": inv.name} for inv in investments]
