@@ -2,18 +2,14 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
 from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
 from app.models import Dividend, DividendFrequency, Investment
-from app.utils import sanitize_log_input
 
 if TYPE_CHECKING:
     pass
-
-logger = logging.getLogger(__name__)
 
 
 class DividendService:
@@ -100,12 +96,6 @@ class DividendService:
         db.session.add(dividend)
         db.session.commit()
 
-        logger.info(
-            "Created dividend for investment %s: $%.2f (%s)",
-            sanitize_log_input(investment.name),
-            amount,
-            sanitize_log_input(frequency),
-        )
         return dividend, investment
 
     def delete_dividend(self, dividend_id: int) -> int:
@@ -127,7 +117,6 @@ class DividendService:
         db.session.delete(dividend)
         db.session.commit()
 
-        logger.info("Deleted dividend ID %d", dividend_id)
         return investment_id
 
     def update_dividend(
@@ -180,12 +169,6 @@ class DividendService:
 
         db.session.commit()
 
-        logger.info(
-            "Updated dividend ID %d: $%.2f (%s)",
-            dividend_id,
-            amount,
-            sanitize_log_input(frequency),
-        )
         return dividend
 
     def get_dividends_for_investment(self, investment_id: int) -> list[Dividend]:

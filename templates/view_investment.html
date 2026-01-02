@@ -13,8 +13,8 @@
         </div>
         <div class="header-actions">
             <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="btn btn-success">+ Add Dividend</a>
-            <a href="{{ url_for('investments.edit_investment', investment_id=investment.id) }}" class="btn btn-secondary">Edit</a>
-            <form method="post" action="{{ url_for('investments.delete_investment', investment_id=investment.id) }}" class="inline-form" onsubmit="return confirm('Are you sure you want to delete this investment and all its dividend records?');">
+            <a href="{{ url_for('investments.edit_investment', id=investment.id) }}" class="btn btn-secondary">Edit</a>
+            <form method="post" action="{{ url_for('investments.delete_investment', id=investment.id) }}" class="inline-form" onsubmit="return confirm('Are you sure you want to delete this investment and all its dividend records?');">
                 <button type="submit" class="btn btn-danger">Delete</button>
             </form>
         </div>
@@ -106,8 +106,8 @@
                         <td>{{ "%.2f"|format(dividend.yield_at_time) ~ '%' if dividend.yield_at_time else '-' }}</td>
                         <td>{{ dividend.notes or '-' }}</td>
                         <td class="actions-cell">
-                            <a href="{{ url_for('dividends.edit_dividend', dividend_id=dividend.id) }}" class="btn btn-sm btn-secondary" title="Edit">✏️</a>
-                            <form method="post" action="{{ url_for('dividends.delete_dividend', dividend_id=dividend.id) }}" class="inline-form" onsubmit="return confirm('Delete this dividend record?');">
+                            <a href="{{ url_for('dividends.edit_dividend', id=dividend.id) }}" class="btn btn-sm btn-secondary" title="Edit">✏️</a>
+                            <form method="post" action="{{ url_for('dividends.delete_dividend', id=dividend.id) }}" class="inline-form" onsubmit="return confirm('Delete this dividend record?');">
                                 <button type="submit" class="btn btn-sm btn-danger" title="Delete">🗑️</button>
                             </form>
                         </td>

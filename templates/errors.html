@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code }} - {{ error_title }} | DiviTracker{% endblock title %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon">{{ error_icon }}</div>
+        <h1 class="error-code">{{ error_code }}</h1>
+        <h2 class="error-title">{{ error_title }}</h2>
+        <p class="error-message">{{ error_message }}</p>
+        
+        <div class="error-actions">
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">← Back to Dashboard</a>
+            {% if error_code == 404 %}
+            <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+            {% endif %}
+        </div>
+        
+        {% if error_code == 404 %}
+        <div class="error-suggestions">
+            <h3>You might want to:</h3>
+            <ul>
+                <li><a href="{{ url_for('main.index') }}">View your portfolio dashboard</a></li>
+                <li><a href="{{ url_for('investments.add_investment') }}">Add a new investment</a></li>
+                <li><a href="{{ url_for('dividends.add_dividend') }}">Record a dividend</a></li>
+                <li><a href="{{ url_for('main.dividend_graph') }}">View dividend charts</a></li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

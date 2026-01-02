@@ -7,7 +7,7 @@
     <h1>Edit Investment</h1>
     
     <div class="form-container">
-        <form method="post" action="{{ url_for('investments.edit_investment', investment_id=investment.id) }}">
+        <form method="post" action="{{ url_for('investments.edit_investment', id=investment.id) }}">
             <div class="form-group">
                 <label for="name">Investment Name *</label>
                 <input type="text" 
@@ -40,7 +40,7 @@
             </div>
 
             <div class="form-actions">
-                <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ url_for('investments.view_investment', id=investment.id) }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">Save Changes</button>
             </div>
         </form>

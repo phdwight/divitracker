@@ -4,7 +4,8 @@ import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, render_template
+from werkzeug.exceptions import HTTPException
 
 from app.config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
 from app.extensions import db, migrate
@@ -49,8 +50,8 @@ def create_app(config_name: str = "development") -> Flask:
 
     # Register blueprints
     app.register_blueprint(main_bp)
-    app.register_blueprint(investments_bp, url_prefix="/investment")
-    app.register_blueprint(dividends_bp, url_prefix="/dividend")
+    app.register_blueprint(investments_bp)
+    app.register_blueprint(dividends_bp)
     app.register_blueprint(admin_bp)
 
     # Register template context processors for currency formatting
@@ -77,6 +78,9 @@ def create_app(config_name: str = "development") -> Flask:
             "timezone_name": settings.timezone.name,
         }
 
+    # Register error handlers
+    _register_error_handlers(app)
+
     # Create database tables
     with app.app_context():
         db.create_all()
@@ -84,6 +88,72 @@ def create_app(config_name: str = "development") -> Flask:
     app.logger.info("DiviTracker application initialized successfully")
 
     return app
+
+
+def _register_error_handlers(app: Flask) -> None:
+    """
+    Register custom error handlers for the application.
+
+    Args:
+        app: Flask application instance
+    """
+
+    @app.errorhandler(404)
+    def not_found_error(error: HTTPException) -> tuple[str, int]:
+        """Handle 404 Not Found errors."""
+        return (
+            render_template(
+                "errors.html",
+                error_code=404,
+                error_title="Page Not Found",
+                error_message="The page you're looking for doesn't exist or has been moved.",
+                error_icon="🔍",
+            ),
+            404,
+        )
+
+    @app.errorhandler(500)
+    def internal_error(error: HTTPException) -> tuple[str, int]:
+        """Handle 500 Internal Server errors."""
+        db.session.rollback()  # Roll back any failed transactions
+        return (
+            render_template(
+                "errors.html",
+                error_code=500,
+                error_title="Internal Server Error",
+                error_message="Something went wrong on our end. Please try again later.",
+                error_icon="⚠️",
+            ),
+            500,
+        )
+
+    @app.errorhandler(403)
+    def forbidden_error(error: HTTPException) -> tuple[str, int]:
+        """Handle 403 Forbidden errors."""
+        return (
+            render_template(
+                "errors.html",
+                error_code=403,
+                error_title="Access Forbidden",
+                error_message="You don't have permission to access this resource.",
+                error_icon="🚫",
+            ),
+            403,
+        )
+
+    @app.errorhandler(400)
+    def bad_request_error(error: HTTPException) -> tuple[str, int]:
+        """Handle 400 Bad Request errors."""
+        return (
+            render_template(
+                "errors.html",
+                error_code=400,
+                error_title="Bad Request",
+                error_message="The server couldn't understand your request.",
+                error_icon="❌",
+            ),
+            400,
+        )
 
 
 def _configure_logging(app: Flask) -> None:

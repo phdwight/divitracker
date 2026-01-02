@@ -15,13 +15,13 @@ class TestAdminIndex:
 
     def test_admin_index_renders(self, client: FlaskClient) -> None:
         """Test that admin index page renders successfully."""
-        response = client.get("/admin/")
+        response = client.get("/settings/")
         assert response.status_code == 200
         assert b"Admin Settings" in response.data
 
     def test_admin_index_shows_currency_presets(self, client: FlaskClient) -> None:
         """Test that currency presets are displayed."""
-        response = client.get("/admin/")
+        response = client.get("/settings/")
         assert response.status_code == 200
         assert b"USD" in response.data
         assert b"EUR" in response.data
@@ -29,14 +29,14 @@ class TestAdminIndex:
 
     def test_admin_index_shows_current_settings(self, client: FlaskClient) -> None:
         """Test that current settings are displayed."""
-        response = client.get("/admin/")
+        response = client.get("/settings/")
         assert response.status_code == 200
         # Default currency is PHP
         assert b"PHP" in response.data
 
     def test_admin_index_shows_database_section(self, client: FlaskClient) -> None:
         """Test that database management section is displayed."""
-        response = client.get("/admin/")
+        response = client.get("/settings/")
         assert response.status_code == 200
         assert b"Database Management" in response.data
 
@@ -51,7 +51,7 @@ class TestSaveSettings:
             mock_manager.return_value = mock_instance
 
             response = client.post(
-                "/admin/save-settings",
+                "/settings/save",
                 data={
                     "currency_code": "USD",
                     "currency_symbol": "$",
@@ -71,7 +71,7 @@ class TestSaveSettings:
     def test_save_settings_invalid_decimal_places(self, client: FlaskClient) -> None:
         """Test validation of decimal places."""
         response = client.post(
-            "/admin/save-settings",
+            "/settings/save",
             data={
                 "currency_code": "USD",
                 "currency_symbol": "$",
@@ -91,7 +91,7 @@ class TestSaveSettings:
     def test_save_settings_invalid_timezone_offset(self, client: FlaskClient) -> None:
         """Test validation of timezone offset."""
         response = client.post(
-            "/admin/save-settings",
+            "/settings/save",
             data={
                 "currency_code": "USD",
                 "currency_symbol": "$",
@@ -111,7 +111,7 @@ class TestSaveSettings:
     def test_save_settings_negative_decimal_places(self, client: FlaskClient) -> None:
         """Test validation rejects negative decimal places."""
         response = client.post(
-            "/admin/save-settings",
+            "/settings/save",
             data={
                 "currency_code": "USD",
                 "currency_symbol": "$",
@@ -137,7 +137,7 @@ class TestDownloadDatabase:
         with patch("app.routes.admin.get_db_path") as mock_path:
             mock_path.return_value = Path("/nonexistent/path.db")
 
-            response = client.get("/admin/download-db", follow_redirects=True)
+            response = client.get("/settings/database/download", follow_redirects=True)
 
             assert response.status_code == 200
             assert b"Database file not found" in response.data
@@ -152,7 +152,7 @@ class TestDownloadDatabase:
             with patch("app.routes.admin.get_db_path") as mock_path:
                 mock_path.return_value = tmp_path
 
-                response = client.get("/admin/download-db")
+                response = client.get("/settings/database/download")
 
                 assert response.status_code == 200
                 assert response.content_type == "application/octet-stream"
@@ -166,7 +166,7 @@ class TestUploadDatabase:
 
     def test_upload_db_no_file(self, client: FlaskClient) -> None:
         """Test upload without file."""
-        response = client.post("/admin/upload-db", follow_redirects=True)
+        response = client.post("/settings/database/upload", follow_redirects=True)
 
         assert response.status_code == 200
         assert b"No file selected" in response.data
@@ -174,7 +174,7 @@ class TestUploadDatabase:
     def test_upload_db_empty_filename(self, client: FlaskClient) -> None:
         """Test upload with empty filename."""
         response = client.post(
-            "/admin/upload-db",
+            "/settings/database/upload",
             data={"db_file": (io.BytesIO(b""), "")},
             follow_redirects=True,
         )
@@ -185,7 +185,7 @@ class TestUploadDatabase:
     def test_upload_db_invalid_extension(self, client: FlaskClient) -> None:
         """Test upload with invalid file extension."""
         response = client.post(
-            "/admin/upload-db",
+            "/settings/database/upload",
             data={"db_file": (io.BytesIO(b"test"), "test.txt")},
             content_type="multipart/form-data",
             follow_redirects=True,
@@ -205,7 +205,7 @@ class TestUploadDatabase:
                 mock_path.return_value = db_path
 
                 response = client.post(
-                    "/admin/upload-db",
+                    "/settings/database/upload",
                     data={"db_file": (io.BytesIO(b"new content"), "backup.db")},
                     content_type="multipart/form-data",
                     follow_redirects=True,
@@ -226,7 +226,7 @@ class TestUploadDatabase:
                 mock_path.return_value = db_path
 
                 client.post(
-                    "/admin/upload-db",
+                    "/settings/database/upload",
                     data={"db_file": (io.BytesIO(b"new content"), "backup.db")},
                     content_type="multipart/form-data",
                 )

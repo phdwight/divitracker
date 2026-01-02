@@ -1,18 +1,14 @@
 """Investment routes blueprint."""
 
-import logging
-
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from app.exceptions import NotFoundError, ValidationError
 from app.services.investment_service import InvestmentService
-from app.utils import sanitize_log_input
 
-investments_bp = Blueprint("investments", __name__)
-logger = logging.getLogger(__name__)
+investments_bp = Blueprint("investments", __name__, url_prefix="/investments")
 
 
-@investments_bp.route("/add", methods=["GET", "POST"])
+@investments_bp.route("/new", methods=["GET", "POST"])
 def add_investment():
     """
     Handle adding a new investment or updating an existing one.
@@ -50,25 +46,18 @@ def add_investment():
                     "success",
                 )
 
-            logger.info(
-                "Investment %s: %s (amount: %s)",
-                "created" if created else "updated",
-                sanitize_log_input(investment.name),
-                sanitize_log_input(amount_str),
-            )
             return redirect(url_for("main.index"))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning("Validation error adding investment: %s", sanitize_log_input(str(e)))
             return redirect(url_for("investments.add_investment"))
 
     investments = investment_service.get_all_investments()
     return render_template("add_investment.html", investments=investments)
 
 
-@investments_bp.route("/<int:investment_id>")
-def view_investment(investment_id: int):
+@investments_bp.route("/<int:id>")
+def view_investment(id: int):
     """
     Display detailed view of a specific investment.
 
@@ -88,12 +77,10 @@ def view_investment(investment_id: int):
     user_settings = get_user_settings()
 
     try:
-        investment = investment_service.get_investment_by_id(investment_id)
+        investment = investment_service.get_investment_by_id(id)
         # Get dividends sorted by date descending
         all_dividends = (
-            Dividend.query.filter_by(investment_id=investment_id)
-            .order_by(Dividend.date_received.desc())
-            .all()
+            Dividend.query.filter_by(investment_id=id).order_by(Dividend.date_received.desc()).all()
         )
 
         # Get years with dividends for the year selector
@@ -151,13 +138,13 @@ def view_investment(investment_id: int):
         return redirect(url_for("main.index"))
 
 
-@investments_bp.route("/<int:investment_id>/edit", methods=["GET", "POST"])
-def edit_investment(investment_id: int):
+@investments_bp.route("/<int:id>/edit", methods=["GET", "POST"])
+def edit_investment(id: int):
     """
     Handle editing an existing investment.
 
     Args:
-        investment_id: The ID of the investment to edit.
+        id: The ID of the investment to edit.
 
     Returns:
         GET: Rendered edit_investment template.
@@ -166,7 +153,7 @@ def edit_investment(investment_id: int):
     investment_service = InvestmentService()
 
     try:
-        investment = investment_service.get_investment_by_id(investment_id)
+        investment = investment_service.get_investment_by_id(id)
     except NotFoundError:
         flash("Investment not found", "error")
         return redirect(url_for("main.index"))
@@ -178,33 +165,27 @@ def edit_investment(investment_id: int):
 
         try:
             investment_service.update_investment(
-                investment_id=investment_id,
+                investment_id=id,
                 name=name,
                 ticker=ticker,
                 total_invested_str=amount_str,
             )
             flash("Investment updated successfully!", "success")
-            logger.info("Investment updated: %s (ID: %d)", sanitize_log_input(name), investment_id)
-            return redirect(url_for("investments.view_investment", investment_id=investment_id))
+            return redirect(url_for("investments.view_investment", id=id))
 
         except ValidationError as e:
             flash(str(e), "error")
-            logger.warning(
-                "Validation error updating investment %d: %s",
-                investment_id,
-                sanitize_log_input(str(e)),
-            )
 
     return render_template("edit_investment.html", investment=investment)
 
 
-@investments_bp.route("/<int:investment_id>/delete", methods=["POST"])
-def delete_investment(investment_id: int):
+@investments_bp.route("/<int:id>/delete", methods=["POST"])
+def delete_investment(id: int):
     """
     Delete an investment and all associated dividend records.
 
     Args:
-        investment_id: The ID of the investment to delete.
+        id: The ID of the investment to delete.
 
     Returns:
         Redirect to index page.
@@ -212,18 +193,15 @@ def delete_investment(investment_id: int):
     investment_service = InvestmentService()
 
     try:
-        investment_name = investment_service.delete_investment(investment_id)
+        investment_name = investment_service.delete_investment(id)
         flash(f'Investment "{investment_name}" deleted successfully!', "success")
-        logger.info(
-            "Investment deleted: %s (ID: %d)", sanitize_log_input(investment_name), investment_id
-        )
     except NotFoundError:
         flash("Investment not found", "error")
 
     return redirect(url_for("main.index"))
 
 
-@investments_bp.route("/api/list")
+@investments_bp.route("/api")
 def api_investments():
     """
     API endpoint to get all investments for autocomplete.

@@ -27,9 +27,8 @@ from app.settings import (
     UserSettings,
     get_settings_manager,
 )
-from app.utils import sanitize_log_input
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+admin_bp = Blueprint("admin", __name__, url_prefix="/settings")
 logger = logging.getLogger(__name__)
 
 
@@ -68,7 +67,7 @@ def admin_index() -> str:
     )
 
 
-@admin_bp.route("/save-settings", methods=["POST"])
+@admin_bp.route("/save", methods=["POST"])
 def save_settings() -> WerkzeugResponse:
     """
     Save user settings from form submission.
@@ -129,24 +128,17 @@ def save_settings() -> WerkzeugResponse:
         settings_manager = get_settings_manager()
         settings_manager.save_settings(new_settings)
 
-        logger.info(
-            "Settings updated: currency=%s, timezone=%s",
-            sanitize_log_input(currency_code),
-            sanitize_log_input(timezone_name),
-        )
         flash("Settings saved successfully!", "success")
 
     except ValueError as e:
-        logger.warning("Invalid settings value: %s", sanitize_log_input(str(e)))
         flash(f"Invalid value: {e}", "error")
     except Exception as e:
-        logger.error("Error saving settings: %s", sanitize_log_input(str(e)))
         flash(f"Error saving settings: {e}", "error")
 
     return redirect(url_for("admin.admin_index"))
 
 
-@admin_bp.route("/download-db")
+@admin_bp.route("/database/download")
 def download_db() -> Response | WerkzeugResponse:
     """
     Download the database file.
@@ -169,7 +161,7 @@ def download_db() -> Response | WerkzeugResponse:
     )
 
 
-@admin_bp.route("/upload-db", methods=["POST"])
+@admin_bp.route("/database/upload", methods=["POST"])
 def upload_db() -> WerkzeugResponse:
     """
     Upload and replace the database file.
@@ -201,22 +193,15 @@ def upload_db() -> WerkzeugResponse:
             backup_name = f"dividends_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
             backup_path = db_path.parent / backup_name
             os.rename(db_path, backup_path)
-            logger.info("Created backup: %s", sanitize_log_input(backup_name))
 
         # Save new database
         file.save(db_path)
-        logger.info(
-            "Database uploaded: %s (%d bytes)",
-            sanitize_log_input(filename),
-            db_path.stat().st_size,
-        )
         flash(
             "Database uploaded successfully! Please restart the application to apply changes.",
             "success",
         )
 
     except Exception as e:
-        logger.error("Error uploading database: %s", sanitize_log_input(str(e)))
         flash(f"Error uploading database: {e}", "error")
 
     return redirect(url_for("admin.admin_index"))
