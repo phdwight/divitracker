@@ -29,7 +29,7 @@ from app.settings import (
 )
 from app.utils import sanitize_log_input
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+admin_bp = Blueprint("admin", __name__, url_prefix="/settings")
 logger = logging.getLogger(__name__)
 
 
@@ -68,7 +68,7 @@ def admin_index() -> str:
     )
 
 
-@admin_bp.route("/save-settings", methods=["POST"])
+@admin_bp.route("/save", methods=["POST"])
 def save_settings() -> WerkzeugResponse:
     """
     Save user settings from form submission.
@@ -146,7 +146,7 @@ def save_settings() -> WerkzeugResponse:
     return redirect(url_for("admin.admin_index"))
 
 
-@admin_bp.route("/download-db")
+@admin_bp.route("/database/download")
 def download_db() -> Response | WerkzeugResponse:
     """
     Download the database file.
@@ -169,7 +169,7 @@ def download_db() -> Response | WerkzeugResponse:
     )
 
 
-@admin_bp.route("/upload-db", methods=["POST"])
+@admin_bp.route("/database/upload", methods=["POST"])
 def upload_db() -> WerkzeugResponse:
     """
     Upload and replace the database file.

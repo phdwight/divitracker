@@ -14,7 +14,8 @@ A Flask application for tracking dividend income from your investments. Calculat
 - **Real-time Preview**: See yield calculations before recording dividends
 - **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
 - **Timezone Support**: Configurable timezone for accurate local time display (default: GMT+8)
-- **Admin Settings**: Configure currency, formatting, pagination, and timezone; download/upload database backups
+- **Settings Page**: Configure currency, formatting, pagination, and timezone; download/upload database backups
+- **RESTful URLs**: SEO-friendly URL structure following best practices (e.g., `/investments/new`, `/dividends/<id>/edit`)
 - **Code Quality**: Templates pass djlint (Jinja2-aware HTML linter) with zero errors
 
 ## Architecture
@@ -351,24 +352,24 @@ The application supports multiple environments:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/` | Dashboard (paginated) |
-| GET | `/yield-breakdown` | Yield calculation breakdown (printable) |
-| GET | `/dividend-graph` | Dividend visualization with charts |
-| GET | `/investment/add` | Add investment form |
-| POST | `/investment/add` | Create/update investment |
-| GET | `/investment/<id>` | View investment details (paginated dividend history) |
-| GET | `/investment/<id>/edit` | Edit investment form |
-| POST | `/investment/<id>/edit` | Update investment |
-| POST | `/investment/<id>/delete` | Delete investment |
-| GET | `/investment/api/list` | JSON list of investments |
-| GET | `/dividend/add` | Add dividend form |
-| POST | `/dividend/add` | Create dividend record |
-| GET | `/dividend/<id>/edit` | Edit dividend form |
-| POST | `/dividend/<id>/edit` | Update dividend record |
-| POST | `/dividend/<id>/delete` | Delete dividend record |
-| GET | `/admin/` | Admin settings page |
-| POST | `/admin/save-settings` | Save configuration settings |
-| GET | `/admin/download-db` | Download database backup |
-| POST | `/admin/upload-db` | Upload/restore database |
+| GET | `/reports/yield-breakdown` | Yield calculation breakdown (printable) |
+| GET | `/reports/dividends-chart` | Dividend visualization with charts |
+| GET | `/investments/new` | Add investment form |
+| POST | `/investments/new` | Create/update investment |
+| GET | `/investments/<id>` | View investment details (paginated dividend history) |
+| GET | `/investments/<id>/edit` | Edit investment form |
+| POST | `/investments/<id>/edit` | Update investment |
+| POST | `/investments/<id>/delete` | Delete investment |
+| GET | `/investments/api` | JSON list of investments |
+| GET | `/dividends/new` | Add dividend form |
+| POST | `/dividends/new` | Create dividend record |
+| GET | `/dividends/<id>/edit` | Edit dividend form |
+| POST | `/dividends/<id>/edit` | Update dividend record |
+| POST | `/dividends/<id>/delete` | Delete dividend record |
+| GET | `/settings/` | Settings page |
+| POST | `/settings/save` | Save configuration settings |
+| GET | `/settings/database/download` | Download database backup |
+| POST | `/settings/database/upload` | Upload/restore database |
 
 ## Technology Stack
 

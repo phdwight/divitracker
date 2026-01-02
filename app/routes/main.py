@@ -14,7 +14,8 @@ main_bp = Blueprint("main", __name__)
 
 
 @main_bp.route("/")
-def index():
+@main_bp.route("/year/<int:year>")
+def index(year: int | None = None):
     """
     Render the main dashboard with portfolio overview.
 
@@ -37,8 +38,8 @@ def index():
     all_years.add(current_year)
     years_with_dividends = sorted(all_years, reverse=True)
 
-    # Get selected year from query params
-    selected_year = request.args.get("year", type=int)
+    # Get selected year from URL path parameter or query params (for backward compatibility)
+    selected_year = year or request.args.get("year", type=int)
     if selected_year is None or selected_year not in years_with_dividends:
         selected_year = current_year
 
@@ -103,7 +104,7 @@ class InvestmentYieldDetail:
     yield_percent: float
 
 
-@main_bp.route("/yield-breakdown")
+@main_bp.route("/reports/yield-breakdown")
 def yield_breakdown():
     """
     Render the yield calculation breakdown page.
@@ -158,7 +159,7 @@ def yield_breakdown():
     )
 
 
-@main_bp.route("/dividend-graph")
+@main_bp.route("/reports/dividends-chart")
 def dividend_graph():
     """
     Render the dividend graph visualization page.
