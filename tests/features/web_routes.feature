@@ -54,7 +54,7 @@ Feature: Web Routes
     Scenario: Yield breakdown shows formula
         When I visit "/reports/yield-breakdown"
         Then I should see "Total Dividends Received" in the page
-        And I should see "Total Investment Amount" in the page
+        And I should see "Sum of Average Investment Amounts" in the page
 
     # Dividend Graph Routes
     Scenario: Dividend graph page loads
