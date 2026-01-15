@@ -1,6 +1,61 @@
 """Utility functions for the DiviTracker application."""
 
 import re
+from dataclasses import dataclass
+from math import ceil
+
+
+@dataclass
+class PaginationResult:
+    """Result of pagination calculation."""
+
+    page: int
+    total_pages: int
+    start_idx: int
+    end_idx: int
+
+
+def paginate(total_items: int, page: int, items_per_page: int) -> PaginationResult:
+    """
+    Calculate pagination bounds.
+
+    Args:
+        total_items: Total number of items.
+        page: Requested page number (1-indexed).
+        items_per_page: Number of items per page.
+
+    Returns:
+        PaginationResult with corrected page and slice indices.
+    """
+    total_pages = ceil(total_items / items_per_page) if total_items > 0 else 1
+
+    # Ensure page is within bounds
+    if page < 1:
+        page = 1
+    elif page > total_pages:
+        page = total_pages
+
+    start_idx = (page - 1) * items_per_page
+    end_idx = start_idx + items_per_page
+
+    return PaginationResult(
+        page=page,
+        total_pages=total_pages,
+        start_idx=start_idx,
+        end_idx=end_idx,
+    )
+
+
+@dataclass
+class DividendData:
+    """Data transfer object for dividend creation/update."""
+
+    amount_str: str
+    frequency: str
+    notes: str | None = None
+    investment_amount_at_time_str: str | None = None
+    period_month_str: str | None = None
+    period_year_str: str | None = None
 
 
 def sanitize_log_input(value: str) -> str:

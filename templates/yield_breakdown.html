@@ -23,7 +23,7 @@
                 <span class="formula-equals">=</span>
                 <div class="formula-fraction">
                     <span class="formula-numerator">Total Dividends Received</span>
-                    <span class="formula-denominator">Total Investment Amount</span>
+                    <span class="formula-denominator">Sum of Average Investment Amounts</span>
                 </div>
                 <span class="formula-multiply">×</span>
                 <span class="formula-text">100</span>
@@ -38,7 +38,7 @@
                     <span class="calc-value">{{ format_currency(total_dividends) }}</span>
                 </div>
                 <div class="calc-row">
-                    <span class="calc-label">Total Investment Amount:</span>
+                    <span class="calc-label">Sum of Average Investment Amounts:</span>
                     <span class="calc-value">{{ format_currency(total_investment_for_yield) }}</span>
                 </div>
                 <div class="calc-row calc-divider"></div>
@@ -58,7 +58,7 @@
 
     <div class="yield-details">
         <h2>Investment Breakdown</h2>
-        <p class="yield-note">The investment amount used for yield calculation is based on the amount recorded at the time of the most recent dividend for each investment in {{ selected_year }}.</p>
+        <p class="yield-note">The investment amount used for yield calculation is the average of all investment amounts recorded at the time of each dividend in {{ selected_year }}. This provides a more accurate yield calculation when investment balances change during the year.</p>
 
         {% if investment_details %}
         <table class="yield-table">

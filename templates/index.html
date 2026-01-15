@@ -90,7 +90,7 @@
                     {% for investment in investments %}
                     <tr>
                         <td>
-                            <a href="{{ url_for('investments.view_investment', id=investment.id) }}">
+                            <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}">
                                 {{ investment.name }}
                             </a>
                         </td>
@@ -111,7 +111,7 @@
                         <td>
                             <div class="action-buttons">
                                 <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="btn btn-sm btn-success" title="Add Dividend">+💵</a>
-                                <a href="{{ url_for('investments.view_investment', id=investment.id) }}" class="btn btn-sm btn-info" title="View Details">👁️</a>
+                                <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="btn btn-sm btn-info" title="View Details">👁️</a>
                             </div>
                         </td>
                     </tr>

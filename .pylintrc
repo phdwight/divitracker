@@ -9,6 +9,8 @@ disable=
     C0116,  # missing-function-docstring
     R0903,  # too-few-public-methods
     W0511,  # fixme/todo comments
+    R0801,  # duplicate-code (expected in BDD tests - steps reuse similar patterns)
+    W0621,  # redefined-outer-name (expected in pytest - fixtures work via name injection)
 
 [FORMAT]
 # Maximum line length

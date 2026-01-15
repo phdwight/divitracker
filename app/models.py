@@ -167,41 +167,46 @@ class Investment(db.Model):
 
     def get_investment_amount_for_year(self, year: int | None = None) -> float:
         """
-        Get the investment amount to use for yield calculation for a specific year.
+        Get the average investment amount for yield calculation for a specific year.
 
-        Uses investment_amount_at_time from the most recent dividend in that year,
-        falling back to current total_invested if not available.
+        Calculates the average of all investment_amount_at_time values recorded
+        with dividends during that year, falling back to current total_invested
+        if no dividends were recorded.
 
         Args:
             year: The year to get investment amount for. If None, uses current year.
 
         Returns:
-            Investment amount to use for yield calculation.
+            Average investment amount to use for yield calculation.
         """
         if year is None:
             year = datetime.now(timezone.utc).year
 
-        # Get dividends for this year, sorted by period_month descending
+        # Get dividends for this year
         year_dividends = [d for d in self.dividends.all() if d.period_year == year]
 
         if not year_dividends:
             return self.total_invested
 
-        # Sort by period_month descending to get most recent
-        year_dividends.sort(key=lambda d: (d.period_month or 0, d.date_received), reverse=True)
+        # Collect all recorded investment amounts from dividends
+        investment_amounts = [
+            d.investment_amount_at_time
+            for d in year_dividends
+            if d.investment_amount_at_time and d.investment_amount_at_time > 0
+        ]
 
-        # Use investment_amount_at_time from most recent dividend if available
-        most_recent = year_dividends[0]
-        if most_recent.investment_amount_at_time and most_recent.investment_amount_at_time > 0:
-            return most_recent.investment_amount_at_time
+        # If we have recorded amounts, return the average
+        if investment_amounts:
+            return sum(investment_amounts) / len(investment_amounts)
 
+        # Fall back to current total_invested if no amounts were recorded
         return self.total_invested
 
     def calculate_dividend_yield(self, year: int | None = None, projected: bool = False) -> float:
         """
         Calculate dividend yield percentage for a specific year.
 
-        Uses investment_amount_at_time from the most recent dividend in that year
+        Uses the average investment_amount_at_time from all dividends in that year
         for more accurate yield calculation.
 
         Args:

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from app.exceptions import NotFoundError, ValidationError
 from app.extensions import db
 from app.models import Dividend, DividendFrequency, Investment
+from app.utils import DividendData
 
 if TYPE_CHECKING:
     pass
@@ -42,24 +43,14 @@ class DividendService:
     def create_dividend(
         self,
         investment_id_str: str,
-        amount_str: str,
-        frequency: str,
-        notes: str | None = None,
-        investment_amount_at_time_str: str | None = None,
-        period_month_str: str | None = None,
-        period_year_str: str | None = None,
+        data: DividendData,
     ) -> tuple[Dividend, Investment]:
         """
         Create a new dividend record.
 
         Args:
             investment_id_str: Investment ID as string.
-            amount_str: Dividend amount as string.
-            frequency: Payment frequency (monthly, quarterly, yearly).
-            notes: Optional notes.
-            investment_amount_at_time_str: Optional investment amount at time of dividend.
-            period_month_str: Optional month the dividend is for (1-12).
-            period_year_str: Optional year the dividend is for.
+            data: DividendData containing amount, frequency, notes, and period info.
 
         Returns:
             Tuple of (Dividend, Investment).
@@ -70,13 +61,13 @@ class DividendService:
         """
         # Validate inputs
         investment_id = self._validate_investment_id(investment_id_str)
-        amount = self._validate_amount(amount_str)
-        self._validate_frequency(frequency)
+        amount = self._validate_amount(data.amount_str)
+        self._validate_frequency(data.frequency)
         investment_amount_at_time = self._validate_investment_amount_at_time(
-            investment_amount_at_time_str
+            data.investment_amount_at_time_str
         )
-        period_month = self._validate_period_month(period_month_str)
-        period_year = self._validate_period_year(period_year_str)
+        period_month = self._validate_period_month(data.period_month_str)
+        period_year = self._validate_period_year(data.period_year_str)
 
         # Get investment
         investment = db.session.get(Investment, investment_id)
@@ -87,8 +78,8 @@ class DividendService:
         dividend = Dividend(
             investment_id=investment_id,
             amount=amount,
-            frequency=frequency,
-            notes=notes,
+            frequency=data.frequency,
+            notes=data.notes,
             investment_amount_at_time=investment_amount_at_time,
             period_month=period_month,
             period_year=period_year,
@@ -122,24 +113,14 @@ class DividendService:
     def update_dividend(
         self,
         dividend_id: int,
-        amount_str: str,
-        frequency: str,
-        notes: str | None = None,
-        investment_amount_at_time_str: str | None = None,
-        period_month_str: str | None = None,
-        period_year_str: str | None = None,
+        data: DividendData,
     ) -> Dividend:
         """
         Update an existing dividend record.
 
         Args:
             dividend_id: ID of the dividend to update.
-            amount_str: Dividend amount as string.
-            frequency: Payment frequency (monthly, quarterly, yearly).
-            notes: Optional notes.
-            investment_amount_at_time_str: Optional investment amount at time of dividend.
-            period_month_str: Optional month the dividend is for (1-12).
-            period_year_str: Optional year the dividend is for.
+            data: DividendData containing amount, frequency, notes, and period info.
 
         Returns:
             Updated Dividend object.
@@ -151,18 +132,18 @@ class DividendService:
         dividend = self.get_dividend_by_id(dividend_id)
 
         # Validate inputs
-        amount = self._validate_amount(amount_str)
-        self._validate_frequency(frequency)
+        amount = self._validate_amount(data.amount_str)
+        self._validate_frequency(data.frequency)
         investment_amount_at_time = self._validate_investment_amount_at_time(
-            investment_amount_at_time_str
+            data.investment_amount_at_time_str
         )
-        period_month = self._validate_period_month(period_month_str)
-        period_year = self._validate_period_year(period_year_str)
+        period_month = self._validate_period_month(data.period_month_str)
+        period_year = self._validate_period_year(data.period_year_str)
 
         # Update dividend
         dividend.amount = amount
-        dividend.frequency = frequency
-        dividend.notes = notes
+        dividend.frequency = data.frequency
+        dividend.notes = data.notes
         dividend.investment_amount_at_time = investment_amount_at_time
         dividend.period_month = period_month
         dividend.period_year = period_year

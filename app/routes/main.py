@@ -2,13 +2,13 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from math import ceil
 
 from flask import Blueprint, render_template, request
 
 from app.services.investment_service import InvestmentService
 from app.services.portfolio_service import PortfolioService
 from app.settings import get_user_settings
+from app.utils import paginate
 
 main_bp = Blueprint("main", __name__)
 
@@ -58,18 +58,9 @@ def index(year: int | None = None):
     )
     page = request.args.get("page", type=int, default=1)
     total_items = len(filtered_investments)
-    total_pages = ceil(total_items / items_per_page) if total_items > 0 else 1
 
-    # Ensure page is within bounds
-    if page < 1:
-        page = 1
-    elif page > total_pages:
-        page = total_pages
-
-    # Slice the investments for current page
-    start_idx = (page - 1) * items_per_page
-    end_idx = start_idx + items_per_page
-    paginated_investments = filtered_investments[start_idx:end_idx]
+    pagination = paginate(total_items, page, items_per_page)
+    paginated_investments = filtered_investments[pagination.start_idx : pagination.end_idx]
 
     # Get portfolio summary for selected year
     portfolio_summary = portfolio_service.get_portfolio_summary(year=selected_year)
@@ -86,8 +77,8 @@ def index(year: int | None = None):
         years_with_dividends=years_with_dividends,
         hide_zero=hide_zero,
         # Pagination data
-        page=page,
-        total_pages=total_pages,
+        page=pagination.page,
+        total_pages=pagination.total_pages,
         total_items=total_items,
         items_per_page=items_per_page,
     )

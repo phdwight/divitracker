@@ -1,9 +1,14 @@
 """Investment routes blueprint."""
 
+from datetime import datetime
+
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from app.exceptions import NotFoundError, ValidationError
+from app.models import Dividend
 from app.services.investment_service import InvestmentService
+from app.settings import get_user_settings
+from app.utils import paginate
 
 investments_bp = Blueprint("investments", __name__, url_prefix="/investments")
 
@@ -56,8 +61,8 @@ def add_investment():
     return render_template("add_investment.html", investments=investments)
 
 
-@investments_bp.route("/<int:id>")
-def view_investment(id: int):
+@investments_bp.route("/<int:investment_id>")
+def view_investment(investment_id: int):
     """
     Display detailed view of a specific investment.
 
@@ -67,20 +72,16 @@ def view_investment(id: int):
     Returns:
         Rendered view_investment template or 404 error.
     """
-    from datetime import datetime
-    from math import ceil
-
-    from app.models import Dividend
-    from app.settings import get_user_settings
-
     investment_service = InvestmentService()
     user_settings = get_user_settings()
 
     try:
-        investment = investment_service.get_investment_by_id(id)
+        investment = investment_service.get_investment_by_id(investment_id)
         # Get dividends sorted by date descending
         all_dividends = (
-            Dividend.query.filter_by(investment_id=id).order_by(Dividend.date_received.desc()).all()
+            Dividend.query.filter_by(investment_id=investment_id)
+            .order_by(Dividend.date_received.desc())
+            .all()
         )
 
         # Get years with dividends for the year selector
@@ -108,18 +109,9 @@ def view_investment(id: int):
         )
         page = request.args.get("page", type=int, default=1)
         total_items = len(filtered_dividends)
-        total_pages = ceil(total_items / items_per_page) if total_items > 0 else 1
 
-        # Ensure page is within bounds
-        if page < 1:
-            page = 1
-        elif page > total_pages:
-            page = total_pages
-
-        # Slice dividends for current page
-        start_idx = (page - 1) * items_per_page
-        end_idx = start_idx + items_per_page
-        dividends = filtered_dividends[start_idx:end_idx]
+        pagination = paginate(total_items, page, items_per_page)
+        dividends = filtered_dividends[pagination.start_idx : pagination.end_idx]
 
         return render_template(
             "view_investment.html",
@@ -128,8 +120,8 @@ def view_investment(id: int):
             years_with_dividends=years_with_dividends,
             selected_year=selected_year,
             # Pagination data
-            page=page,
-            total_pages=total_pages,
+            page=pagination.page,
+            total_pages=pagination.total_pages,
             total_items=total_items,
             items_per_page=items_per_page,
         )
@@ -138,13 +130,13 @@ def view_investment(id: int):
         return redirect(url_for("main.index"))
 
 
-@investments_bp.route("/<int:id>/edit", methods=["GET", "POST"])
-def edit_investment(id: int):
+@investments_bp.route("/<int:investment_id>/edit", methods=["GET", "POST"])
+def edit_investment(investment_id: int):
     """
     Handle editing an existing investment.
 
     Args:
-        id: The ID of the investment to edit.
+        investment_id: The ID of the investment to edit.
 
     Returns:
         GET: Rendered edit_investment template.
@@ -153,7 +145,7 @@ def edit_investment(id: int):
     investment_service = InvestmentService()
 
     try:
-        investment = investment_service.get_investment_by_id(id)
+        investment = investment_service.get_investment_by_id(investment_id)
     except NotFoundError:
         flash("Investment not found", "error")
         return redirect(url_for("main.index"))
@@ -165,13 +157,13 @@ def edit_investment(id: int):
 
         try:
             investment_service.update_investment(
-                investment_id=id,
+                investment_id=investment_id,
                 name=name,
                 ticker=ticker,
                 total_invested_str=amount_str,
             )
             flash("Investment updated successfully!", "success")
-            return redirect(url_for("investments.view_investment", id=id))
+            return redirect(url_for("investments.view_investment", investment_id=investment_id))
 
         except ValidationError as e:
             flash(str(e), "error")
@@ -179,13 +171,13 @@ def edit_investment(id: int):
     return render_template("edit_investment.html", investment=investment)
 
 
-@investments_bp.route("/<int:id>/delete", methods=["POST"])
-def delete_investment(id: int):
+@investments_bp.route("/<int:investment_id>/delete", methods=["POST"])
+def delete_investment(investment_id: int):
     """
     Delete an investment and all associated dividend records.
 
     Args:
-        id: The ID of the investment to delete.
+        investment_id: The ID of the investment to delete.
 
     Returns:
         Redirect to index page.
@@ -193,7 +185,7 @@ def delete_investment(id: int):
     investment_service = InvestmentService()
 
     try:
-        investment_name = investment_service.delete_investment(id)
+        investment_name = investment_service.delete_investment(investment_id)
         flash(f'Investment "{investment_name}" deleted successfully!', "success")
     except NotFoundError:
         flash("Investment not found", "error")
