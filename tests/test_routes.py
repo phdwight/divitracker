@@ -75,11 +75,11 @@ class TestMainRoutes:
         assert b"Total Dividends Received" in response.data
         assert b"Total Investment Amount" in response.data
 
-    def test_yield_breakdown_with_investments(self, client, app, sample_investment):
+    def test_yield_breakdown_with_investments(self, client, app, sample_investment_with_dividend):
         """Test yield breakdown with existing investments."""
         response = client.get("/reports/yield-breakdown")
         assert response.status_code == 200
-        assert b"Test Investment" in response.data
+        assert b"Dividend Test Investment" in response.data
 
 
 class TestDividendGraphRoutes:

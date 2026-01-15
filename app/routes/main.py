@@ -129,8 +129,8 @@ def yield_breakdown():
         inv_amount = inv.get_investment_amount_for_year(selected_year)
         div_amount = inv.calculate_annual_dividends(selected_year)
 
-        # Only include investments that have investment amount or dividends
-        if inv_amount > 0 or div_amount > 0:
+        # Only include investments that have dividends for the year
+        if div_amount > 0:
             inv_yield = (div_amount / inv_amount * 100) if inv_amount > 0 else 0.0
             investment_details.append(
                 InvestmentYieldDetail(
