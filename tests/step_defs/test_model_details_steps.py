@@ -38,7 +38,10 @@ def check_yearly_multiplier(expected):
 
 
 # Investment creation steps
-@given(parsers.parse('an investment "{name}" with ticker "{ticker}" and {amount:d} dollars exists'), target_fixture="investment")
+@given(
+    parsers.parse('an investment "{name}" with ticker "{ticker}" and {amount:d} dollars exists'),
+    target_fixture="investment",
+)
 def create_investment_with_ticker(app_context, name, ticker, amount):
     """Create an investment with a ticker."""
     investment = Investment(name=name, ticker=ticker, total_invested=float(amount))
@@ -47,7 +50,10 @@ def create_investment_with_ticker(app_context, name, ticker, amount):
     return investment
 
 
-@given(parsers.parse('an investment "{name}" without ticker and {amount:d} dollars exists'), target_fixture="investment")
+@given(
+    parsers.parse('an investment "{name}" without ticker and {amount:d} dollars exists'),
+    target_fixture="investment",
+)
 def create_investment_without_ticker(app_context, name, amount):
     """Create an investment without a ticker."""
     investment = Investment(name=name, total_invested=float(amount))
@@ -95,7 +101,11 @@ def check_dict_created_at(investment_dict):
 
 
 # Investment summary steps
-@given(parsers.parse("the investment has quarterly dividends of {amount:d} dollars for the current year"))
+@given(
+    parsers.parse(
+        "the investment has quarterly dividends of {amount:d} dollars for the current year"
+    )
+)
 def add_quarterly_dividends_current_year(investment, amount):
     """Add quarterly dividends for current year."""
     current_year = datetime.now(timezone.utc).year
@@ -143,7 +153,12 @@ def check_summary_total_received(summary, expected):
 
 
 # Dividend creation steps - ORDER MATTERS: more specific patterns first
-@given(parsers.re(r'a dividend of (?P<amount>[\d.]+) dollars with frequency "(?P<frequency>[^"]+)" and notes "(?P<notes>[^"]+)" exists for the investment'), target_fixture="dividend")
+@given(
+    parsers.re(
+        r'a dividend of (?P<amount>[\d.]+) dollars with frequency "(?P<frequency>[^"]+)" and notes "(?P<notes>[^"]+)" exists for the investment'
+    ),
+    target_fixture="dividend",
+)
 def create_dividend_with_notes(investment, amount, frequency, notes):
     """Create a dividend with notes."""
     dividend = Dividend(
@@ -157,7 +172,12 @@ def create_dividend_with_notes(investment, amount, frequency, notes):
     return dividend
 
 
-@given(parsers.re(r'a dividend of (?P<amount>[\d.]+) dollars with frequency "(?P<frequency>[^"]+)" and investment balance (?P<balance>\d+) exists for the investment'), target_fixture="dividend")
+@given(
+    parsers.re(
+        r'a dividend of (?P<amount>[\d.]+) dollars with frequency "(?P<frequency>[^"]+)" and investment balance (?P<balance>\d+) exists for the investment'
+    ),
+    target_fixture="dividend",
+)
 def create_dividend_with_balance(investment, amount, frequency, balance):
     """Create a dividend with investment amount at time."""
     inv_amt = float(balance) if int(balance) > 0 else 0.0
@@ -172,7 +192,12 @@ def create_dividend_with_balance(investment, amount, frequency, balance):
     return dividend
 
 
-@given(parsers.re(r'a dividend of (?P<amount>[\d.]+) dollars with frequency "(?P<frequency>[^"]+)" exists for the investment'), target_fixture="dividend")
+@given(
+    parsers.re(
+        r'a dividend of (?P<amount>[\d.]+) dollars with frequency "(?P<frequency>[^"]+)" exists for the investment'
+    ),
+    target_fixture="dividend",
+)
 def create_dividend_basic(investment, amount, frequency):
     """Create a basic dividend."""
     amt = float(amount)

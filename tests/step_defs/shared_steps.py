@@ -21,6 +21,7 @@ from app.models import Dividend, Investment
 # Application Setup Steps
 # =============================================================================
 
+
 @given("the application is configured for testing")
 def app_configured_basic(app):
     """Application is configured for testing (basic version)."""
@@ -42,6 +43,7 @@ def app_running(app, client):
 # =============================================================================
 # Investment Creation Steps (Parameterized)
 # =============================================================================
+
 
 @given(parsers.parse('an investment "{name}" with ticker "{ticker}" and {amount:d} dollars exists'))
 def create_investment_full(app, context, name, ticker, amount):
@@ -89,7 +91,12 @@ def no_investments_basic(app):
 # Dividend Creation Steps (Parameterized)
 # =============================================================================
 
-@given(parsers.parse('a {frequency} dividend of {amount:d} for "{inv_name}" with period month {month:d} and year {year:d}'))
+
+@given(
+    parsers.parse(
+        'a {frequency} dividend of {amount:d} for "{inv_name}" with period month {month:d} and year {year:d}'
+    )
+)
 def create_dividend_with_period(app, context, frequency, amount, inv_name, month, year):
     """Create a dividend with specific period."""
     inv = Investment.query.filter_by(name=inv_name).first()
@@ -121,7 +128,9 @@ def create_dividend_year_only(app, context, frequency, amount, inv_name, year):
     context["dividend_id"] = div.id
 
 
-@given(parsers.parse('{count:d} {frequency} dividends of {amount:d} for "{inv_name}" in year {year:d}'))
+@given(
+    parsers.parse('{count:d} {frequency} dividends of {amount:d} for "{inv_name}" in year {year:d}')
+)
 def create_multiple_dividends(app, context, count, frequency, amount, inv_name, year):
     """Create multiple dividends for an investment."""
     inv = Investment.query.filter_by(name=inv_name).first()
@@ -137,7 +146,11 @@ def create_multiple_dividends(app, context, count, frequency, amount, inv_name, 
     db.session.commit()
 
 
-@given(parsers.parse('the investment has {frequency} dividends of {amount:d} dollars for the current year'))
+@given(
+    parsers.parse(
+        "the investment has {frequency} dividends of {amount:d} dollars for the current year"
+    )
+)
 def add_current_year_dividends(app, context, frequency, amount):
     """Add dividends to the investment for current year."""
     current_year = datetime.now(timezone.utc).year
@@ -166,6 +179,7 @@ def add_current_year_dividends(app, context, frequency, amount):
 # =============================================================================
 # Common Then Steps
 # =============================================================================
+
 
 @then(parsers.parse("I should see status code {code:d}"))
 def check_status_code_common(context, code):
@@ -197,6 +211,7 @@ def check_validation_error_common(context, text):
 # =============================================================================
 # Common When Steps
 # =============================================================================
+
 
 @when(parsers.parse('I visit "{url}"'))
 def visit_url_common(client, context, url):

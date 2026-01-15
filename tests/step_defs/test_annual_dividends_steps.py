@@ -48,7 +48,9 @@ def investment_exists(app, name, amount, context):
 
 
 @given(
-    parsers.parse("I recorded {count:d} monthly dividends of {amount:d} dollars each for the current year")
+    parsers.parse(
+        "I recorded {count:d} monthly dividends of {amount:d} dollars each for the current year"
+    )
 )
 def record_monthly_dividends(app, count, amount, context):
     """Record monthly dividends."""
@@ -67,7 +69,9 @@ def record_monthly_dividends(app, count, amount, context):
 
 
 @given(
-    parsers.parse("I recorded {count:d} quarterly dividends of {amount:d} dollars each for the current year")
+    parsers.parse(
+        "I recorded {count:d} quarterly dividends of {amount:d} dollars each for the current year"
+    )
 )
 def record_quarterly_dividends_current(app, count, amount, context):
     """Record quarterly dividends for current year."""
@@ -76,7 +80,9 @@ def record_quarterly_dividends_current(app, count, amount, context):
 
 
 @given(
-    parsers.parse("I recorded {count:d} quarterly dividends of {amount:d} dollars each for year {year:d}")
+    parsers.parse(
+        "I recorded {count:d} quarterly dividends of {amount:d} dollars each for year {year:d}"
+    )
 )
 def record_quarterly_dividends_year(app, count, amount, year, context):
     """Record quarterly dividends for specific year."""
@@ -99,9 +105,7 @@ def _record_quarterly_dividends(app, investment_id, count, amount, year):
         db.session.commit()
 
 
-@given(
-    parsers.parse("I recorded a quarterly dividend of {amount:d} dollars for month {month:d}")
-)
+@given(parsers.parse("I recorded a quarterly dividend of {amount:d} dollars for month {month:d}"))
 def record_single_quarterly(app, amount, month, context):
     """Record a single quarterly dividend."""
     current_year = datetime.now(timezone.utc).year
@@ -117,9 +121,7 @@ def record_single_quarterly(app, amount, month, context):
         db.session.commit()
 
 
-@given(
-    parsers.parse("I recorded a monthly dividend of {amount:d} dollars for month {month:d}")
-)
+@given(parsers.parse("I recorded a monthly dividend of {amount:d} dollars for month {month:d}"))
 def record_single_monthly(app, amount, month, context):
     """Record a single monthly dividend."""
     current_year = datetime.now(timezone.utc).year

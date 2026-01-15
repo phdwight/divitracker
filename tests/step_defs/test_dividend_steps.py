@@ -48,7 +48,9 @@ def investment_exists(app, name, ticker, amount, context):
 
 # Given steps for dividends
 @given(
-    parsers.parse('a dividend of {amount:d} dollars with frequency "{frequency}" exists for "{inv_name}"'),
+    parsers.parse(
+        'a dividend of {amount:d} dollars with frequency "{frequency}" exists for "{inv_name}"'
+    ),
     target_fixture="context",
 )
 def dividend_exists(app, amount, frequency, inv_name, context):
@@ -139,7 +141,9 @@ def record_dividend_with_balance(app, amount, frequency, balance, inv_name, cont
 
 
 @when(
-    parsers.parse('I try to record a dividend of {amount:d} dollars with frequency "{frequency}" without an investment'),
+    parsers.parse(
+        'I try to record a dividend of {amount:d} dollars with frequency "{frequency}" without an investment'
+    ),
     target_fixture="context",
 )
 def try_record_without_investment(app, amount, frequency, context):
@@ -158,7 +162,9 @@ def try_record_without_investment(app, amount, frequency, context):
 
 
 @when(
-    parsers.parse('I try to record a dividend of {amount:d} dollars with frequency "{frequency}" for "{inv_name}"'),
+    parsers.parse(
+        'I try to record a dividend of {amount:d} dollars with frequency "{frequency}" for "{inv_name}"'
+    ),
     target_fixture="context",
 )
 def try_record_dividend(app, amount, frequency, inv_name, context):

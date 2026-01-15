@@ -38,7 +38,11 @@ def app_configured(app):
 
 
 # Currency Settings steps
-@when(parsers.parse('I create currency settings with code "{code}" symbol "{symbol}" and name "{name}"'))
+@when(
+    parsers.parse(
+        'I create currency settings with code "{code}" symbol "{symbol}" and name "{name}"'
+    )
+)
 def create_currency_settings(context, code, symbol, name):
     """Create currency settings."""
     context["currency_settings"] = CurrencySettings(code=code, symbol=symbol, name=name)
@@ -86,7 +90,11 @@ def check_currency_name(context, expected):
 
 
 # Formatting Settings steps
-@when(parsers.parse('I create formatting settings with thousands "{thousands}" decimal "{decimal}" and places {places:d}'))
+@when(
+    parsers.parse(
+        'I create formatting settings with thousands "{thousands}" decimal "{decimal}" and places {places:d}'
+    )
+)
 def create_formatting_settings(context, thousands, decimal, places):
     """Create formatting settings."""
     context["formatting_settings"] = FormattingSettings(
@@ -152,7 +160,9 @@ def user_settings_php(context):
     """Create user settings with PHP currency."""
     context["user_settings"] = UserSettings(
         currency=CurrencySettings(code="PHP", symbol="₱", name="Philippine Peso"),
-        formatting=FormattingSettings(thousands_separator=",", decimal_separator=".", decimal_places=2),
+        formatting=FormattingSettings(
+            thousands_separator=",", decimal_separator=".", decimal_places=2
+        ),
         timezone=TimezoneSettings(offset_hours=8, name="GMT+8"),
         pagination=PaginationSettings(items_per_page=10),
     )
@@ -163,7 +173,9 @@ def user_settings_usd(context):
     """Create user settings with USD currency."""
     context["user_settings"] = UserSettings(
         currency=CurrencySettings(code="USD", symbol="$", name="US Dollar"),
-        formatting=FormattingSettings(thousands_separator=",", decimal_separator=".", decimal_places=2),
+        formatting=FormattingSettings(
+            thousands_separator=",", decimal_separator=".", decimal_places=2
+        ),
         timezone=TimezoneSettings(offset_hours=-5, name="EST"),
         pagination=PaginationSettings(items_per_page=10),
     )
@@ -174,7 +186,9 @@ def user_settings_eur(context):
     """Create user settings with EUR currency and European formatting."""
     context["user_settings"] = UserSettings(
         currency=CurrencySettings(code="EUR", symbol="€", name="Euro"),
-        formatting=FormattingSettings(thousands_separator=" ", decimal_separator=",", decimal_places=2),
+        formatting=FormattingSettings(
+            thousands_separator=" ", decimal_separator=",", decimal_places=2
+        ),
         timezone=TimezoneSettings(offset_hours=1, name="CET"),
         pagination=PaginationSettings(items_per_page=10),
     )
@@ -185,7 +199,9 @@ def user_settings_jpy(context):
     """Create user settings with JPY currency and no decimals."""
     context["user_settings"] = UserSettings(
         currency=CurrencySettings(code="JPY", symbol="¥", name="Japanese Yen"),
-        formatting=FormattingSettings(thousands_separator=",", decimal_separator=".", decimal_places=0),
+        formatting=FormattingSettings(
+            thousands_separator=",", decimal_separator=".", decimal_places=0
+        ),
         timezone=TimezoneSettings(offset_hours=9, name="JST"),
         pagination=PaginationSettings(items_per_page=10),
     )
@@ -269,7 +285,9 @@ def save_eur_settings(context):
     context["manager"] = SettingsManager(context["config_path"])
     new_settings = UserSettings(
         currency=CurrencySettings(code="EUR", symbol="€", name="Euro"),
-        formatting=FormattingSettings(thousands_separator=" ", decimal_separator=",", decimal_places=2),
+        formatting=FormattingSettings(
+            thousands_separator=" ", decimal_separator=",", decimal_places=2
+        ),
         timezone=TimezoneSettings(offset_hours=1, name="CET"),
         pagination=PaginationSettings(items_per_page=20),
     )
@@ -395,6 +413,7 @@ def cleanup_temp_dir(context):
     yield
     if context.get("temp_dir"):
         import shutil
+
         try:
             shutil.rmtree(context["temp_dir"])
         except FileNotFoundError:

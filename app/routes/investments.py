@@ -111,7 +111,7 @@ def view_investment(investment_id: int):
         total_items = len(filtered_dividends)
 
         pagination = paginate(total_items, page, items_per_page)
-        dividends = filtered_dividends[pagination.start_idx:pagination.end_idx]
+        dividends = filtered_dividends[pagination.start_idx : pagination.end_idx]
 
         return render_template(
             "view_investment.html",

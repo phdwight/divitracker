@@ -60,7 +60,7 @@ def index(year: int | None = None):
     total_items = len(filtered_investments)
 
     pagination = paginate(total_items, page, items_per_page)
-    paginated_investments = filtered_investments[pagination.start_idx:pagination.end_idx]
+    paginated_investments = filtered_investments[pagination.start_idx : pagination.end_idx]
 
     # Get portfolio summary for selected year
     portfolio_summary = portfolio_service.get_portfolio_summary(year=selected_year)

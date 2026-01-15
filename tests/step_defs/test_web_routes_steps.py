@@ -22,7 +22,10 @@ def app_configured(app):
         yield app
 
 
-@given(parsers.parse('an investment "{name}" with ticker "{ticker}" exists'), target_fixture="investment")
+@given(
+    parsers.parse('an investment "{name}" with ticker "{ticker}" exists'),
+    target_fixture="investment",
+)
 def create_investment(app_context, name, ticker):
     """Create an investment."""
     investment = Investment(name=name, ticker=ticker, total_invested=10000.0)
@@ -31,7 +34,10 @@ def create_investment(app_context, name, ticker):
     return investment
 
 
-@given(parsers.parse('an investment "{name}" with ticker "{ticker}" and amount {amount:d} exists'), target_fixture="investment")
+@given(
+    parsers.parse('an investment "{name}" with ticker "{ticker}" and amount {amount:d} exists'),
+    target_fixture="investment",
+)
 def create_investment_with_amount(app_context, name, ticker, amount):
     """Create an investment with specific amount."""
     investment = Investment(name=name, ticker=ticker, total_invested=float(amount))
@@ -85,7 +91,12 @@ def visit_edit_investment(client, app_context, name):
     return client.get(f"/investments/{investment.id}/edit")
 
 
-@when(parsers.parse('I submit new investment with name "{name}" ticker "{ticker}" and amount "{amount}"'), target_fixture="response")
+@when(
+    parsers.parse(
+        'I submit new investment with name "{name}" ticker "{ticker}" and amount "{amount}"'
+    ),
+    target_fixture="response",
+)
 def submit_new_investment(client, name, ticker, amount):
     """Submit a new investment."""
     return client.post(
@@ -95,7 +106,10 @@ def submit_new_investment(client, name, ticker, amount):
     )
 
 
-@when('I submit new investment with name "" ticker "TEST" and amount "1000"', target_fixture="response")
+@when(
+    'I submit new investment with name "" ticker "TEST" and amount "1000"',
+    target_fixture="response",
+)
 def submit_new_investment_empty_name(client):
     """Submit a new investment with empty name."""
     return client.post(
@@ -105,7 +119,12 @@ def submit_new_investment_empty_name(client):
     )
 
 
-@when(parsers.parse('I update investment "{name}" to name "{new_name}" ticker "{new_ticker}" and amount "{amount}"'), target_fixture="response")
+@when(
+    parsers.parse(
+        'I update investment "{name}" to name "{new_name}" ticker "{new_ticker}" and amount "{amount}"'
+    ),
+    target_fixture="response",
+)
 def update_investment(client, app_context, name, new_name, new_ticker, amount):
     """Update an investment."""
     investment = Investment.query.filter_by(name=name).first()
@@ -130,14 +149,22 @@ def request_url(client, url):
     return client.get(url)
 
 
-@when(parsers.parse('I visit add dividend page with preselected investment "{name}"'), target_fixture="response")
+@when(
+    parsers.parse('I visit add dividend page with preselected investment "{name}"'),
+    target_fixture="response",
+)
 def visit_add_dividend_preselected(client, app_context, name):
     """Visit add dividend page with preselected investment."""
     investment = Investment.query.filter_by(name=name).first()
     return client.get(f"/dividends/new?investment_id={investment.id}")
 
 
-@when(parsers.re(r'I submit dividend of "(?P<amount>[^"]+)" with frequency "(?P<frequency>[^"]+)" and notes "(?P<notes>[^"]+)" for "(?P<name>[^"]+)"'), target_fixture="response")
+@when(
+    parsers.re(
+        r'I submit dividend of "(?P<amount>[^"]+)" with frequency "(?P<frequency>[^"]+)" and notes "(?P<notes>[^"]+)" for "(?P<name>[^"]+)"'
+    ),
+    target_fixture="response",
+)
 def submit_dividend(client, app_context, amount, frequency, notes, name, context):
     """Submit a dividend with notes."""
     investment = Investment.query.filter_by(name=name).first()
@@ -154,7 +181,12 @@ def submit_dividend(client, app_context, amount, frequency, notes, name, context
     )
 
 
-@when(parsers.re(r'I submit dividend of "(?P<amount>[^"]+)" with frequency "(?P<frequency>[^"]+)" for "(?P<name>[^"]+)"'), target_fixture="response")
+@when(
+    parsers.re(
+        r'I submit dividend of "(?P<amount>[^"]+)" with frequency "(?P<frequency>[^"]+)" for "(?P<name>[^"]+)"'
+    ),
+    target_fixture="response",
+)
 def submit_dividend_no_notes(client, app_context, amount, frequency, name, context):
     """Submit a dividend without notes."""
     investment = Investment.query.filter_by(name=name).first()
@@ -170,7 +202,12 @@ def submit_dividend_no_notes(client, app_context, amount, frequency, name, conte
     )
 
 
-@when(parsers.parse('I submit dividend of "{amount}" with frequency "{frequency}" without investment'), target_fixture="response")
+@when(
+    parsers.parse(
+        'I submit dividend of "{amount}" with frequency "{frequency}" without investment'
+    ),
+    target_fixture="response",
+)
 def submit_dividend_no_investment(client, amount, frequency):
     """Submit a dividend without investment."""
     return client.post(
@@ -204,7 +241,12 @@ def visit_edit_dividend(client, app_context, name, context):
     return client.get(f"/dividends/{dividend.id}/edit")
 
 
-@when(parsers.parse('I update a dividend for "{name}" to amount "{amount}" frequency "{frequency}" and notes "{notes}"'), target_fixture="response")
+@when(
+    parsers.parse(
+        'I update a dividend for "{name}" to amount "{amount}" frequency "{frequency}" and notes "{notes}"'
+    ),
+    target_fixture="response",
+)
 def update_dividend(client, app_context, name, amount, frequency, notes, context):
     """Update a dividend."""
     investment = Investment.query.filter_by(name=name).first()
@@ -212,12 +254,20 @@ def update_dividend(client, app_context, name, amount, frequency, notes, context
     context["dividend_id"] = dividend.id
     return client.post(
         f"/dividends/{dividend.id}/edit",
-        data={"amount": amount, "frequency": frequency, "notes": notes, "period_month": "6", "period_year": "2025"},
+        data={
+            "amount": amount,
+            "frequency": frequency,
+            "notes": notes,
+            "period_month": "6",
+            "period_year": "2025",
+        },
         follow_redirects=True,
     )
 
 
-@when(parsers.parse('I update a dividend for "{name}" with invalid amount'), target_fixture="response")
+@when(
+    parsers.parse('I update a dividend for "{name}" with invalid amount'), target_fixture="response"
+)
 def update_dividend_invalid(client, app_context, name, context):
     """Update a dividend with invalid amount."""
     investment = Investment.query.filter_by(name=name).first()
@@ -230,7 +280,10 @@ def update_dividend_invalid(client, app_context, name, context):
     )
 
 
-@when(parsers.parse('I update a dividend for "{name}" with investment amount "{inv_amount}"'), target_fixture="response")
+@when(
+    parsers.parse('I update a dividend for "{name}" with investment amount "{inv_amount}"'),
+    target_fixture="response",
+)
 def update_dividend_with_inv_amount(client, app_context, name, inv_amount, context):
     """Update a dividend with investment amount at time."""
     investment = Investment.query.filter_by(name=name).first()
@@ -267,7 +320,11 @@ def check_navigation_to_dashboard(response):
     assert b"Dashboard" in response.data or b'href="/"' in response.data
 
 
-@then(parsers.parse('the investment "{name}" should exist with ticker "{ticker}" and amount {amount:d}'))
+@then(
+    parsers.parse(
+        'the investment "{name}" should exist with ticker "{ticker}" and amount {amount:d}'
+    )
+)
 def check_investment_exists(app_context, name, ticker, amount):
     """Check investment exists with values."""
     investment = Investment.query.filter_by(name=name).first()

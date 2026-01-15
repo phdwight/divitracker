@@ -106,7 +106,11 @@ def record_dividend_with_balance_for_year(app, quarter, amount, balance, year, i
     _add_dividend(app, investment_context, quarter, amount, balance, year)
 
 
-@given(parsers.parse("I recorded a {quarter} dividend of {amount:d} dollars without investment balance"))
+@given(
+    parsers.parse(
+        "I recorded a {quarter} dividend of {amount:d} dollars without investment balance"
+    )
+)
 def record_dividend_without_balance(app, quarter, amount, investment_context):
     """Record a dividend without investment amount at time."""
     current_year = datetime.now(timezone.utc).year

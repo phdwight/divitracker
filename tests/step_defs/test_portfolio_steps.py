@@ -28,7 +28,6 @@ def app_configured(app):  # pylint: disable=unused-argument
     """Application is configured - app fixture ensures test context."""
 
 
-
 # Given steps
 @given("no investments exist")
 def no_investments(app):
@@ -72,7 +71,7 @@ def add_quarterly_dividends_current(app, amount, test_context):
 @given(
     parsers.parse(
         'the investment "{name}" has quarterly dividends of '
-        '{amount:d} dollars for the current year'
+        "{amount:d} dollars for the current year"
     )
 )
 def add_named_investment_dividends(app, name, amount, test_context):
@@ -84,8 +83,7 @@ def add_named_investment_dividends(app, name, amount, test_context):
 
 @given(
     parsers.parse(
-        'the investment "{name}" has quarterly dividends of '
-        '{amount:d} dollars for year {year:d}'
+        'the investment "{name}" has quarterly dividends of ' "{amount:d} dollars for year {year:d}"
     )
 )
 def add_named_investment_dividends_year(app, name, amount, year, test_context):
@@ -122,7 +120,7 @@ def request_summary(app, test_context):
 
 @when(
     parsers.parse("I request the portfolio summary for year {year:d}"),
-    target_fixture="test_context"
+    target_fixture="test_context",
 )
 def request_summary_for_year(app, year, test_context):
     """Request portfolio summary for specific year."""
@@ -156,7 +154,9 @@ def verify_overall_yield(test_context, yield_pct):
 @then(
     parsers.parse('the yield calculation should only include the {amount:d} dollars from "{name}"')
 )
-def verify_yield_investment_amount(app, amount, name, test_context):  # pylint: disable=unused-argument
+def verify_yield_investment_amount(
+    app, amount, name, test_context
+):  # pylint: disable=unused-argument
     """Verify yield calculation uses correct investment amount."""
     # The yield should be calculated only from investments with dividends
     # Total annual dividends / investment amount * 100 = yield

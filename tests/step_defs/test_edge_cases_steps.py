@@ -1,4 +1,5 @@
 """Step definitions for edge cases feature."""
+
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -43,6 +44,7 @@ def context():
 # Given Steps - Application & Investment Setup
 # =============================================================================
 
+
 @given("the application is running")
 def app_running(app, client):  # pylint: disable=unused-argument
     """Ensure app is running."""
@@ -50,7 +52,9 @@ def app_running(app, client):  # pylint: disable=unused-argument
 
 
 @given(parsers.parse('an investment "{name}" with ticker "{ticker}" and amount {amount:d} exists'))
-def create_investment_with_amount(app, context, name, ticker, amount):  # pylint: disable=unused-argument
+def create_investment_with_amount(
+    app, context, name, ticker, amount
+):  # pylint: disable=unused-argument
     """Create an investment with specified amount."""
     del app  # Required for Flask context
     inv = Investment(name=name, ticker=ticker, total_invested=float(amount))
@@ -76,11 +80,12 @@ def create_investment(app, context, name, ticker):  # pylint: disable=unused-arg
 # Given Steps - Dividend Creation (Parameterized)
 # =============================================================================
 
+
 @given(
     parsers.re(
-        r'a (?P<frequency>quarterly|monthly|yearly|semi-annual) dividend of '
+        r"a (?P<frequency>quarterly|monthly|yearly|semi-annual) dividend of "
         r'(?P<amount>\d+) for "(?P<inv_name>[^"]+)" with period month (?P<month>\d+) '
-        r'and year (?P<year>\d+)'
+        r"and year (?P<year>\d+)"
     )
 )
 def create_dividend_with_month(  # pylint: disable=too-many-positional-arguments,unused-argument
@@ -103,7 +108,7 @@ def create_dividend_with_month(  # pylint: disable=too-many-positional-arguments
 
 @given(
     parsers.re(
-        r'a (?P<frequency>quarterly|monthly|yearly|semi-annual) dividend of '
+        r"a (?P<frequency>quarterly|monthly|yearly|semi-annual) dividend of "
         r'(?P<amount>\d+) for "(?P<inv_name>[^"]+)" with period year (?P<year>\d+)'
     )
 )
@@ -142,11 +147,7 @@ def create_dividend_without_month(app, context, inv_name, year):  # pylint: disa
     context["dividend_id"] = div.id
 
 
-@given(
-    parsers.parse(
-        '{count:d} monthly dividends of {amount:d} for "{inv_name}" in year {year:d}'
-    )
-)
+@given(parsers.parse('{count:d} monthly dividends of {amount:d} for "{inv_name}" in year {year:d}'))
 def create_multiple_monthly_dividends(  # pylint: disable=too-many-positional-arguments,unused-argument
     app, context, count, amount, inv_name, year
 ):
@@ -166,7 +167,9 @@ def create_multiple_monthly_dividends(  # pylint: disable=too-many-positional-ar
 
 
 @given(parsers.parse('a dividend with unknown frequency for "{inv_name}" in year {year:d}'))
-def create_dividend_unknown_frequency(app, context, inv_name, year):  # pylint: disable=unused-argument
+def create_dividend_unknown_frequency(
+    app, context, inv_name, year
+):  # pylint: disable=unused-argument
     """Create a dividend with an unknown frequency value."""
     del app, context  # Required for Flask context
     inv = Investment.query.filter_by(name=inv_name).first()
@@ -184,6 +187,7 @@ def create_dividend_unknown_frequency(app, context, inv_name, year):  # pylint: 
 # =============================================================================
 # Given Steps - Settings Edge Cases
 # =============================================================================
+
 
 @given("a corrupted settings file exists")
 def corrupted_settings_file(context):
@@ -204,6 +208,7 @@ def inaccessible_settings_file(context):
 # =============================================================================
 # When Steps - Navigation
 # =============================================================================
+
 
 @when(parsers.parse('I visit "{url}"'))
 def visit_url(client, context, url):
@@ -236,7 +241,9 @@ def view_investment(app, client, context, name):  # pylint: disable=unused-argum
 
 
 @when(parsers.parse('I filter dividend graph by investment "{name}"'))
-def filter_dividend_graph_by_investment(app, client, context, name):  # pylint: disable=unused-argument
+def filter_dividend_graph_by_investment(
+    app, client, context, name
+):  # pylint: disable=unused-argument
     """Filter dividend graph by investment."""
     del app  # Required for Flask context
     inv = Investment.query.filter_by(name=name).first()
@@ -246,6 +253,7 @@ def filter_dividend_graph_by_investment(app, client, context, name):  # pylint: 
 # =============================================================================
 # When Steps - Investment Operations
 # =============================================================================
+
 
 @when(
     parsers.parse(
@@ -275,6 +283,7 @@ def delete_investment_by_id(client, context, investment_id):
 # =============================================================================
 # When Steps - Admin Settings
 # =============================================================================
+
 
 @when(parsers.parse("I save admin settings with items_per_page {items:d}"))
 def save_admin_settings_items_per_page(client, context, items):
@@ -323,9 +332,10 @@ def save_admin_settings_exception(app, client, context):  # pylint: disable=unus
 # When Steps - Dividend Operations
 # =============================================================================
 
+
 @when(
     parsers.parse(
-        'I submit dividend with investment_id {inv_id:d} '
+        "I submit dividend with investment_id {inv_id:d} "
         'amount "{amount}" and frequency "{frequency}"'
     )
 )
@@ -362,15 +372,18 @@ def get_period_display(app, context):  # pylint: disable=unused-argument
 # When Steps - Error Handlers
 # =============================================================================
 
+
 @when("a 500 error occurs")
 def trigger_500_error(app, client, context):  # noqa: ARG001
     """Trigger a 500 error."""
     del app, client  # unused but required fixtures
     test_app = create_app("testing")
     with test_app.test_request_context():
+
         @test_app.route("/trigger-500")
         def trigger_error():
             raise InternalServerError("Test error")
+
         with test_app.test_client() as test_client:
             context["response"] = test_client.get("/trigger-500")
 
@@ -381,9 +394,11 @@ def trigger_403_error(app, client, context):  # noqa: ARG001
     del app, client  # unused but required fixtures
     test_app = create_app("testing")
     with test_app.app_context():
+
         @test_app.route("/trigger-403")
         def trigger_forbidden():
             raise Forbidden("Test forbidden")
+
         with test_app.test_client() as test_client:
             context["response"] = test_client.get("/trigger-403")
 
@@ -394,9 +409,11 @@ def trigger_400_error(app, client, context):  # noqa: ARG001
     del app, client  # unused but required fixtures
     test_app = create_app("testing")
     with test_app.app_context():
+
         @test_app.route("/trigger-400")
         def trigger_bad_request():
             raise BadRequest("Test bad request")
+
         with test_app.test_client() as test_client:
             context["response"] = test_client.get("/trigger-400")
 
@@ -411,6 +428,7 @@ def load_settings(context):
 # =============================================================================
 # Then Steps
 # =============================================================================
+
 
 @then(parsers.parse("I should see status code {code:d}"))
 def check_status_code(context, code):

@@ -60,10 +60,8 @@ def visit_url(client, url):
 
 
 @when(
-    parsers.parse(
-        'I save settings with currency "{code}" symbol "{symbol}" and name "{name}"'
-    ),
-    target_fixture="response"
+    parsers.parse('I save settings with currency "{code}" symbol "{symbol}" and name "{name}"'),
+    target_fixture="response",
 )
 def save_settings(client, code, symbol, name, context):
     """Save settings."""
@@ -162,7 +160,7 @@ def upload_db_file(client, filename):
 
 @when(
     parsers.parse('I upload database file "{filename}" with content "{content}"'),
-    target_fixture="response"
+    target_fixture="response",
 )
 def upload_db_file_with_content(client, filename, content, context):
     """Upload database file with content."""

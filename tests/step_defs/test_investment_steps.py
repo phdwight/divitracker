@@ -54,7 +54,9 @@ def investment_exists(app, name, ticker, amount, context):
 
 # When steps
 @when(
-    parsers.parse('I create an investment named "{name}" with ticker "{ticker}" and {amount:d} dollars'),
+    parsers.parse(
+        'I create an investment named "{name}" with ticker "{ticker}" and {amount:d} dollars'
+    ),
     target_fixture="context",
 )
 def create_investment(app, name, ticker, amount, context):
@@ -116,7 +118,9 @@ def try_create_negative_amount(app, name, amount, context):
 
 
 @when(
-    parsers.parse('I update the investment to name "{name}" ticker "{ticker}" and amount {amount:d}'),
+    parsers.parse(
+        'I update the investment to name "{name}" ticker "{ticker}" and amount {amount:d}'
+    ),
     target_fixture="context",
 )
 def update_investment(app, name, ticker, amount, context):
