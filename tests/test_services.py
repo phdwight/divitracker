@@ -580,3 +580,45 @@ class TestPortfolioService:
             # NOT 400 / 15000 = 2.67%
             assert summary.overall_yield == 4.0
             assert summary.investment_count == 2
+
+    def test_get_portfolio_summary_projected_yield_excludes_zero_dividends(self, app):
+        """Test that projected yield calculation excludes investments with zero projected dividends."""
+        from datetime import datetime, timezone
+
+        with app.app_context():
+            current_year = datetime.now(timezone.utc).year
+            # Create two investments
+            inv1 = Investment(name="Inv1", total_invested=10000.0)
+            inv2 = Investment(name="Inv2", total_invested=5000.0)
+            db.session.add_all([inv1, inv2])
+            db.session.commit()
+
+            # Add only 1 quarterly dividend for inv1 in current year
+            # This means actual = 100, but projected = 400 (4 quarters)
+            div = Dividend(
+                investment_id=inv1.id,
+                amount=100.0,
+                frequency="quarterly",
+                period_month=3,
+                period_year=current_year,
+            )
+            db.session.add(div)
+            # inv2 has NO dividends for current year
+            db.session.commit()
+
+            investment_service = InvestmentService()
+            service = PortfolioService(investment_service)
+
+            summary = service.get_portfolio_summary()
+
+            # Total invested includes both investments
+            assert summary.total_invested == 15000.0
+            # Only inv1 has actual dividends
+            assert summary.total_annual_dividends == 100.0
+            # Actual yield: 100 / 10000 = 1.0%
+            assert summary.overall_yield == 1.0
+            # Projected dividends: 100 * 4 = 400
+            assert summary.projected_annual_dividends == 400.0
+            # Projected yield: 400 / 10000 = 4.0%
+            assert summary.projected_yield == 4.0
+            assert summary.investment_count == 2
