@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from pytest_bdd import given, when, then, scenarios, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from app.routes.admin import get_db_path
 

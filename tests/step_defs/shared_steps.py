@@ -11,11 +11,10 @@ Usage in step definition files:
 
 from datetime import datetime, timezone
 
-from pytest_bdd import given, when, then, parsers
+from pytest_bdd import given, parsers, then, when
 
 from app.extensions import db
 from app.models import Dividend, Investment
-
 
 # =============================================================================
 # Application Setup Steps

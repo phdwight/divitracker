@@ -1,7 +1,7 @@
 """Step definitions for utility functions feature."""
 
 import pytest
-from pytest_bdd import given, when, then, scenarios, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from app.utils import sanitize_log_input
 

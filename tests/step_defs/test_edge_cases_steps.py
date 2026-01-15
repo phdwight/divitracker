@@ -5,14 +5,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from pytest_bdd import scenarios, given, when, then, parsers
-from werkzeug.exceptions import InternalServerError, Forbidden, BadRequest
+from pytest_bdd import given, parsers, scenarios, then, when
+from werkzeug.exceptions import BadRequest, Forbidden, InternalServerError
 
-from app.factory import create_app
 from app.extensions import db
-from app.models import Investment, Dividend
-from app.settings import SettingsManager, DEFAULT_SETTINGS
-
+from app.factory import create_app
+from app.models import Dividend, Investment
+from app.settings import DEFAULT_SETTINGS, SettingsManager
 
 scenarios("../features/edge_cases.feature")
 

@@ -1,0 +1,8 @@
+[flake8]
+max-line-length = 100
+extend-ignore = E203
+# E203: whitespace before ':' - conflicts with black's slice formatting
+
+per-file-ignores =
+    # Ignore line too long in test files due to Gherkin pattern strings
+    tests/*:E501

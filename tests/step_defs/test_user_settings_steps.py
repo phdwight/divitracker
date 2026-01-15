@@ -1,12 +1,12 @@
 """Step definitions for user settings feature."""
 
 import json
+import logging
 import tempfile
 from pathlib import Path
 
-import logging
 import pytest
-from pytest_bdd import given, when, then, scenarios, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from app.settings import (
     CURRENCY_PRESETS,

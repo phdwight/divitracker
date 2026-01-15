@@ -1,7 +1,7 @@
 """Step definitions for period validation feature."""
 
 import pytest
-from pytest_bdd import given, when, then, scenarios, parsers
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from app.exceptions import ValidationError
 from app.services.dividend_service import DividendService
