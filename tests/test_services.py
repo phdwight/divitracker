@@ -541,3 +541,42 @@ class TestPortfolioService:
             # 1000 / 15000 * 100 = 6.666...
             assert abs(summary.overall_yield - 6.666666666666667) < 0.001
             assert summary.investment_count == 2
+
+    def test_get_portfolio_summary_excludes_investments_with_zero_dividends(self, app):
+        """Test that portfolio yield calculation excludes investments with zero dividends for the year."""
+        from datetime import datetime, timezone
+
+        with app.app_context():
+            current_year = datetime.now(timezone.utc).year
+            # Create two investments
+            inv1 = Investment(name="Inv1", total_invested=10000.0)
+            inv2 = Investment(name="Inv2", total_invested=5000.0)
+            db.session.add_all([inv1, inv2])
+            db.session.commit()
+
+            # Add 4 quarterly dividends for inv1 only (100 * 4 = 400)
+            for month in [3, 6, 9, 12]:
+                div = Dividend(
+                    investment_id=inv1.id,
+                    amount=100.0,
+                    frequency="quarterly",
+                    period_month=month,
+                    period_year=current_year,
+                )
+                db.session.add(div)
+            # inv2 has NO dividends for current year
+            db.session.commit()
+
+            investment_service = InvestmentService()
+            service = PortfolioService(investment_service)
+
+            summary = service.get_portfolio_summary()
+
+            # Total invested includes both investments
+            assert summary.total_invested == 15000.0
+            # Only inv1 has dividends
+            assert summary.total_annual_dividends == 400.0
+            # Yield should be calculated as 400 / 10000 (only inv1) = 4.0%
+            # NOT 400 / 15000 = 2.67%
+            assert summary.overall_yield == 4.0
+            assert summary.investment_count == 2

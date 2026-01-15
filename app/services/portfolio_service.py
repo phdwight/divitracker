@@ -60,8 +60,11 @@ class PortfolioService:
         )
 
         # For yield, use the investment amounts recorded at time of dividends
+        # Only include investments that have dividends for the year
         total_investment_for_yield = sum(
-            inv.get_investment_amount_for_year(year) for inv in investments
+            inv.get_investment_amount_for_year(year)
+            for inv in investments
+            if inv.calculate_annual_dividends(year) > 0
         )
 
         overall_yield = 0.0
