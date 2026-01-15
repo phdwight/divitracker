@@ -46,7 +46,7 @@ def context():
 @given("the application is running")
 def app_running(app, client):  # pylint: disable=unused-argument
     """Ensure app is running."""
-    del app, client  # Fixtures needed for Flask context
+    # Fixtures are requested via function arguments; no additional action needed.
 
 
 @given(parsers.parse('an investment "{name}" with ticker "{ticker}" and amount {amount:d} exists'))
