@@ -26,7 +26,7 @@ def test_context():
 @given("the application is configured for testing")
 def app_configured(app):  # pylint: disable=unused-argument
     """Application is configured - app fixture ensures test context."""
-    del app  # Ensure fixture is used
+
 
 
 # Given steps
