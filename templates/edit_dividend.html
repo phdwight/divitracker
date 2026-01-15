@@ -8,7 +8,7 @@
     <p class="subtitle">Update dividend record for {{ dividend.investment.name }}</p>
     
     <div class="form-container">
-        <form method="post" action="{{ url_for('dividends.edit_dividend', id=dividend.id) }}">
+        <form method="post" action="{{ url_for('dividends.edit_dividend', dividend_id=dividend.id) }}">
             <div class="form-group">
                 <label for="amount">Dividend Amount ({{ currency_symbol }}) *</label>
                 <input type="number" 
@@ -100,7 +100,7 @@
             </div>
 
             <div class="form-actions">
-                <a href="{{ url_for('investments.view_investment', id=dividend.investment_id) }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ url_for('investments.view_investment', investment_id=dividend.investment_id) }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">Update Dividend</button>
             </div>
         </form>

@@ -8,6 +8,7 @@ from app.exceptions import NotFoundError, ValidationError
 from app.services.dividend_service import DividendService
 from app.services.investment_service import InvestmentService
 from app.settings import format_currency
+from app.utils import DividendData
 
 dividends_bp = Blueprint("dividends", __name__, url_prefix="/dividends")
 
@@ -39,14 +40,17 @@ def add_dividend():
         period_year_str = request.form.get("period_year", "").strip() or None
 
         try:
-            dividend, investment = dividend_service.create_dividend(
-                investment_id_str=investment_id_str,
+            dividend_data = DividendData(
                 amount_str=amount_str,
                 frequency=frequency,
                 notes=notes,
                 investment_amount_at_time_str=investment_amount_at_time_str,
                 period_month_str=period_month_str,
                 period_year_str=period_year_str,
+            )
+            dividend, investment = dividend_service.create_dividend(
+                investment_id_str=investment_id_str,
+                data=dividend_data,
             )
 
             # Calculate annualized yield for the message
@@ -58,7 +62,7 @@ def add_dividend():
                 f"({investment.calculate_dividend_yield():.2f}% yield)",
                 "success",
             )
-            return redirect(url_for("investments.view_investment", id=investment.id))
+            return redirect(url_for("investments.view_investment", investment_id=investment.id))
 
         except ValidationError as e:
             flash(str(e), "error")
@@ -82,8 +86,8 @@ def add_dividend():
     )
 
 
-@dividends_bp.route("/<int:id>/edit", methods=["GET", "POST"])
-def edit_dividend(id: int):
+@dividends_bp.route("/<int:dividend_id>/edit", methods=["GET", "POST"])
+def edit_dividend(dividend_id: int):
     """
     Handle editing an existing dividend record.
 
@@ -91,7 +95,7 @@ def edit_dividend(id: int):
     POST: Process the dividend update.
 
     Args:
-        id: The ID of the dividend to edit.
+        dividend_id: The ID of the dividend to edit.
 
     Returns:
         GET: Rendered edit_dividend template.
@@ -100,7 +104,7 @@ def edit_dividend(id: int):
     dividend_service = DividendService()
 
     try:
-        dividend = dividend_service.get_dividend_by_id(id)
+        dividend = dividend_service.get_dividend_by_id(dividend_id)
     except NotFoundError:
         flash("Dividend not found", "error")
         return redirect(url_for("main.index"))
@@ -116,14 +120,17 @@ def edit_dividend(id: int):
         period_year_str = request.form.get("period_year", "").strip() or None
 
         try:
-            updated_dividend = dividend_service.update_dividend(
-                dividend_id=id,
+            dividend_data = DividendData(
                 amount_str=amount_str,
                 frequency=frequency,
                 notes=notes,
                 investment_amount_at_time_str=investment_amount_at_time_str,
                 period_month_str=period_month_str,
                 period_year_str=period_year_str,
+            )
+            updated_dividend = dividend_service.update_dividend(
+                dividend_id=dividend_id,
+                data=dividend_data,
             )
 
             period_info = (
@@ -137,7 +144,7 @@ def edit_dividend(id: int):
             return redirect(
                 url_for(
                     "investments.view_investment",
-                    id=updated_dividend.investment_id,
+                    investment_id=updated_dividend.investment_id,
                 )
             )
 
@@ -153,13 +160,13 @@ def edit_dividend(id: int):
     )
 
 
-@dividends_bp.route("/<int:id>/delete", methods=["POST"])
-def delete_dividend(id: int):
+@dividends_bp.route("/<int:dividend_id>/delete", methods=["POST"])
+def delete_dividend(dividend_id: int):
     """
     Delete a dividend record.
 
     Args:
-        id: The ID of the dividend to delete.
+        dividend_id: The ID of the dividend to delete.
 
     Returns:
         Redirect to investment view page.
@@ -167,9 +174,9 @@ def delete_dividend(id: int):
     dividend_service = DividendService()
 
     try:
-        investment_id = dividend_service.delete_dividend(id)
+        investment_id = dividend_service.delete_dividend(dividend_id)
         flash("Dividend record deleted successfully!", "success")
-        return redirect(url_for("investments.view_investment", id=investment_id))
+        return redirect(url_for("investments.view_investment", investment_id=investment_id))
 
     except NotFoundError:
         flash("Dividend not found", "error")

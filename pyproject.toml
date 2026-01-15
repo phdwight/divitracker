@@ -5,3 +5,32 @@ target-version = ['py312']
 [tool.isort]
 profile = "black"
 line_length = 100
+
+[tool.pylint.main]
+ignore-patterns = ["tests/.*"]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0115",  # missing-class-docstring
+    "C0116",  # missing-function-docstring
+    "R0903",  # too-few-public-methods
+    "R0801",  # duplicate-code (expected in tests)
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "edge_cases: marks tests as edge case coverage tests",
+    "admin: marks tests for admin functionality",
+    "user: marks tests for user functionality",
+    "system: marks tests for system/internal functionality",
+    "developer: marks tests for developer tools/utilities",
+    "dividends: marks tests related to dividends",
+    "investments: marks tests related to investments",
+    "portfolio: marks tests related to portfolio",
+    "settings: marks tests related to settings",
+    "routes: marks tests related to web routes",
+    "models: marks tests related to data models",
+    "validation: marks tests related to validation",
+    "utilities: marks tests related to utility functions",
+]

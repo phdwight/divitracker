@@ -44,14 +44,24 @@ divitracker/
 │       └── portfolio_service.py
 ├── templates/               # Jinja2 templates
 ├── static/                  # CSS and static files
-├── tests/                   # Pytest test suite
+├── tests/                   # BDD test suite (pytest-bdd)
 │   ├── conftest.py         # Test fixtures
-│   ├── test_admin.py       # Admin route tests
-│   ├── test_models.py      # Model tests
-│   ├── test_routes.py      # Route tests
-│   ├── test_services.py    # Service tests
-│   ├── test_settings.py    # Settings tests
-│   └── test_utils.py       # Utility function tests
+│   ├── features/           # Gherkin feature files
+│   │   ├── admin_settings.feature
+│   │   ├── annual_dividends.feature
+│   │   ├── dividend_recording.feature
+│   │   ├── dividend_yield.feature
+│   │   ├── edge_cases.feature
+│   │   ├── investment_management.feature
+│   │   ├── model_details.feature
+│   │   ├── period_validation.feature
+│   │   ├── portfolio_summary.feature
+│   │   ├── user_settings.feature
+│   │   ├── utility_functions.feature
+│   │   └── web_routes.feature
+│   └── step_defs/          # Step definitions
+│       ├── shared_steps.py # Reusable step definitions
+│       └── test_*.py       # Feature-specific steps
 ├── instance/               # Instance-specific data (SQLite DB)
 ├── run.py                  # Application entry point
 └── requirements.txt        # Python dependencies
@@ -202,8 +212,10 @@ Click on the "Annualized Yield" card in the dashboard to view:
 The annualized dividend yield is calculated as:
 
 ```
-Yield (%) = (Annual Dividends / Currently Invested) × 100
+Yield (%) = (Annual Dividends / Average Investment Balance) × 100
 ```
+
+The **Average Investment Balance** is calculated from the investment amounts recorded at the time of each dividend during the year. This provides a more accurate yield calculation that accounts for changes in your investment balance throughout the year.
 
 Where **Annual Dividends** is computed based on frequency:
 - Monthly dividends × 12
@@ -220,19 +232,67 @@ The dashboard shows both values in "actual | projected" format for transparency.
 
 ## Running Tests
 
+The project uses **BDD (Behavior-Driven Development)** with pytest-bdd for human-readable test scenarios.
+
+### Test Organization
+
+Tests are organized by actor and domain using tags:
+
+| Actor | Tag | Description |
+|-------|-----|-------------|
+| Admin | `@admin` | Administrative functions |
+| User | `@user` | User-facing features |
+| System | `@system` | Internal system behavior |
+| Developer | `@developer` | Developer utilities |
+
+| Domain | Tag | Features Covered |
+|--------|-----|------------------|
+| `@dividends` | Dividend recording, yield calculation, annual totals |
+| `@investments` | Investment CRUD operations |
+| `@portfolio` | Portfolio summary and dashboard |
+| `@settings` | User settings and configuration |
+| `@routes` | Web route navigation |
+| `@models` | Data model behavior |
+| `@validation` | Input validation |
+
+### Running Tests
+
 ```bash
-# Run all tests
+# Run all tests (181 scenarios)
 pytest
 
-# Run with coverage
+# Run with coverage report
 pytest --cov=app --cov-report=html
 
-# Run specific test file
-pytest tests/test_models.py
+# Run tests by actor
+pytest -m admin          # Admin tests only
+pytest -m user           # User tests only
+pytest -m "not system"   # Exclude system tests
+
+# Run tests by domain
+pytest -m dividends      # Dividend-related tests
+pytest -m investments    # Investment-related tests
+
+# Run specific feature file
+pytest tests/step_defs/test_dividend_steps.py
 
 # Run with verbose output
 pytest -v
 ```
+
+### Test Coverage
+
+Current coverage: **96%** (181 BDD scenarios)
+
+| Module | Coverage |
+|--------|----------|
+| `app/routes/dividends.py` | 100% |
+| `app/services/investment_service.py` | 100% |
+| `app/services/portfolio_service.py` | 100% |
+| `app/factory.py` | 100% |
+| `app/utils.py` | 100% |
+| `app/models.py` | 97% |
+| `app/settings.py` | 98% |
 
 ### Running Tests with Docker
 
@@ -376,7 +436,7 @@ The application supports multiple environments:
 - **Framework**: Flask 3.0
 - **Database**: SQLite with SQLAlchemy ORM
 - **Migrations**: Flask-Migrate
-- **Testing**: pytest with pytest-cov (95% coverage)
+- **Testing**: pytest-bdd with 96% coverage (181 BDD scenarios)
 - **Styling**: Custom CSS (no external dependencies)
 - **Containerization**: Docker with multi-stage builds
 - **CI/CD**: GitHub Actions (automated builds to GHCR)

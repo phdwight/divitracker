@@ -58,7 +58,7 @@
 
     <div class="yield-details">
         <h2>Investment Breakdown</h2>
-        <p class="yield-note">The investment amount used for yield calculation is based on the amount recorded at the time of the most recent dividend for each investment in {{ selected_year }}.</p>
+        <p class="yield-note">The investment amount used for yield calculation is the average of all investment amounts recorded at the time of each dividend in {{ selected_year }}. This provides a more accurate yield calculation when investment balances change during the year.</p>
 
         {% if investment_details %}
         <table class="yield-table">
