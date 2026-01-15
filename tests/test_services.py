@@ -543,7 +543,8 @@ class TestPortfolioService:
             assert summary.investment_count == 2
 
     def test_get_portfolio_summary_excludes_investments_with_zero_dividends(self, app):
-        """Test that portfolio yield calculation excludes investments with zero dividends for the year."""
+        """Test that portfolio yield calculation excludes investments with zero
+        dividends for the year."""
         from datetime import datetime, timezone
 
         with app.app_context():
@@ -582,7 +583,8 @@ class TestPortfolioService:
             assert summary.investment_count == 2
 
     def test_get_portfolio_summary_projected_yield_excludes_zero_dividends(self, app):
-        """Test that projected yield calculation excludes investments with zero projected dividends."""
+        """Test that projected yield calculation excludes investments with
+        zero projected dividends."""
         from datetime import datetime, timezone
 
         with app.app_context():
