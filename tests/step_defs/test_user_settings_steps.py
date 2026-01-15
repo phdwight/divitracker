@@ -4,6 +4,7 @@ import json
 import tempfile
 from pathlib import Path
 
+import logging
 import pytest
 from pytest_bdd import given, when, then, scenarios, parsers
 
@@ -397,4 +398,8 @@ def cleanup_temp_dir(context):
         try:
             shutil.rmtree(context["temp_dir"])
         except FileNotFoundError:
-            pass
+            # The temporary directory may have already been removed by the test; ignore.
+            logging.getLogger(__name__).debug(
+                "Temporary directory %s already removed during cleanup",
+                context["temp_dir"],
+            )
