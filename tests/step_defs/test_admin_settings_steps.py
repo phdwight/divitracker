@@ -251,9 +251,11 @@ def cleanup_temp_files(context):
         try:
             os.unlink(context["temp_file"])
         except FileNotFoundError:
+            # File was already removed (e.g., by the code under test); safe to ignore.
             pass
     if context.get("temp_dir"):
         try:
             shutil.rmtree(context["temp_dir"])
         except FileNotFoundError:
+            # Directory was already removed; safe to ignore in test cleanup.
             pass
