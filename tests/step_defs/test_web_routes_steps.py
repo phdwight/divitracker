@@ -381,4 +381,6 @@ def check_version_in_footer(response):
     assert "Version" in data
     # Use a regex to verify the version format (v1.2.3 or dev)
     pattern = r"Version (v\d+\.\d+\.\d+|dev)"
-    assert re.search(pattern, data), "Footer should contain 'Version' followed by a version number or 'dev'"
+    assert re.search(
+        pattern, data
+    ), "Footer should contain 'Version' followed by a version number or 'dev'"
