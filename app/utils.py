@@ -118,7 +118,9 @@ def get_version() -> str:
             if version:
                 _version_cache = version
                 return _version_cache
-    except Exception:
+    except OSError:
+        # If the VERSION file cannot be read (e.g., missing or permission error),
+        # silently fall back to git-based detection and 'dev' default below.
         pass
 
     # Try to get from git tags (for development)
