@@ -3,9 +3,6 @@
 from playwright.sync_api import expect
 from pytest_bdd import parsers, scenarios, then, when
 
-# Import shared steps to register their step definitions
-from . import ui_shared_steps  # noqa: F401
-
 # Link all scenarios from the feature file
 scenarios("../features/ui_dividend_recording.feature")
 

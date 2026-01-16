@@ -8,6 +8,37 @@ from pytest_bdd import given, parsers, then, when
 from app.extensions import db
 from app.models import Dividend, Investment
 
+# Export all step definition functions for wildcard import
+__all__ = [
+    "application_is_running",
+    "navigate_to_dashboard",
+    "navigate_to_url",
+    "navigate_directly_to_url",
+    "navigate_to_dashboard_no_filter",
+    "click_back_button",
+    "see_page_title",
+    "see_text_on_page",
+    "not_see_text_on_page",
+    "see_heading",
+    "on_page",
+    "redirected_to_dashboard",
+    "see_success_message",
+    "click_link",
+    "click_button",
+    "create_investment_with_data",
+    "add_dividend_to_investment",
+    "create_multiple_investments",
+    "see_navigation_bar",
+    "see_link_in_navigation",
+    "see_logo",
+    "on_any_page",
+    "verify_on_dashboard",
+    "page_loads_successfully",
+    "see_404_page",
+    "see_message",
+    "see_dashboard_link",
+]
+
 
 # Background steps
 @given("the application is running", target_fixture="ui_context")
