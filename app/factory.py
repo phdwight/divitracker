@@ -55,6 +55,9 @@ def create_app(config_name: str = "development") -> Flask:
     app.register_blueprint(dividends_bp)
     app.register_blueprint(admin_bp)
 
+    # Get version once during initialization
+    app_version = get_version()
+
     # Register template context processors for currency formatting
     @app.context_processor
     def inject_settings() -> dict:
@@ -77,7 +80,7 @@ def create_app(config_name: str = "development") -> Flask:
             "format_currency": format_currency,
             "now": get_local_time,
             "timezone_name": settings.timezone.name,
-            "app_version": get_version(),
+            "app_version": app_version,
         }
 
     # Register error handlers
