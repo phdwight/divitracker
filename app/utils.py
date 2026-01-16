@@ -1,8 +1,10 @@
 """Utility functions for the DiviTracker application."""
 
 import re
+import subprocess
 from dataclasses import dataclass
 from math import ceil
+from pathlib import Path
 
 
 @dataclass
@@ -86,3 +88,52 @@ def sanitize_log_input(value: str) -> str:
         sanitized = sanitized[:max_length] + "..."
 
     return sanitized
+
+
+# Cache for version string to avoid repeated subprocess calls
+_version_cache: str | None = None
+
+
+def get_version() -> str:
+    """
+    Get the application version.
+
+    Tries in order:
+    1. Read from VERSION file (used in production/Docker builds)
+    2. Get from git tags (used in development)
+    3. Return 'dev' as fallback
+
+    Returns:
+        Version string (e.g., 'v1.1.3') or 'dev' if not available.
+    """
+    global _version_cache
+    if _version_cache is not None:
+        return _version_cache
+
+    # Try to read from VERSION file first (for production/Docker)
+    try:
+        version_file = Path(__file__).parent.parent / "VERSION"
+        if version_file.exists():
+            version = version_file.read_text().strip()
+            if version:
+                _version_cache = version
+                return _version_cache
+    except Exception:
+        pass
+
+    # Try to get from git tags (for development)
+    try:
+        result = subprocess.run(
+            ["git", "describe", "--tags", "--abbrev=0"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=2,
+        )
+        version = result.stdout.strip()
+        _version_cache = version if version else "dev"
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        # If git is not available or no tags exist, return 'dev'
+        _version_cache = "dev"
+
+    return _version_cache

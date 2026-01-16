@@ -14,6 +14,7 @@ from app.routes.dividends import dividends_bp
 from app.routes.investments import investments_bp
 from app.routes.main import main_bp
 from app.settings import format_currency, get_user_settings
+from app.utils import get_version
 
 
 def create_app(config_name: str = "development") -> Flask:
@@ -54,6 +55,9 @@ def create_app(config_name: str = "development") -> Flask:
     app.register_blueprint(dividends_bp)
     app.register_blueprint(admin_bp)
 
+    # Get version once during initialization
+    app_version = get_version()
+
     # Register template context processors for currency formatting
     @app.context_processor
     def inject_settings() -> dict:
@@ -76,6 +80,7 @@ def create_app(config_name: str = "development") -> Flask:
             "format_currency": format_currency,
             "now": get_local_time,
             "timezone_name": settings.timezone.name,
+            "app_version": app_version,
         }
 
     # Register error handlers

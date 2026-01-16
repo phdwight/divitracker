@@ -39,6 +39,9 @@ COPY tests/ ./tests/
 COPY run.py .
 COPY pyproject.toml .
 
+# Copy VERSION file for production version display
+COPY VERSION .
+
 # Create instance directory for SQLite database
 RUN mkdir -p /app/instance && chown -R divitracker:divitracker /app
 

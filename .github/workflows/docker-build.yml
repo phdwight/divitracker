@@ -26,6 +26,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for git describe to work
+
+      - name: Generate VERSION file
+        run: |
+          if git describe --tags --abbrev=0 2>/dev/null; then
+            git describe --tags --abbrev=0 > VERSION
+          else
+            echo "dev" > VERSION
+          fi
+          cat VERSION
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
