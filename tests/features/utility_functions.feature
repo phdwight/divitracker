@@ -53,3 +53,12 @@ Feature: Utility Functions
         When I sanitize "Normal log\n2025-01-01 INFO Fake entry: Admin logged in"
         Then the result should not contain actual newline
         And the result should contain escaped newline "\\n"
+
+    # Get Version Function
+    Scenario: Get version returns a valid version string
+        When I get the application version
+        Then the version should be a non-empty string
+
+    Scenario: Version matches git tag format
+        When I get the application version
+        Then the version should match pattern "v\d+\.\d+\.\d+" or be "dev"

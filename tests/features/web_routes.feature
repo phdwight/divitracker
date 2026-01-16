@@ -100,6 +100,15 @@ Feature: Web Routes
         When I visit "/?hide_zero=false"
         Then I should see "Hide zero dividends" in the page
 
+    # Version Display
+    Scenario: Footer displays version number
+        When I visit "/"
+        Then I should see "Version" in the page
+
+    Scenario: Version matches expected format
+        When I visit "/"
+        Then the page should contain version in footer
+
     # Investment Routes
     Scenario: Add investment page loads
         When I visit "/investments/new"

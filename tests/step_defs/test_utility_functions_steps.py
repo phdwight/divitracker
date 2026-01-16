@@ -1,9 +1,11 @@
 """Step definitions for utility functions feature."""
 
+import re
+
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 
-from app.utils import sanitize_log_input
+from app.utils import get_version, sanitize_log_input
 
 scenarios("../features/utility_functions.feature")
 
@@ -105,3 +107,28 @@ def check_escaped_newline(context, escaped):
     """Check result contains escaped newline."""
     # The actual escaped newline in the result is \n (backslash-n)
     assert "\\n" in context["result"]
+
+
+@when("I get the application version")
+def get_app_version(context):
+    """Get the application version."""
+    context["version"] = get_version()
+
+
+@then("the version should be a non-empty string")
+def check_version_non_empty(context):
+    """Check version is a non-empty string."""
+    assert context["version"]
+    assert isinstance(context["version"], str)
+    assert len(context["version"]) > 0
+
+
+@then('the version should match pattern "v\\d+\\.\\d+\\.\\d+" or be "dev"')
+def check_version_format(context):
+    """Check version format."""
+    version = context["version"]
+    # Version should be either 'dev' or match v1.2.3 pattern
+    pattern = r"^v\d+\.\d+\.\d+$"
+    assert version == "dev" or re.match(pattern, version), (
+        f"Version '{version}' should be 'dev' or match pattern 'vX.Y.Z'"
+    )

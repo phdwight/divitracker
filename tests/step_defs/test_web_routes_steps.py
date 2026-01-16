@@ -369,3 +369,16 @@ def check_dividend_inv_amount(app_context, context, amount):
     """Check dividend investment amount at time."""
     dividend = db.session.get(Dividend, context["dividend_id"])
     assert dividend.investment_amount_at_time == float(amount)
+
+
+@then("the page should contain version in footer")
+def check_version_in_footer(response):
+    """Check version is present in footer."""
+    import re
+
+    data = response.data.decode("utf-8")
+    # Check that the footer contains "Version" followed by either a version number or "dev"
+    assert "Version" in data
+    # Use a regex to verify the version format (v1.2.3 or dev)
+    pattern = r"Version (v\d+\.\d+\.\d+|dev)"
+    assert re.search(pattern, data), "Footer should contain 'Version' followed by a version number or 'dev'"
