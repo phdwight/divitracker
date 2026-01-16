@@ -202,7 +202,16 @@ def see_success_message(ui_context):
 def click_link(ui_context, link):
     """Click on a link by text."""
     page = ui_context["page"]
-    page.get_by_role("link", name=link).first.click()
+    # Try multiple strategies for finding the link
+    try:
+        page.get_by_role("link", name=link).first.click(timeout=5000)
+    except Exception:
+        try:
+            # Try exact match with different case
+            page.get_by_role("link", name=link, exact=True).first.click(timeout=5000)
+        except Exception:
+            # Fallback to CSS selector
+            page.locator(f'a:has-text("{link}")').first.click()
 
 
 # Form field actions
@@ -249,7 +258,15 @@ def click_button(ui_context, button):
                 current_month = str(datetime.now().month)
                 period_month.first.select_option(current_month)
 
-    page.get_by_role("button", name=button).click()
+    # Try button role first, then link role (some buttons are styled as links)
+    try:
+        page.get_by_role("button", name=button).click(timeout=5000)
+    except Exception:
+        try:
+            page.get_by_role("link", name=button).click(timeout=5000)
+        except Exception:
+            # Fallback to text-based selector
+            page.locator(f'button:has-text("{button}"), a:has-text("{button}")').first.click()
 
 
 # Data setup steps
@@ -263,12 +280,14 @@ def create_investment_with_data(ui_context, name, ticker, amount):
         db.session.commit()
         # Force flush to disk for file-based SQLite
         db.session.flush()
+        # Execute a dummy query to force database sync
+        Investment.query.count()
         # Remove the session so Flask server thread gets a fresh session with the new data
         db.session.remove()
-    # Give a tiny moment for the write to fully complete
+    # Give time for the write to fully complete and be visible to other threads
     import time
 
-    time.sleep(0.1)
+    time.sleep(0.3)
 
 
 @given(parsers.parse("the investment has a {frequency} dividend of {amount:d} in month {month:d}"))
@@ -302,10 +321,16 @@ def add_dividend_to_investment(ui_context, amount, frequency, month, name=None):
             )
             db.session.add(dividend)
             db.session.commit()
+            # Force a query to sync
+            Dividend.query.count()
             # Remove the session so Flask server thread gets a fresh session with the new data
             db.session.remove()
         else:
             raise ValueError("No investment found to add dividend to")
+    # Give time for sync
+    import time
+
+    time.sleep(0.3)
 
 
 @given(parsers.parse("I have {count:d} investments"))

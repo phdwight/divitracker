@@ -143,9 +143,15 @@ def verify_table_columns(ui_context, col1, col2, col3):
 def verify_table_row_count(ui_context, count):
     """Verify number of rows in data table."""
     page = ui_context["page"]
+    # Wait a moment for any data to load
+    page.wait_for_timeout(500)
     rows = page.locator("table tbody tr")
+    # Wait for table rows to appear if they haven't yet
+    if rows.count() < count:
+        page.wait_for_timeout(500)
     # Allow for at least the expected count
-    assert rows.count() >= count
+    actual_count = rows.count()
+    assert actual_count >= count, f"Expected at least {count} rows, but found {actual_count}"
 
 
 @then(parsers.parse('I should see "{stat}" statistic'))
