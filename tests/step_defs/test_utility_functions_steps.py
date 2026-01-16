@@ -9,6 +9,9 @@ from app.utils import get_version, sanitize_log_input
 
 scenarios("../features/utility_functions.feature")
 
+# Version pattern for validation
+VERSION_PATTERN = r"^v\d+\.\d+\.\d+$"
+
 
 @pytest.fixture
 def context():
@@ -128,7 +131,6 @@ def check_version_format(context):
     """Check version format."""
     version = context["version"]
     # Version should be either 'dev' or match v1.2.3 pattern
-    pattern = r"^v\d+\.\d+\.\d+$"
-    assert version == "dev" or re.match(pattern, version), (
+    assert version == "dev" or re.match(VERSION_PATTERN, version), (
         f"Version '{version}' should be 'dev' or match pattern 'vX.Y.Z'"
     )

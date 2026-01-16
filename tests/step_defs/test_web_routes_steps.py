@@ -1,5 +1,7 @@
 """Step definitions for web routes feature."""
 
+import re
+
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 
@@ -374,8 +376,6 @@ def check_dividend_inv_amount(app_context, context, amount):
 @then("the page should contain version in footer")
 def check_version_in_footer(response):
     """Check version is present in footer."""
-    import re
-
     data = response.data.decode("utf-8")
     # Check that the footer contains "Version" followed by either a version number or "dev"
     assert "Version" in data

@@ -89,6 +89,10 @@ def sanitize_log_input(value: str) -> str:
     return sanitized
 
 
+# Cache for version string to avoid repeated subprocess calls
+_version_cache: str | None = None
+
+
 def get_version() -> str:
     """
     Get the application version from git tags.
@@ -96,6 +100,10 @@ def get_version() -> str:
     Returns:
         Version string (e.g., 'v1.1.3') or 'dev' if not available.
     """
+    global _version_cache
+    if _version_cache is not None:
+        return _version_cache
+
     try:
         # Try to get the version from git describe
         result = subprocess.run(
@@ -106,7 +114,9 @@ def get_version() -> str:
             timeout=2,
         )
         version = result.stdout.strip()
-        return version if version else "dev"
+        _version_cache = version if version else "dev"
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
         # If git is not available or no tags exist, return 'dev'
-        return "dev"
+        _version_cache = "dev"
+
+    return _version_cache
