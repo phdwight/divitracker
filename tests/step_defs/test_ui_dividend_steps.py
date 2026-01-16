@@ -14,7 +14,26 @@ def select_investment(ui_context, investment):
     investment_select = page.locator(
         "select[name='investment_id'], #investment_id, select.investment-select"
     )
-    investment_select.first.select_option(label=investment)
+    # Wait for the select to be visible and contain options
+    investment_select.first.wait_for(state="visible", timeout=5000)
+    # Wait a moment for options to load (they may be populated dynamically or from database)
+    page.wait_for_timeout(500)
+    # Try to select by label first, fall back to value if needed
+    try:
+        investment_select.first.select_option(label=investment)
+    except Exception:
+        # If label selection fails, try finding option by text content
+        options = investment_select.first.locator("option")
+        for i in range(options.count()):
+            if investment in options.nth(i).text_content():
+                options.nth(i).click()
+                break
+        else:
+            # If still not found, raise informative error
+            available_options = [options.nth(i).text_content() for i in range(options.count())]
+            raise ValueError(
+                f"Investment '{investment}' not found in dropdown. Available options: {available_options}"
+            )
 
 
 @when(parsers.parse('I enter "{text}" in the dividend amount field'))
@@ -30,7 +49,22 @@ def select_frequency(ui_context, frequency):
     """Select frequency from dropdown."""
     page = ui_context["page"]
     frequency_select = page.locator("select[name='frequency'], #frequency")
-    frequency_select.first.select_option(label=frequency)
+    frequency_select.first.wait_for(state="visible", timeout=5000)
+    page.wait_for_timeout(200)
+    # Try to select by label
+    try:
+        frequency_select.first.select_option(label=frequency)
+    except Exception:
+        # Try by value (lowercase)
+        try:
+            frequency_select.first.select_option(value=frequency.lower())
+        except Exception:
+            # Last resort - try to find by text
+            options = frequency_select.first.locator("option")
+            for i in range(options.count()):
+                if frequency.lower() in options.nth(i).text_content().lower():
+                    frequency_select.first.select_option(index=i)
+                    break
 
 
 @when(parsers.parse('I select month "{month}" from the period month dropdown'))

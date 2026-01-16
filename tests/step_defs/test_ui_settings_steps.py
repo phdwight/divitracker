@@ -43,7 +43,25 @@ def select_currency(ui_context, currency):
     """Select currency from dropdown."""
     page = ui_context["page"]
     currency_select = page.locator("#currency_preset")
-    currency_select.first.select_option(label=currency)
+    currency_select.first.wait_for(state="visible", timeout=5000)
+    page.wait_for_timeout(200)
+    # Try different selection strategies
+    try:
+        currency_select.first.select_option(label=currency)
+    except Exception:
+        try:
+            # Try by value
+            currency_select.first.select_option(value=currency)
+        except Exception:
+            # Try to find option containing the text
+            options = currency_select.first.locator("option")
+            for i in range(options.count()):
+                if currency.lower() in options.nth(i).text_content().lower():
+                    currency_select.first.select_option(index=i)
+                    return
+            # If still not found, list available options for debugging
+            available = [options.nth(i).text_content() for i in range(options.count())]
+            raise ValueError(f"Currency '{currency}' not found. Available: {available}")
 
 
 @then(parsers.parse('the currency should be updated to "{currency}"'))
@@ -59,7 +77,22 @@ def enter_decimal_places(ui_context, value):
     """Enter decimal places value."""
     page = ui_context["page"]
     decimal_field = page.locator("#decimal_places")
-    decimal_field.first.select_option(value)
+    decimal_field.first.wait_for(state="visible", timeout=5000)
+    page.wait_for_timeout(200)
+    try:
+        decimal_field.first.select_option(value)
+    except Exception:
+        # Try as label
+        try:
+            decimal_field.first.select_option(label=value)
+        except Exception:
+            # List available options for debugging
+            options = decimal_field.first.locator("option")
+            available = [
+                options.nth(i).get_attribute("value") or options.nth(i).text_content()
+                for i in range(options.count())
+            ]
+            raise ValueError(f"Decimal places '{value}' not found. Available: {available}")
 
 
 @then(parsers.parse("the decimal places should be set to {value:d}"))
@@ -100,7 +133,20 @@ def enter_items_per_page(ui_context, value):
     """Enter items per page value."""
     page = ui_context["page"]
     items_field = page.locator("#items_per_page")
-    items_field.first.select_option(value)
+    items_field.first.wait_for(state="visible", timeout=5000)
+    page.wait_for_timeout(200)
+    try:
+        items_field.first.select_option(value)
+    except Exception:
+        try:
+            items_field.first.select_option(label=value)
+        except Exception:
+            options = items_field.first.locator("option")
+            available = [
+                options.nth(i).get_attribute("value") or options.nth(i).text_content()
+                for i in range(options.count())
+            ]
+            raise ValueError(f"Items per page '{value}' not found. Available: {available}")
 
 
 @then(parsers.parse("the default items per page should be {value:d}"))

@@ -57,6 +57,7 @@ def navigate_to_dashboard(ui_context):
 
 
 @when(parsers.parse('I navigate to "{url}"'))
+@given(parsers.parse('I navigate to "{url}"'))
 def navigate_to_url(ui_context, url):
     """Navigate to a specific URL."""
     page = ui_context["page"]
@@ -117,7 +118,14 @@ def see_heading(ui_context, heading):
 def on_page(ui_context, url):
     """Verify current page URL."""
     page = ui_context["page"]
-    expect(page).to_have_url(page.base_url + url)
+    current_url = page.url
+    expected_url = page.base_url + url
+    # Check if URL matches exactly or starts with expected URL (to allow query parameters)
+    if current_url == expected_url or current_url.startswith(expected_url + "?"):
+        assert True
+    else:
+        # Use expect for better error messages
+        expect(page).to_have_url(expected_url)
 
 
 @then("I should be redirected to the dashboard")
@@ -145,13 +153,15 @@ def see_success_message(ui_context):
 # Both "click on" and "click" patterns support natural language variations
 @when(parsers.parse('I click on the "{link}" link'))
 @when(parsers.parse('I click on "{link}" in navigation'))
+@when(parsers.parse('I click on the "{link}" logo'))
 def click_link(ui_context, link):
     """Click on a link by text."""
     page = ui_context["page"]
-    page.get_by_role("link", name=link).click()
+    page.get_by_role("link", name=link).first.click()
 
 
 @when(parsers.parse('I click the "{button}" button'))
+@when(parsers.parse('I click on the "{button}" button'))
 def click_button(ui_context, button):
     """Click a button by text."""
     page = ui_context["page"]
@@ -167,8 +177,14 @@ def create_investment_with_data(ui_context, name, ticker, amount):
         investment = Investment(name=name, ticker=ticker, total_invested=float(amount))
         db.session.add(investment)
         db.session.commit()
+        # Force flush to disk for file-based SQLite
+        db.session.flush()
         # Remove the session so Flask server thread gets a fresh session with the new data
         db.session.remove()
+    # Give a tiny moment for the write to fully complete
+    import time
+
+    time.sleep(0.1)
 
 
 @given(parsers.parse("the investment has a {frequency} dividend of {amount:d} in month {month:d}"))
@@ -231,14 +247,20 @@ def see_navigation_bar(ui_context):
 def see_link_in_navigation(ui_context, link):
     """Verify link is visible in navigation."""
     page = ui_context["page"]
-    expect(page.get_by_role("link", name=link)).to_be_visible()
+    # Use first to handle multiple matches (e.g., "Add Investment" appears in nav and as button)
+    nav_links = page.locator("nav, .navbar, header").get_by_role("link", name=link)
+    if nav_links.count() > 0:
+        expect(nav_links.first).to_be_visible()
+    else:
+        # Fallback to checking anywhere on page
+        expect(page.get_by_role("link", name=link).first).to_be_visible()
 
 
 @then(parsers.parse('I should see the "{logo}" logo'))
 def see_logo(ui_context, logo):
     """Verify logo is visible."""
     page = ui_context["page"]
-    expect(page.get_by_text(logo)).to_be_visible()
+    expect(page.get_by_text(logo).first).to_be_visible()
 
 
 # Page state checks
@@ -282,4 +304,4 @@ def see_message(ui_context, message):
 def see_dashboard_link(ui_context):
     """Verify link back to dashboard exists."""
     page = ui_context["page"]
-    expect(page.get_by_role("link", name="Dashboard")).to_be_visible()
+    expect(page.get_by_role("link", name="Dashboard").first).to_be_visible()

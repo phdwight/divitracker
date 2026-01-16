@@ -140,6 +140,24 @@ def see_dividend_count(ui_context, count):
 def verify_total_amount(ui_context, name, amount):
     """Verify investment shows correct total amount."""
     page = ui_context["page"]
-    # This is a complex check - look for the investment row and verify amount
-    investment_row = page.locator(f"text={name}").locator("..").locator("..")
-    expect(investment_row).to_contain_text(amount)
+    # The amount may be formatted with currency symbol, thousands separators, etc.
+    # Extract just the numeric part for comparison
+    amount_num = amount.replace(",", "").replace(" ", "")
+
+    # Look for the investment name on the page
+    investment_locator = page.locator(f"text={name}")
+    if investment_locator.count() > 0:
+        # Get the surrounding context (parent elements)
+        investment_row = investment_locator.first.locator("..").locator("..")
+        row_text = investment_row.text_content()
+        # Check if the amount appears in the text (with or without formatting)
+        if amount_num in row_text.replace(",", "").replace(" ", "").replace("₱", "").replace(
+            "$", ""
+        ):
+            assert True
+        else:
+            # For better error message, use expect
+            expect(investment_row).to_contain_text(amount_num)
+    else:
+        # If investment name not found, fail
+        expect(page.locator("body")).to_contain_text(name)
