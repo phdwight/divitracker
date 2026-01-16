@@ -3,9 +3,10 @@ FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies including git for version detection
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
@@ -38,6 +39,9 @@ COPY static/ ./static/
 COPY tests/ ./tests/
 COPY run.py .
 COPY pyproject.toml .
+
+# Copy VERSION file for production version display
+COPY VERSION .
 
 # Create instance directory for SQLite database
 RUN mkdir -p /app/instance && chown -R divitracker:divitracker /app

@@ -95,7 +95,12 @@ _version_cache: str | None = None
 
 def get_version() -> str:
     """
-    Get the application version from git tags.
+    Get the application version.
+
+    Tries in order:
+    1. Read from VERSION file (used in production/Docker builds)
+    2. Get from git tags (used in development)
+    3. Return 'dev' as fallback
 
     Returns:
         Version string (e.g., 'v1.1.3') or 'dev' if not available.
@@ -104,8 +109,21 @@ def get_version() -> str:
     if _version_cache is not None:
         return _version_cache
 
+    # Try to read from VERSION file first (for production/Docker)
     try:
-        # Try to get the version from git describe
+        from pathlib import Path
+
+        version_file = Path(__file__).parent.parent / "VERSION"
+        if version_file.exists():
+            version = version_file.read_text().strip()
+            if version:
+                _version_cache = version
+                return _version_cache
+    except Exception:
+        pass
+
+    # Try to get from git tags (for development)
+    try:
         result = subprocess.run(
             ["git", "describe", "--tags", "--abbrev=0"],
             capture_output=True,
