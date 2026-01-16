@@ -1,8 +1,11 @@
 """Pytest configuration and fixtures."""
 
+import multiprocessing
+import time
 from typing import Generator
 
 import pytest
+from playwright.sync_api import Browser, Page
 
 from app.extensions import db
 from app.factory import create_app
@@ -80,3 +83,44 @@ def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
 
         db.session.refresh(investment)
         yield investment
+
+
+# Playwright fixtures for UI tests
+@pytest.fixture(scope="session")
+def flask_app_for_ui():
+    """Create and configure a test application instance for UI tests."""
+    app = create_app("testing")
+    return app
+
+
+@pytest.fixture(scope="session")
+def live_server(flask_app_for_ui):
+    """Start a live Flask server for UI tests."""
+    def run_server():
+        flask_app_for_ui.run(host="127.0.0.1", port=5555, debug=False, use_reloader=False)
+    
+    server_process = multiprocessing.Process(target=run_server)
+    server_process.start()
+    time.sleep(2)  # Give server time to start
+    
+    yield "http://127.0.0.1:5555"
+    
+    server_process.terminate()
+    server_process.join(timeout=5)
+
+
+@pytest.fixture(scope="function")
+def ui_page(page: Page, live_server: str) -> Generator[Page, None, None]:
+    """Provide a Playwright page with live server context."""
+    page.base_url = live_server
+    yield page
+
+
+@pytest.fixture(scope="function")
+def ui_app(flask_app_for_ui):
+    """Create database tables for UI tests."""
+    with flask_app_for_ui.app_context():
+        db.create_all()
+        yield flask_app_for_ui
+        db.session.remove()
+        db.drop_all()

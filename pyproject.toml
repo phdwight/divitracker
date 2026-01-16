@@ -33,4 +33,7 @@ markers = [
     "models: marks tests related to data models",
     "validation: marks tests related to validation",
     "utilities: marks tests related to utility functions",
+    "ui: marks tests as UI tests using Playwright",
+    "reports: marks tests related to reports and visualizations",
+    "navigation: marks tests related to navigation",
 ]
