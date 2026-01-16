@@ -39,7 +39,7 @@ def app_configured(app):
     config_path = Path(__file__).parent.parent.parent / "config" / "user_settings.json"
     if config_path.exists():
         config_path.unlink()
-    
+
     with app.app_context():
         yield app
 
