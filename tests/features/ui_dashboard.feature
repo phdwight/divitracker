@@ -9,14 +9,14 @@ Feature: UI Dashboard Operations
 
     Scenario: View empty dashboard
         When I navigate to the dashboard
-        Then I should see the page title "DiviTracker"
+        Then I should see the page title "Dashboard - DiviTracker"
         And I should see "No investments yet" on the page
         And I should see the "Add Investment" link
 
     Scenario: View dashboard with investments
         Given I have an investment "Apple Inc" with ticker "AAPL" and amount 10000
         When I navigate to the dashboard
-        Then I should see the page title "DiviTracker"
+        Then I should see the page title "Dashboard - DiviTracker"
         And I should see "Apple Inc" on the page
         And I should see "AAPL" on the page
         And I should not see "No investments yet" on the page

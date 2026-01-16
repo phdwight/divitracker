@@ -1,6 +1,6 @@
 """Pytest configuration and fixtures."""
 
-import multiprocessing
+import threading
 import time
 from typing import Generator
 
@@ -90,6 +90,10 @@ def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
 def flask_app_for_ui():
     """Create and configure a test application instance for UI tests."""
     app = create_app("testing")
+    
+    with app.app_context():
+        db.create_all()
+    
     return app
 
 
@@ -97,16 +101,15 @@ def flask_app_for_ui():
 def live_server(flask_app_for_ui):
     """Start a live Flask server for UI tests."""
     def run_server():
-        flask_app_for_ui.run(host="127.0.0.1", port=5555, debug=False, use_reloader=False)
+        flask_app_for_ui.run(host="127.0.0.1", port=5555, debug=False, use_reloader=False, threaded=True)
     
-    server_process = multiprocessing.Process(target=run_server)
-    server_process.start()
-    time.sleep(2)  # Give server time to start
+    server_thread = threading.Thread(target=run_server, daemon=True)
+    server_thread.start()
+    time.sleep(3)  # Give server time to start
     
     yield "http://127.0.0.1:5555"
     
-    server_process.terminate()
-    server_process.join(timeout=5)
+    # Server will be cleaned up automatically when tests finish
 
 
 @pytest.fixture(scope="function")
@@ -120,7 +123,9 @@ def ui_page(page: Page, live_server: str) -> Generator[Page, None, None]:
 def ui_app(flask_app_for_ui):
     """Create database tables for UI tests."""
     with flask_app_for_ui.app_context():
+        # Clear existing data
+        db.drop_all()
         db.create_all()
         yield flask_app_for_ui
+        # Clean up after test
         db.session.remove()
-        db.drop_all()

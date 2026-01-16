@@ -3,6 +3,9 @@
 from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
 
+# Import shared steps
+from .ui_shared_steps import *  # noqa: F401, F403
+
 # Link all scenarios from the feature file
 scenarios("../features/ui_dashboard.feature")
 
@@ -11,7 +14,7 @@ scenarios("../features/ui_dashboard.feature")
 def see_add_investment_link(ui_context):
     """Verify Add Investment link is visible."""
     page = ui_context["page"]
-    expect(page.get_by_role("link", name="Add Investment")).to_be_visible()
+    expect(page.get_by_role("link", name="Add Investment").first).to_be_visible()
 
 
 @when(parsers.parse('I select the current year from the year filter'))
