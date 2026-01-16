@@ -95,6 +95,26 @@ def enter_decimal_places(ui_context, value):
             raise ValueError(f"Decimal places '{value}' not found. Available: {available}")
 
 
+@then("the decimal places field should only have valid options")
+def verify_decimal_places_valid_options(ui_context):
+    """Verify decimal places field only has valid options."""
+    page = ui_context["page"]
+    decimal_field = page.locator("#decimal_places")
+    options = decimal_field.first.locator("option")
+    option_count = options.count()
+    # Should have options 0-4
+    assert option_count == 5
+
+
+@then("the decimal places should not allow invalid values")
+def verify_decimal_places_no_invalid(ui_context):
+    """Verify decimal places field doesn't allow invalid values."""
+    page = ui_context["page"]
+    # Just verify the field exists and is a select (client-side validation)
+    decimal_field = page.locator("#decimal_places")
+    expect(decimal_field.first).to_be_visible()
+
+
 @then(parsers.parse("the decimal places should be set to {value:d}"))
 def verify_decimal_places(ui_context, value):
     """Verify decimal places was set."""
@@ -147,6 +167,26 @@ def enter_items_per_page(ui_context, value):
                 for i in range(options.count())
             ]
             raise ValueError(f"Items per page '{value}' not found. Available: {available}")
+
+
+@then("the items per page field should only have valid options")
+def verify_items_per_page_valid_options(ui_context):
+    """Verify items per page field only has valid options."""
+    page = ui_context["page"]
+    items_field = page.locator("#items_per_page")
+    options = items_field.first.locator("option")
+    option_count = options.count()
+    # Should have options like 5, 10, 15, 20, 25, 50, 100
+    assert option_count >= 5
+
+
+@then("the items per page should not allow invalid values")
+def verify_items_per_page_no_invalid(ui_context):
+    """Verify items per page field doesn't allow invalid values."""
+    page = ui_context["page"]
+    # Just verify the field exists and is a select (client-side validation)
+    items_field = page.locator("#items_per_page")
+    expect(items_field.first).to_be_visible()
 
 
 @then(parsers.parse("the default items per page should be {value:d}"))

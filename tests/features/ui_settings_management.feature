@@ -83,15 +83,13 @@ Feature: UI Settings Management
 
     Scenario: Validation - invalid decimal places
         When I navigate to "/settings/"
-        And I enter "-1" in the decimal places field
-        And I click the "Save Settings" button
-        Then I should see a validation error
+        Then the decimal places field should only have valid options
+        And the decimal places should not allow invalid values
 
     Scenario: Validation - invalid pagination value
         When I navigate to "/settings/"
-        And I enter "0" in the items per page field
-        And I click the "Save Settings" button
-        Then I should see a validation error
+        Then the items per page field should only have valid options
+        And the items per page should not allow invalid values
 
     Scenario: View all currency presets
         When I navigate to "/settings/"

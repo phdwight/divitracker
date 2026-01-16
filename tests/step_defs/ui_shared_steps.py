@@ -56,6 +56,18 @@ def navigate_to_dashboard(ui_context):
     page.goto(page.base_url + "/")
 
 
+@when(parsers.parse('I navigate to the investment details page for "{name}"'))
+def navigate_to_investment_details(ui_context, name):
+    """Navigate to investment details page."""
+    page = ui_context["page"]
+    app = ui_context["app"]
+
+    with app.app_context():
+        investment = Investment.query.filter_by(name=name).first()
+        if investment:
+            page.goto(page.base_url + f"/investments/{investment.id}")
+
+
 @when(parsers.parse('I navigate to "{url}"'))
 @given(parsers.parse('I navigate to "{url}"'))
 def navigate_to_url(ui_context, url):
@@ -96,6 +108,21 @@ def see_page_title(ui_context, title):
 @then(parsers.parse('I should see "{text}" on the page'))
 def see_text_on_page(ui_context, text):
     """Verify text is visible on the page."""
+    page = ui_context["page"]
+    expect(page.locator("body")).to_contain_text(text)
+
+
+@then(parsers.parse('I should still see "{text}" on the page'))
+def still_see_text_on_page(ui_context, text):
+    """Verify text is still visible on the page."""
+    page = ui_context["page"]
+    expect(page.locator("body")).to_contain_text(text)
+
+
+@then(parsers.parse('I should see "{text}" statistic'))
+@then(parsers.parse('I should see "{text}" dividend statistic'))
+def see_statistic(ui_context, text):
+    """Verify statistic text is visible on the page."""
     page = ui_context["page"]
     expect(page.locator("body")).to_contain_text(text)
 
@@ -178,6 +205,31 @@ def click_link(ui_context, link):
     page.get_by_role("link", name=link).first.click()
 
 
+# Form field actions
+@when(parsers.parse('I enter "{text}" in the name field'))
+def enter_name(ui_context, text):
+    """Enter text in the name field."""
+    page = ui_context["page"]
+    name_field = page.locator("input[name='name'], #name, input[id='investment_name']")
+    name_field.first.fill(text)
+
+
+@when(parsers.parse('I enter "{text}" in the ticker field'))
+def enter_ticker(ui_context, text):
+    """Enter text in the ticker field."""
+    page = ui_context["page"]
+    ticker_field = page.locator("input[name='ticker'], #ticker, input[id='ticker']")
+    ticker_field.first.fill(text)
+
+
+@when(parsers.parse('I enter "{text}" in the amount field'))
+def enter_amount(ui_context, text):
+    """Enter text in the amount field."""
+    page = ui_context["page"]
+    amount_field = page.locator("input[name='amount'], #amount, input[name='total_invested']")
+    amount_field.first.fill(text)
+
+
 @when(parsers.parse('I click the "{button}" button'))
 @when(parsers.parse('I click on the "{button}" button'))
 def click_button(ui_context, button):
@@ -223,6 +275,11 @@ def create_investment_with_data(ui_context, name, ticker, amount):
 @given(
     parsers.parse(
         'the "{name}" investment has a {frequency} dividend of {amount:d} in month {month:d}'
+    )
+)
+@given(
+    parsers.parse(
+        'the investment "{name}" has a {frequency} dividend of {amount:d} in month {month:d}'
     )
 )
 def add_dividend_to_investment(ui_context, amount, frequency, month, name=None):

@@ -33,6 +33,14 @@ def context():
 @given("the application is configured for testing", target_fixture="app_context")
 def app_configured(app):
     """Set up application context for testing."""
+    # Reset global settings manager to ensure fresh settings
+    import app.settings
+    app.settings._settings_manager = None
+    # Ensure user_settings.json doesn't exist in test environment
+    config_path = Path(__file__).parent.parent.parent / "config" / "user_settings.json"
+    if config_path.exists():
+        config_path.unlink()
+    
     with app.app_context():
         yield app
 
