@@ -147,7 +147,7 @@ def verify_table_row_count(ui_context, count):
     page.wait_for_selector("table", timeout=5000)
     # Wait for data to load and populate
     page.wait_for_timeout(1000)
-    
+
     # Retry logic - wait up to 3 seconds for rows to appear
     for _ in range(6):
         rows = page.locator("table tbody tr")
@@ -155,7 +155,7 @@ def verify_table_row_count(ui_context, count):
         if actual_count >= count:
             break
         page.wait_for_timeout(500)
-    
+
     # Final check
     rows = page.locator("table tbody tr")
     actual_count = rows.count()
