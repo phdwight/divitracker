@@ -10,6 +10,9 @@ from app.extensions import db
 from app.factory import create_app
 from app.models import Dividend, Investment
 
+# Register UI shared steps as a pytest plugin so pytest-bdd can discover them
+pytest_plugins = ["tests.step_defs.ui_shared_steps"]
+
 
 @pytest.fixture(scope="function")
 def app():
