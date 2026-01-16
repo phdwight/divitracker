@@ -62,20 +62,20 @@ Feature: UI Settings Management
 
     Scenario: View database backup section
         When I navigate to "/settings/"
-        Then I should see the "Database Backup" section
-        And I should see the "Download Backup" button
-        And I should see the "Upload Backup" button
+        Then I should see the "Database Management" section
+        And I should see the "Download Database" button
+        And I should see the "Upload & Replace" button
 
     Scenario: Download database backup
         When I navigate to "/settings/"
-        And I click the "Download Backup" button for download
+        And I click the "Download Database" button for download
         Then a database file should be downloaded
         And the file should have a .db extension
 
     Scenario: Upload database backup
         Given I have a valid database backup file
         When I navigate to "/settings/"
-        And I click the "Upload Backup" button
+        And I click the "Upload & Replace" button
         And I select the backup file
         And I confirm the upload
         Then I should see a success message

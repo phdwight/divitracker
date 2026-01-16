@@ -18,7 +18,7 @@ def click_settings_link(ui_context):
 def see_currency_dropdown(ui_context):
     """Verify currency dropdown is visible."""
     page = ui_context["page"]
-    currency_select = page.locator("select[name='currency'], #currency, select.currency-select")
+    currency_select = page.locator("#currency_preset")
     expect(currency_select.first).to_be_visible()
 
 
@@ -26,7 +26,7 @@ def see_currency_dropdown(ui_context):
 def see_currency_options(ui_context):
     """Verify currency options are available."""
     page = ui_context["page"]
-    currency_select = page.locator("select[name='currency'], #currency")
+    currency_select = page.locator("#currency_preset")
     expect(currency_select.first).to_be_visible()
 
 
@@ -34,7 +34,7 @@ def see_currency_options(ui_context):
 def verify_current_currency(ui_context):
     """Verify current currency is selected."""
     page = ui_context["page"]
-    currency_select = page.locator("select[name='currency'], #currency")
+    currency_select = page.locator("#currency_preset")
     expect(currency_select.first).to_be_visible()
 
 
@@ -42,7 +42,7 @@ def verify_current_currency(ui_context):
 def select_currency(ui_context, currency):
     """Select currency from dropdown."""
     page = ui_context["page"]
-    currency_select = page.locator("select[name='currency'], #currency, select.currency-select")
+    currency_select = page.locator("#currency_preset")
     currency_select.first.select_option(label=currency)
 
 
@@ -58,8 +58,8 @@ def verify_currency_updated(ui_context, currency):
 def enter_decimal_places(ui_context, value):
     """Enter decimal places value."""
     page = ui_context["page"]
-    decimal_field = page.locator("input[name='decimal_places'], #decimal_places")
-    decimal_field.first.fill(value)
+    decimal_field = page.locator("#decimal_places")
+    decimal_field.first.select_option(value)
 
 
 @then(parsers.parse("the decimal places should be set to {value:d}"))
@@ -99,8 +99,8 @@ def select_decimal_separator(ui_context, separator):
 def enter_items_per_page(ui_context, value):
     """Enter items per page value."""
     page = ui_context["page"]
-    items_field = page.locator("input[name='items_per_page'], #items_per_page")
-    items_field.first.fill(value)
+    items_field = page.locator("#items_per_page")
+    items_field.first.select_option(value)
 
 
 @then(parsers.parse("the default items per page should be {value:d}"))
@@ -223,7 +223,7 @@ def see_validation_error(ui_context):
 def open_currency_dropdown(ui_context):
     """Open currency dropdown."""
     page = ui_context["page"]
-    currency_select = page.locator("select[name='currency'], #currency")
+    currency_select = page.locator("#currency_preset")
     currency_select.first.click()
 
 
@@ -231,7 +231,7 @@ def open_currency_dropdown(ui_context):
 def see_currency_option(ui_context, option):
     """Verify currency option is available."""
     page = ui_context["page"]
-    currency_select = page.locator("select[name='currency'], #currency")
+    currency_select = page.locator("#currency_preset")
     expect(currency_select.first).to_be_visible()
     # Check option exists
     option_locator = currency_select.locator(f"option:has-text('{option}')")
@@ -244,7 +244,7 @@ def change_multiple_settings(ui_context):
     """Change multiple settings."""
     page = ui_context["page"]
     # Change a few settings
-    currency_select = page.locator("select[name='currency']")
+    currency_select = page.locator("#currency_preset")
     if currency_select.count() > 0:
         currency_select.first.select_option("USD")
 
@@ -276,6 +276,6 @@ def return_to_settings(ui_context):
 def verify_currency_persisted(ui_context, currency):
     """Verify currency setting persisted."""
     page = ui_context["page"]
-    currency_select = page.locator("select[name='currency']")
+    currency_select = page.locator("#currency_preset")
     # Check that the selected value matches
     expect(currency_select.first).to_be_visible()
