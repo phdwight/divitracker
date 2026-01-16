@@ -1,7 +1,7 @@
 """Step definitions for UI dashboard tests."""
 
-from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
+from pytest_bdd import parsers, scenarios, then, when
 
 # Import shared steps to register their step definitions
 from . import ui_shared_steps  # noqa: F401
@@ -17,11 +17,12 @@ def see_add_investment_link(ui_context):
     expect(page.get_by_role("link", name="Add Investment").first).to_be_visible()
 
 
-@when(parsers.parse('I select the current year from the year filter'))
+@when(parsers.parse("I select the current year from the year filter"))
 def select_current_year(ui_context):
     """Select current year from filter dropdown."""
     page = ui_context["page"]
     from datetime import datetime
+
     current_year = str(datetime.now().year)
     year_select = page.locator("select[name='year'], #year-filter, .year-filter")
     if year_select.count() > 0:
@@ -79,4 +80,7 @@ def verify_page_number(ui_context, page_num):
     page = ui_context["page"]
     # Check URL for page parameter or active pagination link
     url = page.url
-    assert f"page={page_num}" in url or page.locator(f".page-item.active >> text={page_num}").count() > 0
+    assert (
+        f"page={page_num}" in url
+        or page.locator(f".page-item.active >> text={page_num}").count() > 0
+    )

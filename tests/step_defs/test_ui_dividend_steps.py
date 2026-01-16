@@ -1,7 +1,7 @@
 """Step definitions for UI dividend recording tests."""
 
-from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
+from pytest_bdd import parsers, scenarios, then, when
 
 # Import shared steps to register their step definitions
 from . import ui_shared_steps  # noqa: F401
@@ -14,7 +14,9 @@ scenarios("../features/ui_dividend_recording.feature")
 def select_investment(ui_context, investment):
     """Select investment from dropdown."""
     page = ui_context["page"]
-    investment_select = page.locator("select[name='investment_id'], #investment_id, select.investment-select")
+    investment_select = page.locator(
+        "select[name='investment_id'], #investment_id, select.investment-select"
+    )
     investment_select.first.select_option(label=investment)
 
 
@@ -46,7 +48,9 @@ def select_period_month(ui_context, month):
 def enter_investment_amount(ui_context, text):
     """Enter investment amount at time."""
     page = ui_context["page"]
-    amount_field = page.locator("input[name='investment_amount'], #investment_amount, input[name='investment_amount_at_time']")
+    amount_field = page.locator(
+        "input[name='investment_amount'], #investment_amount, input[name='investment_amount_at_time']"
+    )
     amount_field.first.fill(text)
 
 
@@ -116,8 +120,10 @@ def dividend_amount_updated(ui_context, amount):
 def click_dividend_delete_button(ui_context, button):
     """Click delete button for first dividend."""
     page = ui_context["page"]
-    delete_button = page.locator("table tbody tr:first-child button:has-text('Delete'), .dividend-row:first-child .btn-danger").first
-    
+    delete_button = page.locator(
+        "table tbody tr:first-child button:has-text('Delete'), .dividend-row:first-child .btn-danger"
+    ).first
+
     # Set up dialog handler before clicking
     page.on("dialog", lambda dialog: dialog.accept())
     delete_button.click()

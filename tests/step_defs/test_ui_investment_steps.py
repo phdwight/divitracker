@@ -1,7 +1,7 @@
 """Step definitions for UI investment management tests."""
 
-from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
+from pytest_bdd import parsers, scenarios, then, when
 
 # Import shared steps to register their step definitions
 from . import ui_shared_steps  # noqa: F401
@@ -55,9 +55,10 @@ def navigate_to_investment_details(ui_context, name):
     """Navigate to investment details page."""
     page = ui_context["page"]
     app = ui_context["app"]
-    
+
     with app.app_context():
         from app.models import Investment
+
         investment = Investment.query.filter_by(name=name).first()
         if investment:
             page.goto(page.base_url + f"/investments/{investment.id}")

@@ -1,7 +1,7 @@
 """Step definitions for UI reports and visualizations tests."""
 
-from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
+from pytest_bdd import given, parsers, scenarios, then, when
 
 # Import shared steps to register their step definitions
 from . import ui_shared_steps  # noqa: F401
@@ -38,7 +38,9 @@ def see_dividend_visualization(ui_context):
 def see_cumulative_toggle(ui_context):
     """Verify cumulative total toggle is visible."""
     page = ui_context["page"]
-    toggle = page.locator("input[type='checkbox'][name='show_cumulative'], #show-cumulative, .cumulative-toggle")
+    toggle = page.locator(
+        "input[type='checkbox'][name='show_cumulative'], #show-cumulative, .cumulative-toggle"
+    )
     if toggle.count() > 0:
         expect(toggle.first).to_be_visible()
 
@@ -74,6 +76,7 @@ def select_year_from_dropdown(ui_context):
     """Select current year from year filter."""
     page = ui_context["page"]
     from datetime import datetime
+
     current_year = str(datetime.now().year)
     year_select = page.locator("select[name='year'], #year-filter")
     if year_select.count() > 0:
@@ -163,7 +166,9 @@ def verify_statistics(ui_context):
 def click_yield_card(ui_context):
     """Click on Annualized Yield card."""
     page = ui_context["page"]
-    yield_card = page.locator("a:has-text('Annualized Yield'), .yield-card a, a[href*='yield-breakdown']")
+    yield_card = page.locator(
+        "a:has-text('Annualized Yield'), .yield-card a, a[href*='yield-breakdown']"
+    )
     yield_card.first.click()
 
 
@@ -219,6 +224,7 @@ def select_year_filter(ui_context):
     """Select current year from year filter."""
     page = ui_context["page"]
     from datetime import datetime
+
     current_year = str(datetime.now().year)
     year_select = page.locator("select[name='year'], #year")
     if year_select.count() > 0:

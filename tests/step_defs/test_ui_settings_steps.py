@@ -1,7 +1,7 @@
 """Step definitions for UI settings management tests."""
 
-from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
+from pytest_bdd import given, parsers, scenarios, then, when
 
 # Import shared steps to register their step definitions
 from . import ui_shared_steps  # noqa: F401
@@ -76,7 +76,9 @@ def verify_decimal_places(ui_context, value):
 def select_thousands_separator(ui_context, separator):
     """Select thousands separator."""
     page = ui_context["page"]
-    separator_field = page.locator("select[name='thousands_separator'], #thousands_separator, input[name='thousands_separator']")
+    separator_field = page.locator(
+        "select[name='thousands_separator'], #thousands_separator, input[name='thousands_separator']"
+    )
     if separator_field.first.get_attribute("type") == "text":
         separator_field.first.fill(separator)
     else:
@@ -87,7 +89,9 @@ def select_thousands_separator(ui_context, separator):
 def select_decimal_separator(ui_context, separator):
     """Select decimal separator."""
     page = ui_context["page"]
-    separator_field = page.locator("select[name='decimal_separator'], #decimal_separator, input[name='decimal_separator']")
+    separator_field = page.locator(
+        "select[name='decimal_separator'], #decimal_separator, input[name='decimal_separator']"
+    )
     if separator_field.first.get_attribute("type") == "text":
         separator_field.first.fill(separator)
     else:
@@ -113,7 +117,9 @@ def verify_items_per_page(ui_context, value):
 def enter_timezone_offset(ui_context, value):
     """Enter timezone offset hours."""
     page = ui_context["page"]
-    offset_field = page.locator("input[name='timezone_offset'], #timezone_offset, input[name='offset_hours']")
+    offset_field = page.locator(
+        "input[name='timezone_offset'], #timezone_offset, input[name='offset_hours']"
+    )
     offset_field.first.fill(value)
 
 
@@ -143,7 +149,9 @@ def see_section(ui_context, section):
 def see_button(ui_context, button):
     """Verify button is visible."""
     page = ui_context["page"]
-    expect(page.get_by_role("button", name=button).or_(page.get_by_role("link", name=button))).to_be_visible()
+    expect(
+        page.get_by_role("button", name=button).or_(page.get_by_role("link", name=button))
+    ).to_be_visible()
 
 
 @when(parsers.parse('I click the "{button}" button for download'))
@@ -260,7 +268,7 @@ def verify_default_settings(ui_context):
     expect(page.locator("body")).to_be_visible()
 
 
-@when("I return to \"/settings/\"")
+@when('I return to "/settings/"')
 def return_to_settings(ui_context):
     """Return to settings page."""
     page = ui_context["page"]

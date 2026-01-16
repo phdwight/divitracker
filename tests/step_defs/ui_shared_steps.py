@@ -2,8 +2,8 @@
 
 from datetime import datetime, timezone
 
-from pytest_bdd import given, parsers, then, when
 from playwright.sync_api import Page, expect
+from pytest_bdd import given, parsers, then, when
 
 from app.extensions import db
 from app.models import Dividend, Investment
@@ -17,7 +17,7 @@ def application_is_running(ui_app, ui_page: Page):
 
 
 # Navigation steps
-@when(parsers.parse('I navigate to the dashboard'))
+@when(parsers.parse("I navigate to the dashboard"))
 @when("I navigate to the dashboard")
 def navigate_to_dashboard(ui_context):
     """Navigate to the dashboard page."""
@@ -133,17 +133,17 @@ def create_investment_with_data(ui_context, name, ticker, amount):
     """Create an investment with specified data."""
     app = ui_context["app"]
     with app.app_context():
-        investment = Investment(
-            name=name,
-            ticker=ticker,
-            total_invested=float(amount)
-        )
+        investment = Investment(name=name, ticker=ticker, total_invested=float(amount))
         db.session.add(investment)
         db.session.commit()
 
 
-@given(parsers.parse('the investment has a {frequency} dividend of {amount:d} in month {month:d}'))
-@given(parsers.parse('the "{name}" investment has a {frequency} dividend of {amount:d} in month {month:d}'))
+@given(parsers.parse("the investment has a {frequency} dividend of {amount:d} in month {month:d}"))
+@given(
+    parsers.parse(
+        'the "{name}" investment has a {frequency} dividend of {amount:d} in month {month:d}'
+    )
+)
 def add_dividend_to_investment(ui_context, amount, frequency, month, name=None):
     """Add a dividend to an investment."""
     app = ui_context["app"]
@@ -152,7 +152,7 @@ def add_dividend_to_investment(ui_context, amount, frequency, month, name=None):
             investment = Investment.query.filter_by(name=name).first()
         else:
             investment = Investment.query.order_by(Investment.id.desc()).first()
-        
+
         if investment:
             current_year = datetime.now(timezone.utc).year
             dividend = Dividend(
@@ -160,7 +160,7 @@ def add_dividend_to_investment(ui_context, amount, frequency, month, name=None):
                 amount=float(amount),
                 frequency=frequency.lower(),
                 period_month=month,
-                period_year=current_year
+                period_year=current_year,
             )
             db.session.add(dividend)
             db.session.commit()
@@ -168,16 +168,14 @@ def add_dividend_to_investment(ui_context, amount, frequency, month, name=None):
             raise ValueError("No investment found to add dividend to")
 
 
-@given(parsers.parse('I have {count:d} investments'))
+@given(parsers.parse("I have {count:d} investments"))
 def create_multiple_investments(ui_context, count):
     """Create multiple investments."""
     app = ui_context["app"]
     with app.app_context():
         for i in range(count):
             investment = Investment(
-                name=f"Investment {i+1}",
-                ticker=f"TST{i+1}",
-                total_invested=1000.0 * (i + 1)
+                name=f"Investment {i+1}", ticker=f"TST{i+1}", total_invested=1000.0 * (i + 1)
             )
             db.session.add(investment)
         db.session.commit()

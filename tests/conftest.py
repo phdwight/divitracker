@@ -89,10 +89,10 @@ def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
 def flask_app_for_ui():
     """Create and configure a test application instance for UI tests."""
     app = create_app("testing")
-    
+
     with app.app_context():
         db.create_all()
-    
+
     return app
 
 
@@ -100,10 +100,11 @@ def flask_app_for_ui():
 def live_server(flask_app_for_ui):
     """Start a live Flask server for UI tests."""
     import socket
-    
+
     def is_server_ready(host, port, timeout=5):
         """Check if server is ready to accept connections."""
         import time
+
         end_time = time.time() + timeout
         while time.time() < end_time:
             try:
@@ -112,19 +113,21 @@ def live_server(flask_app_for_ui):
             except (socket.error, ConnectionRefusedError):
                 time.sleep(0.1)
         return False
-    
+
     def run_server():
-        flask_app_for_ui.run(host="127.0.0.1", port=5555, debug=False, use_reloader=False, threaded=True)
-    
+        flask_app_for_ui.run(
+            host="127.0.0.1", port=5555, debug=False, use_reloader=False, threaded=True
+        )
+
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()
-    
+
     # Wait for server to be ready with health check
     if not is_server_ready("127.0.0.1", 5555, timeout=10):
         raise RuntimeError("Flask test server failed to start within 10 seconds")
-    
+
     yield "http://127.0.0.1:5555"
-    
+
     # Server will be cleaned up automatically when tests finish
 
 
