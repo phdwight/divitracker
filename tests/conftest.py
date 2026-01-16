@@ -91,18 +91,53 @@ def sample_investment_with_dividend(app) -> Generator[Investment, None, None]:
 @pytest.fixture(scope="session")
 def flask_app_for_ui():
     """Create and configure a test application instance for UI tests."""
+    import tempfile
+
+    # Create a temporary file-based database for UI tests
+    # This allows the database to be shared between the test thread and server thread
+    db_fd, db_path = tempfile.mkstemp(suffix=".db")
     app = create_app("testing")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+    # Enable check_same_thread=False for SQLite to allow access from multiple threads
+    # Set isolation_level to None for autocommit mode
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "connect_args": {"check_same_thread": False, "isolation_level": None}
+    }
+    # Disable query caching to ensure fresh data is always fetched
+    app.config["SQLALCHEMY_EXPIRE_ON_COMMIT"] = True
 
     with app.app_context():
         db.create_all()
 
-    return app
+    yield app
+
+    # Cleanup: close and remove the temporary database file
+    import os
+
+    os.close(db_fd)
+    os.unlink(db_path)
 
 
 @pytest.fixture(scope="session")
 def live_server(flask_app_for_ui):
     """Start a live Flask server for UI tests."""
     import socket
+
+    # Add handlers to ensure database session is refreshed for every request
+    @flask_app_for_ui.before_request
+    def before_request_handler():
+        """Close any existing session before handling the request."""
+        from app.extensions import db
+
+        # Remove any existing session to force a fresh one
+        db.session.remove()
+
+    @flask_app_for_ui.teardown_appcontext
+    def shutdown_session(exception=None):
+        """Remove session after request to avoid stale data."""
+        from app.extensions import db
+
+        db.session.remove()
 
     def is_server_ready(host, port, timeout=5):
         """Check if server is ready to accept connections."""
@@ -143,11 +178,14 @@ def ui_page(page: Page, live_server: str) -> Generator[Page, None, None]:
 
 @pytest.fixture(scope="function")
 def ui_app(flask_app_for_ui):
-    """Create database tables for UI tests."""
+    """Provide Flask app with clean database for UI tests."""
     with flask_app_for_ui.app_context():
-        # Clear existing data
-        db.drop_all()
-        db.create_all()
+        # Clear existing data without dropping tables
+        # This ensures the Flask server's connections remain valid
+        Dividend.query.delete()
+        Investment.query.delete()
+        db.session.commit()
+        db.session.remove()
         yield flask_app_for_ui
         # Clean up after test
         db.session.remove()

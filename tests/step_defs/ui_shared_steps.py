@@ -167,6 +167,8 @@ def create_investment_with_data(ui_context, name, ticker, amount):
         investment = Investment(name=name, ticker=ticker, total_invested=float(amount))
         db.session.add(investment)
         db.session.commit()
+        # Remove the session so Flask server thread gets a fresh session with the new data
+        db.session.remove()
 
 
 @given(parsers.parse("the investment has a {frequency} dividend of {amount:d} in month {month:d}"))
@@ -195,6 +197,8 @@ def add_dividend_to_investment(ui_context, amount, frequency, month, name=None):
             )
             db.session.add(dividend)
             db.session.commit()
+            # Remove the session so Flask server thread gets a fresh session with the new data
+            db.session.remove()
         else:
             raise ValueError("No investment found to add dividend to")
 
@@ -210,6 +214,8 @@ def create_multiple_investments(ui_context, count):
             )
             db.session.add(investment)
         db.session.commit()
+        # Remove the session so Flask server thread gets a fresh session with the new data
+        db.session.remove()
 
 
 # Navigation bar assertions
