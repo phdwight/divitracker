@@ -4,6 +4,7 @@ import re
 import subprocess
 from dataclasses import dataclass
 from math import ceil
+from pathlib import Path
 
 
 @dataclass
@@ -111,8 +112,6 @@ def get_version() -> str:
 
     # Try to read from VERSION file first (for production/Docker)
     try:
-        from pathlib import Path
-
         version_file = Path(__file__).parent.parent / "VERSION"
         if version_file.exists():
             version = version_file.read_text().strip()

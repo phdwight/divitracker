@@ -3,10 +3,9 @@ FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
-# Install build dependencies including git for version detection
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
