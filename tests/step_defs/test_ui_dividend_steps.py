@@ -21,19 +21,24 @@ def select_investment(ui_context, investment):
     # Try to select by label first, fall back to value if needed
     try:
         investment_select.first.select_option(label=investment)
-    except Exception:
-        # If label selection fails, try finding option by text content
-        options = investment_select.first.locator("option")
-        for i in range(options.count()):
-            if investment in options.nth(i).text_content():
-                options.nth(i).click()
-                break
-        else:
+    except Exception as e1:
+        # If label selection fails, try finding option by partial text match
+        try:
+            options = investment_select.first.locator("option")
+            for i in range(options.count()):
+                option_text = options.nth(i).text_content() or ""
+                if investment in option_text:
+                    # Select by index
+                    investment_select.first.select_option(index=i)
+                    return
             # If still not found, raise informative error
             available_options = [options.nth(i).text_content() for i in range(options.count())]
             raise ValueError(
                 f"Investment '{investment}' not found in dropdown. Available options: {available_options}"
             )
+        except Exception as e2:
+            # If everything fails, show both errors
+            raise ValueError(f"Failed to select investment '{investment}': {str(e1)}, {str(e2)}")
 
 
 @when(parsers.parse('I enter "{text}" in the dividend amount field'))
@@ -46,25 +51,43 @@ def enter_dividend_amount(ui_context, text):
 
 @when(parsers.parse('I select "{frequency}" from the frequency dropdown'))
 def select_frequency(ui_context, frequency):
-    """Select frequency from dropdown."""
+    """Select frequency from dropdown or radio buttons."""
     page = ui_context["page"]
+    # First try to find as a select element
     frequency_select = page.locator("select[name='frequency'], #frequency")
-    frequency_select.first.wait_for(state="visible", timeout=5000)
-    page.wait_for_timeout(200)
-    # Try to select by label
-    try:
-        frequency_select.first.select_option(label=frequency)
-    except Exception:
-        # Try by value (lowercase)
+    if frequency_select.count() > 0:
+        frequency_select.first.wait_for(state="attached", timeout=5000)
+        page.wait_for_timeout(500)
+        # Try to select by label
         try:
-            frequency_select.first.select_option(value=frequency.lower())
+            frequency_select.first.select_option(label=frequency)
+            return
         except Exception:
-            # Last resort - try to find by text
-            options = frequency_select.first.locator("option")
-            for i in range(options.count()):
-                if frequency.lower() in options.nth(i).text_content().lower():
-                    frequency_select.first.select_option(index=i)
-                    break
+            # Try by value (lowercase)
+            try:
+                frequency_select.first.select_option(value=frequency.lower())
+                return
+            except Exception:
+                # Last resort - try to find by text
+                options = frequency_select.first.locator("option")
+                for i in range(options.count()):
+                    if frequency.lower() in options.nth(i).text_content().lower():
+                        frequency_select.first.select_option(index=i)
+                        return
+
+    # If not a select, try radio buttons
+    radio_button = page.locator(f"input[name='frequency'][value='{frequency.lower()}']")
+    if radio_button.count() > 0:
+        radio_button.first.check()
+        return
+
+    # Try to find radio by label text
+    radio_label = page.locator(f"label:has-text('{frequency}')")
+    if radio_label.count() > 0:
+        radio_label.first.click()
+        return
+
+    raise ValueError(f"Could not find frequency '{frequency}' as select or radio button")
 
 
 @when(parsers.parse('I select month "{month}" from the period month dropdown'))
