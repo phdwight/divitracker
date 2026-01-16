@@ -3,8 +3,8 @@
 from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
 
-# Import shared steps
-from .ui_shared_steps import *  # noqa: F401, F403
+# Import shared steps to register their step definitions
+from . import ui_shared_steps  # noqa: F401
 
 # Link all scenarios from the feature file
 scenarios("../features/ui_investment_management.feature")
@@ -34,13 +34,6 @@ def enter_amount(ui_context, text):
     amount_field.first.fill(text)
 
 
-@when(parsers.parse('I click the "{button_text}" button'))
-def click_form_button(ui_context, button_text):
-    """Click a button with specific text."""
-    page = ui_context["page"]
-    page.get_by_role("button", name=button_text).click()
-
-
 @when(parsers.parse('I click on the "{investment_name}" investment link'))
 def click_investment_link(ui_context, investment_name):
     """Click on investment link."""
@@ -68,13 +61,6 @@ def navigate_to_investment_details(ui_context, name):
         investment = Investment.query.filter_by(name=name).first()
         if investment:
             page.goto(page.base_url + f"/investments/{investment.id}")
-
-
-@when(parsers.parse('I click on the "{button}" button'))
-def click_button_generic(ui_context, button):
-    """Click a button."""
-    page = ui_context["page"]
-    page.get_by_role("button", name=button).click()
 
 
 @then("I should be on the edit investment page")

@@ -3,8 +3,8 @@
 from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
 
-# Import shared steps
-from .ui_shared_steps import *  # noqa: F401, F403
+# Import shared steps to register their step definitions
+from . import ui_shared_steps  # noqa: F401
 
 # Link all scenarios from the feature file
 scenarios("../features/ui_settings_management.feature")
@@ -47,13 +47,6 @@ def select_currency(ui_context, currency):
     page = ui_context["page"]
     currency_select = page.locator("select[name='currency'], #currency, select.currency-select")
     currency_select.first.select_option(label=currency)
-
-
-@when(parsers.parse('I click the "{button}" button'))
-def click_save_button(ui_context, button):
-    """Click button by text."""
-    page = ui_context["page"]
-    page.get_by_role("button", name=button).click()
 
 
 @then(parsers.parse('the currency should be updated to "{currency}"'))
@@ -153,9 +146,9 @@ def see_button(ui_context, button):
     expect(page.get_by_role("button", name=button).or_(page.get_by_role("link", name=button))).to_be_visible()
 
 
-@when(parsers.parse('I click the "{button}" button'))
+@when(parsers.parse('I click the "{button}" button for download'))
 def click_download_button(ui_context, button):
-    """Click download button."""
+    """Click button that triggers a download."""
     page = ui_context["page"]
     # For download, we need to handle the download event
     with page.expect_download() as download_info:

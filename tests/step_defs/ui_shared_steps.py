@@ -111,6 +111,7 @@ def see_success_message(ui_context):
 
 
 # Click actions
+# Both "click on" and "click" patterns support natural language variations
 @when(parsers.parse('I click on the "{link}" link'))
 @when(parsers.parse('I click on "{link}" in navigation'))
 def click_link(ui_context, link):

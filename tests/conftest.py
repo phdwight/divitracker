@@ -1,11 +1,10 @@
 """Pytest configuration and fixtures."""
 
 import threading
-import time
 from typing import Generator
 
 import pytest
-from playwright.sync_api import Browser, Page
+from playwright.sync_api import Page
 
 from app.extensions import db
 from app.factory import create_app

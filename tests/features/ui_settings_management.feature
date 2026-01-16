@@ -68,7 +68,7 @@ Feature: UI Settings Management
 
     Scenario: Download database backup
         When I navigate to "/settings/"
-        And I click the "Download Backup" button
+        And I click the "Download Backup" button for download
         Then a database file should be downloaded
         And the file should have a .db extension
 

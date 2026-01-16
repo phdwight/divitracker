@@ -3,8 +3,8 @@
 from pytest_bdd import parsers, scenarios, then, when
 from playwright.sync_api import expect
 
-# Import shared steps
-from .ui_shared_steps import *  # noqa: F401, F403
+# Import shared steps to register their step definitions
+from . import ui_shared_steps  # noqa: F401
 
 # Link all scenarios from the feature file
 scenarios("../features/ui_dividend_recording.feature")
@@ -102,13 +102,6 @@ def amount_field_contains(ui_context, text):
     page = ui_context["page"]
     amount_field = page.locator("input[name='amount'], #amount")
     expect(amount_field.first).to_have_value(text)
-
-
-@when(parsers.parse('I click the "{button}" button'))
-def click_button_text(ui_context, button):
-    """Click button by text."""
-    page = ui_context["page"]
-    page.get_by_role("button", name=button).click()
 
 
 @then(parsers.parse("the dividend amount should be updated to {amount:d}"))
