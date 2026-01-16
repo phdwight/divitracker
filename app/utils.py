@@ -1,6 +1,7 @@
 """Utility functions for the DiviTracker application."""
 
 import re
+import subprocess
 from dataclasses import dataclass
 from math import ceil
 
@@ -86,3 +87,26 @@ def sanitize_log_input(value: str) -> str:
         sanitized = sanitized[:max_length] + "..."
 
     return sanitized
+
+
+def get_version() -> str:
+    """
+    Get the application version from git tags.
+
+    Returns:
+        Version string (e.g., 'v1.1.3') or 'dev' if not available.
+    """
+    try:
+        # Try to get the version from git describe
+        result = subprocess.run(
+            ["git", "describe", "--tags", "--abbrev=0"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=2,
+        )
+        version = result.stdout.strip()
+        return version if version else "dev"
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+        # If git is not available or no tags exist, return 'dev'
+        return "dev"
