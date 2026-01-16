@@ -55,8 +55,8 @@ def verify_links_accessible(ui_context):
     """Verify all navigation links are accessible."""
     page = ui_context["page"]
     # Check that main navigation links are present
-    expect(page.get_by_role("link", name="Add Investment")).to_be_attached()
-    expect(page.get_by_role("link", name="Add Dividend")).to_be_attached()
+    expect(page.get_by_role("link", name="Add Investment").first).to_be_attached()
+    expect(page.get_by_role("link", name="Add Dividend").first).to_be_attached()
 
 
 @when("I press the Tab key repeatedly")
@@ -84,9 +84,14 @@ def verify_enter_key_activation(ui_context):
     expect(page.locator("nav")).to_be_visible()
 
 
-@when("I might see an unsaved changes warning")
+@then("I might see an unsaved changes warning")
 def might_see_warning(ui_context):
     """Handle potential unsaved changes warning."""
     page = ui_context["page"]
-    # Set up dialog handler
-    page.on("dialog", lambda dialog: dialog.accept())
+    # Set up dialog handler if a dialog appears
+    # This is a non-blocking step that handles optional dialog
+    try:
+        page.wait_for_event("dialog", timeout=1000)
+    except Exception:
+        # Dialog didn't appear, which is fine
+        pass

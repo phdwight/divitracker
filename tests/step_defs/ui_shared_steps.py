@@ -106,6 +106,7 @@ def see_page_title(ui_context, title):
 
 
 @then(parsers.parse('I should see "{text}" on the page'))
+@then(parsers.parse('I should see "{text}"'))
 def see_text_on_page(ui_context, text):
     """Verify text is visible on the page."""
     page = ui_context["page"]

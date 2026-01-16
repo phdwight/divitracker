@@ -143,13 +143,21 @@ def verify_table_columns(ui_context, col1, col2, col3):
 def verify_table_row_count(ui_context, count):
     """Verify number of rows in data table."""
     page = ui_context["page"]
-    # Wait a moment for any data to load
-    page.wait_for_timeout(500)
-    rows = page.locator("table tbody tr")
-    # Wait for table rows to appear if they haven't yet
-    if rows.count() < count:
+    # Wait for table to be visible first
+    page.wait_for_selector("table", timeout=5000)
+    # Wait for data to load and populate
+    page.wait_for_timeout(1000)
+    
+    # Retry logic - wait up to 3 seconds for rows to appear
+    for _ in range(6):
+        rows = page.locator("table tbody tr")
+        actual_count = rows.count()
+        if actual_count >= count:
+            break
         page.wait_for_timeout(500)
-    # Allow for at least the expected count
+    
+    # Final check
+    rows = page.locator("table tbody tr")
     actual_count = rows.count()
     assert actual_count >= count, f"Expected at least {count} rows, but found {actual_count}"
 
