@@ -6,7 +6,7 @@
     <meta name="description" content="DiviTracker - Track and manage your dividend income from investments">
     <meta name="keywords" content="dividends, investments, portfolio, tracker, income">
     <title>{% block title %}DiviTracker{% endblock title %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=mask2">
 </head>
 <body>
     <nav class="navbar">
@@ -18,6 +18,10 @@
                 <a href="{{ url_for('investments.add_investment') }}">Add Investment</a>
                 <a href="{{ url_for('dividends.add_dividend') }}">Add Dividend</a>
                 <a href="{{ url_for('admin.admin_index') }}">⚙️ Settings</a>
+                <button type="button" id="mask-toggle" class="nav-mask-toggle" onclick="toggleAmountsMask()" title="Hide/Show amounts" aria-pressed="false">
+                    <span class="mask-icon">👁️</span>
+                    <span class="mask-label">Hide amounts</span>
+                </button>
             </div>
         </div>
     </nav>
@@ -51,6 +55,33 @@
                 setTimeout(() => alert.remove(), 300);
             });
         }, 5000);
+
+        // Global amount masking toggle
+        (function () {
+            const STORAGE_KEY = 'divitracker.amountsMasked';
+            const btn = document.getElementById('mask-toggle');
+            const labelEl = btn ? btn.querySelector('.mask-label') : null;
+            const iconEl = btn ? btn.querySelector('.mask-icon') : null;
+
+            function applyState(masked) {
+                document.body.classList.toggle('amounts-masked', masked);
+                if (btn) {
+                    btn.setAttribute('aria-pressed', masked ? 'true' : 'false');
+                    if (labelEl) labelEl.textContent = masked ? 'Show amounts' : 'Hide amounts';
+                    if (iconEl) iconEl.textContent = masked ? '🙈' : '👁️';
+                }
+            }
+
+            window.toggleAmountsMask = function () {
+                const next = !document.body.classList.contains('amounts-masked');
+                try { localStorage.setItem(STORAGE_KEY, next ? '1' : '0'); } catch (e) {}
+                applyState(next);
+            };
+
+            let initial = false;
+            try { initial = localStorage.getItem(STORAGE_KEY) === '1'; } catch (e) {}
+            applyState(initial);
+        })();
     </script>
     {% block scripts %}{% endblock scripts %}
 </body>
