@@ -48,18 +48,18 @@
     </script>
 
     <div class="graph-container">
-        <div class="chart-wrapper">
+        <div class="chart-wrapper maskable">
             <canvas id="dividendChart"></canvas>
         </div>
         
         <div class="chart-summary">
             <div class="summary-card">
                 <h3>Total Displayed</h3>
-                <p class="summary-value" id="totalValue">{{ format_currency(chart_data | sum(attribute='value')) }}</p>
+                <p class="summary-value maskable" id="totalValue">{{ format_currency(chart_data | sum(attribute='value')) }}</p>
             </div>
             <div class="summary-card">
                 <h3>Highest</h3>
-                <p class="summary-value" id="maxValue">
+                <p class="summary-value maskable" id="maxValue">
                     {% if chart_data %}
                     {{ format_currency(chart_data | map(attribute='value') | max) }}
                     {% else %}
@@ -87,15 +87,15 @@
                     {% set cumulative.total = cumulative.total + item.value %}
                     <tr>
                         <td>{{ item.label }}</td>
-                        <td>{{ format_currency(item.value) }}</td>
-                        <td>{{ format_currency(cumulative.total) }}</td>
+                        <td class="maskable">{{ format_currency(item.value) }}</td>
+                        <td class="maskable">{{ format_currency(cumulative.total) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
                 <tfoot>
                     <tr>
                         <th>Total</th>
-                        <th>{{ format_currency(chart_data | sum(attribute='value')) }}</th>
+                        <th class="maskable">{{ format_currency(chart_data | sum(attribute='value')) }}</th>
                         <th></th>
                     </tr>
                 </tfoot>

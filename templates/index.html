@@ -47,14 +47,14 @@
             <div class="stat-icon">📊</div>
             <div class="stat-content">
                 <h3>Currently Invested</h3>
-                <p class="stat-value">{{ format_currency(total_invested) }}</p>
+                <p class="stat-value maskable">{{ format_currency(total_invested) }}</p>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">💵</div>
             <div class="stat-content">
                 <h3>Dividends Received ({{ selected_year }})</h3>
-                <p class="stat-value">{{ format_currency(total_annual_dividends) }}</p>
+                <p class="stat-value maskable">{{ format_currency(total_annual_dividends) }}</p>
             </div>
         </div>
         <a href="{{ url_for('main.yield_breakdown', year=selected_year) }}" class="stat-card highlight stat-card-link">
@@ -95,8 +95,8 @@
                             </a>
                         </td>
                         <td>{{ investment.ticker or '-' }}</td>
-                        <td>{{ format_currency(investment.total_invested) }}</td>
-                        <td>{{ format_currency(investment.calculate_annual_dividends(selected_year)) }}</td>
+                        <td class="maskable">{{ format_currency(investment.total_invested) }}</td>
+                        <td class="maskable">{{ format_currency(investment.calculate_annual_dividends(selected_year)) }}</td>
                         <td>
                             <span class="yield-dual">
                                 <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
@@ -174,3 +174,5 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}{% endblock scripts %}
