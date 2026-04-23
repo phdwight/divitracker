@@ -232,7 +232,10 @@ The dashboard shows both values in "actual | projected" format for transparency.
 
 ## Running Tests
 
-The project uses **BDD (Behavior-Driven Development)** with pytest-bdd for human-readable test scenarios.
+The project uses **BDD (Behavior-Driven Development)** with pytest-bdd for human-readable test scenarios. Tests are divided into two categories:
+
+1. **Unit/Integration Tests**: Test business logic, models, and services
+2. **UI Tests**: End-to-end tests using Playwright to test the web interface
 
 ### Test Organization
 
@@ -254,15 +257,18 @@ Tests are organized by actor and domain using tags:
 | `@routes` | Web route navigation |
 | `@models` | Data model behavior |
 | `@validation` | Input validation |
+| `@ui` | End-to-end UI tests with Playwright |
+| `@reports` | Reports and visualizations |
+| `@navigation` | Navigation and routing |
 
-### Running Tests
+### Running Unit/Integration Tests
 
 ```bash
-# Run all tests (181 scenarios)
-pytest
+# Run all non-UI tests (181 scenarios)
+pytest -m "not ui"
 
 # Run with coverage report
-pytest --cov=app --cov-report=html
+pytest -m "not ui" --cov=app --cov-report=html
 
 # Run tests by actor
 pytest -m admin          # Admin tests only
@@ -277,12 +283,54 @@ pytest -m investments    # Investment-related tests
 pytest tests/step_defs/test_dividend_steps.py
 
 # Run with verbose output
-pytest -v
+pytest -v -m "not ui"
+```
+
+### Running UI Tests
+
+UI tests use Playwright to test the web interface in a real browser. **Important**: UI tests require Chromium browser to be installed.
+
+```bash
+# Install Playwright browsers (first time only)
+playwright install chromium
+
+# Run all UI tests
+pytest -m ui
+
+# Run specific UI test scenarios
+pytest -m "ui and portfolio"     # Dashboard tests
+pytest -m "ui and investments"   # Investment management tests
+pytest -m "ui and dividends"     # Dividend recording tests
+pytest -m "ui and reports"       # Reports and visualizations tests
+pytest -m "ui and settings"      # Settings page tests
+pytest -m "ui and navigation"    # Navigation tests
+
+# Run UI tests in headed mode (see the browser)
+pytest -m ui --headed
+
+# Run UI tests with slow motion (helps debugging)
+pytest -m ui --headed --slowmo 1000
+
+# Run specific UI test file
+pytest tests/step_defs/test_ui_dashboard_steps.py
+
+# Run with verbose output
+pytest -m ui -v
+```
+
+### Running All Tests
+
+```bash
+# Run all tests (unit, integration, and UI)
+pytest
+
+# Run all tests with coverage (excluding UI)
+pytest --cov=app --cov-report=html -m "not ui"
 ```
 
 ### Test Coverage
 
-Current coverage: **96%** (181 BDD scenarios)
+Current coverage: **96%** (181+ BDD scenarios)
 
 | Module | Coverage |
 |--------|----------|
@@ -294,15 +342,28 @@ Current coverage: **96%** (181 BDD scenarios)
 | `app/models.py` | 97% |
 | `app/settings.py` | 98% |
 
+### UI Test Features
+
+The UI tests cover all major user operations:
+
+- **Dashboard Operations**: Viewing portfolio, filtering by year, pagination
+- **Investment Management**: Adding, editing, deleting, and viewing investments
+- **Dividend Recording**: Recording dividends with different frequencies and periods
+- **Reports & Visualizations**: Dividend graphs, yield breakdowns
+- **Settings Management**: Configuring currency, pagination, timezone, database backup
+- **Navigation**: Testing all navigation links and routing
+
 ### Running Tests with Docker
 
 ```bash
 # Build test image and run tests
 docker build -t divitracker-test .
-docker run --rm divitracker-test pytest tests/ -v
+docker run --rm divitracker-test pytest tests/ -v -m "not ui"
 
 # Run tests with coverage
-docker run --rm divitracker-test pytest tests/ -v --cov=app --cov-report=term-missing
+docker run --rm divitracker-test pytest tests/ -v --cov=app --cov-report=term-missing -m "not ui"
+
+# Note: UI tests are not recommended in Docker without proper display setup
 ```
 
 ## Linting
@@ -433,10 +494,11 @@ The application supports multiple environments:
 
 ## Technology Stack
 
-- **Framework**: Flask 3.0
+- **Framework**: Flask 3.1
 - **Database**: SQLite with SQLAlchemy ORM
 - **Migrations**: Flask-Migrate
-- **Testing**: pytest-bdd with 96% coverage (181 BDD scenarios)
+- **Testing**: pytest-bdd with 96% coverage (181+ BDD scenarios)
+- **UI Testing**: Playwright 1.57 with pytest-playwright for end-to-end tests
 - **Styling**: Custom CSS (no external dependencies)
 - **Containerization**: Docker with multi-stage builds
 - **CI/CD**: GitHub Actions (automated builds to GHCR)

@@ -12,3 +12,14 @@
 /app/routes/__pycache__
 .env
 .env.example
+
+# Playwright artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+*.png
+*.jpg
+*.webm
+*.mp4
+trace.zip
+__pycache__/

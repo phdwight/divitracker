@@ -28,6 +28,10 @@ jobs:
           pip install -r requirements.txt
           pip install flake8 black isort mypy pylint types-Flask
 
+      - name: Install Playwright browsers
+        run: |
+          playwright install --with-deps chromium
+
       - name: Check code formatting with Black
         run: |
           black --check --diff app/ tests/
