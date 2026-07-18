@@ -4,14 +4,14 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>⚙️ Admin Settings</h1>
+    <h1>Admin <span>Settings</span></h1>
     <p class="text-muted">Manage application settings and database</p>
 </div>
 
 <div class="admin-grid">
     <!-- Settings Section -->
     <div class="card admin-card">
-        <h2>💱 Currency & Formatting</h2>
+        <h2>Currency & Formatting</h2>
         <form action="{{ url_for('admin.save_settings') }}" method="post" class="admin-form">
             <div class="form-section">
                 <h3>Currency</h3>
@@ -100,7 +100,7 @@
             </div>
 
             <div class="form-section">
-                <h3>📄 Pagination</h3>
+                <h3>Pagination</h3>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="items_per_page">Items Per Page</label>
@@ -120,7 +120,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
-                    💾 Save Settings
+                    Save Settings
                 </button>
             </div>
         </form>
@@ -128,12 +128,14 @@
 
     <!-- Database Section -->
     <div class="card admin-card">
-        <h2>🗄️ Database Management</h2>
+        <h2>Database Management</h2>
         
         <div class="db-info">
             {% if db_exists %}
             <div class="db-status db-status-ok">
-                <span class="status-icon">✅</span>
+                <span class="status-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </span>
                 <div class="status-details">
                     <strong>Database Active</strong>
                     <p>File: dividends.db</p>
@@ -143,7 +145,9 @@
             </div>
             {% else %}
             <div class="db-status db-status-warning">
-                <span class="status-icon">⚠️</span>
+                <span class="status-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </span>
                 <div class="status-details">
                     <strong>No Database Found</strong>
                     <p>The database file does not exist yet.</p>
@@ -154,7 +158,7 @@
 
         <div class="db-actions">
             <div class="db-action-card">
-                <h3>📥 Download Backup</h3>
+                <h3>Download Backup</h3>
                 <p>Download a backup copy of your database file.</p>
                 {% if db_exists %}
                 <a href="{{ url_for('admin.download_db') }}" class="btn btn-primary">
@@ -166,27 +170,29 @@
             </div>
 
             <div class="db-action-card">
-                <h3>📤 Restore / Upload</h3>
+                <h3>Restore / Upload</h3>
                 <p>Upload a database file to replace the current one. A backup will be created automatically.</p>
                 <form action="{{ url_for('admin.upload_db') }}" method="post" enctype="multipart/form-data" 
                       onsubmit="return confirmUpload()">
                     <div class="file-upload">
                         <input type="file" id="db_file" name="db_file" accept=".db" required>
                         <label for="db_file" class="file-label">
-                            <span class="file-icon">📁</span>
+                            <span class="file-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+                            </span>
                             <span class="file-text">Choose .db file</span>
                         </label>
                         <span id="file_name" class="file-name"></span>
                     </div>
                     <button type="submit" class="btn btn-warning">
-                        ⬆️ Upload & Replace
+                        Upload & Replace
                     </button>
                 </form>
             </div>
         </div>
 
         <div class="warning-box">
-            <strong>⚠️ Warning:</strong> Uploading a database will replace all current data. 
+            <strong>Warning:</strong> Uploading a database will replace all current data.
             Make sure to download a backup first. After uploading, restart the application for changes to take effect.
         </div>
     </div>

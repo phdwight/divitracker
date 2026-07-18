@@ -5,7 +5,7 @@
 {% block content %}
 <div class="dividend-graph-page">
     <div class="page-header">
-        <h1>📈 Dividend Graph</h1>
+        <h1>Dividend <span>Graph</span></h1>
         <p class="text-muted">Visual representation of your dividend income</p>
     </div>
 
@@ -154,11 +154,16 @@
     });
     
     const ctx = document.getElementById('dividendChart').getContext('2d');
-    
+
+    // Night theme chart defaults
+    Chart.defaults.color = '#948fa8';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.07)';
+    Chart.defaults.font.family = "'Manrope', -apple-system, sans-serif";
+
     // Calculate gradient for bars
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.8)');
-    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.1)');
+    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.85)');
+    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
     
     const currencySymbol = '{{ settings.currency.symbol if settings else "₱" }}';
     
@@ -175,9 +180,9 @@
                     label: 'Dividend Amount',
                     data: values,
                     backgroundColor: gradient,
-                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderColor: 'rgba(167, 139, 250, 1)',
                     borderWidth: 1,
-                    borderRadius: 4,
+                    borderRadius: 6,
                     order: 2,
                     yAxisID: 'y',
                 },
@@ -185,11 +190,11 @@
                     label: 'Cumulative Total',
                     data: cumulativeValues,
                     type: 'line',
-                    borderColor: 'rgba(22, 163, 74, 1)',
-                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    borderColor: 'rgba(52, 199, 123, 1)',
+                    backgroundColor: 'rgba(52, 199, 123, 0.08)',
                     borderWidth: 2,
-                    pointBackgroundColor: 'rgba(22, 163, 74, 1)',
-                    pointBorderColor: '#fff',
+                    pointBackgroundColor: 'rgba(52, 199, 123, 1)',
+                    pointBorderColor: '#1c1928',
                     pointBorderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,

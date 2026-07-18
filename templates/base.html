@@ -5,24 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="DiviTracker - Track and manage your dividend income from investments">
     <meta name="keywords" content="dividends, investments, portfolio, tracker, income">
+    <meta name="theme-color" content="#1c1928">
     <title>{% block title %}DiviTracker{% endblock title %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=mask2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=night1">
 </head>
 <body>
+    {% set ep = request.endpoint or '' %}
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('main.index') }}" class="logo">💰 DiviTracker</a>
+            <a href="{{ url_for('main.index') }}" class="logo">
+                <span class="logo-mark">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M21 12a1 1 0 0 0-1-1h-4a2 2 0 0 0 0 4h4a1 1 0 0 0 1-1v-2Z"/></svg>
+                </span>
+                DiviTracker
+            </a>
             <div class="nav-links">
-                <a href="{{ url_for('main.index') }}">Dashboard</a>
-                <a href="{{ url_for('main.dividend_graph') }}">📈 Graph</a>
-                <a href="{{ url_for('investments.add_investment') }}">Add Investment</a>
-                <a href="{{ url_for('dividends.add_dividend') }}">Add Dividend</a>
-                <a href="{{ url_for('admin.admin_index') }}">⚙️ Settings</a>
-                <button type="button" id="mask-toggle" class="nav-mask-toggle" onclick="toggleAmountsMask()" title="Hide/Show amounts" aria-pressed="false">
-                    <span class="mask-icon">👁️</span>
-                    <span class="mask-label">Hide amounts</span>
-                </button>
+                <a href="{{ url_for('main.index') }}" class="{{ 'active' if ep in ('main.index', 'main.yield_breakdown') or ep.startswith('investments.view') }}">Dashboard</a>
+                <a href="{{ url_for('main.dividend_graph') }}" class="{{ 'active' if ep == 'main.dividend_graph' }}">Graph</a>
+                <a href="{{ url_for('investments.add_investment') }}" class="{{ 'active' if ep == 'investments.add_investment' }}">Add investment</a>
+                <a href="{{ url_for('dividends.add_dividend') }}" class="{{ 'active' if ep == 'dividends.add_dividend' }}">Add dividend</a>
+                <a href="{{ url_for('admin.admin_index') }}" class="{{ 'active' if ep.startswith('admin.') }}">Settings</a>
             </div>
+            <button type="button" id="mask-toggle" class="nav-mask-toggle" onclick="toggleAmountsMask()" title="Hide/Show amounts" aria-pressed="false">
+                <svg class="icon-eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                <span class="mask-label">Hide amounts</span>
+            </button>
         </div>
     </nav>
 
@@ -61,14 +72,16 @@
             const STORAGE_KEY = 'divitracker.amountsMasked';
             const btn = document.getElementById('mask-toggle');
             const labelEl = btn ? btn.querySelector('.mask-label') : null;
-            const iconEl = btn ? btn.querySelector('.mask-icon') : null;
+            const eyeEl = btn ? btn.querySelector('.icon-eye') : null;
+            const eyeOffEl = btn ? btn.querySelector('.icon-eye-off') : null;
 
             function applyState(masked) {
                 document.body.classList.toggle('amounts-masked', masked);
                 if (btn) {
                     btn.setAttribute('aria-pressed', masked ? 'true' : 'false');
                     if (labelEl) labelEl.textContent = masked ? 'Show amounts' : 'Hide amounts';
-                    if (iconEl) iconEl.textContent = masked ? '🙈' : '👁️';
+                    if (eyeEl) eyeEl.classList.toggle('hidden', masked);
+                    if (eyeOffEl) eyeOffEl.classList.toggle('hidden', !masked);
                 }
             }
 

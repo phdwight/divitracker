@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="form-page">
-    <h1>Edit Investment</h1>
+    <h1>Edit <span>Investment</span></h1>
     
     <div class="form-container">
         <form method="post" action="{{ url_for('investments.edit_investment', investment_id=investment.id) }}">
