@@ -2140,6 +2140,38 @@ main {
 
     .investment-row {
         padding: 18px 18px;
+        gap: 16px;
+    }
+
+    /* Stack metrics as label-left / value-right rows so the dual yield
+       badge no longer overflows the crushed 3-column grid on phones. */
+    .inv-metrics {
+        flex-basis: 100%;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .metric {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 16px;
+    }
+
+    .metric-label {
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+
+    /* margin-left:auto right-aligns the value, and flex-wrap lets it
+       drop below the label on very narrow screens instead of clipping. */
+    .metric-value {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .inv-actions {
+        flex-basis: 100%;
     }
 }
 
