@@ -5,11 +5,14 @@
 {% block content %}
 <div class="dashboard">
     <div class="dashboard-header">
-        <h1>Dividend Dashboard</h1>
+        <div>
+            <h1>Dividend <span>Dashboard</span></h1>
+            <p class="page-subtitle">Tracking {{ selected_year }} payouts across your portfolio</p>
+        </div>
         <div class="dashboard-filters">
             {% if years_with_dividends %}
             <div class="year-selector">
-                <label for="year-select">Year:</label>
+                <label for="year-select">Year</label>
                 <select id="year-select" onchange="updateFilters()">
                     {% for y in years_with_dividends %}
                     <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
@@ -25,7 +28,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         function updateFilters() {
             const year = document.getElementById('year-select')?.value || {{ selected_year }};
@@ -33,7 +36,7 @@
             const perPage = document.getElementById('per-page-select')?.value || {{ items_per_page }};
             window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&per_page=' + perPage;
         }
-        
+
         function goToPage(page) {
             const year = document.getElementById('year-select')?.value || {{ selected_year }};
             const hideZero = document.getElementById('hide-zero').checked;
@@ -41,89 +44,89 @@
             window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&per_page=' + perPage + '&page=' + page;
         }
     </script>
-    
+
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-content">
-                <h3>Currently Invested</h3>
-                <p class="stat-value maskable">{{ format_currency(total_invested) }}</p>
+            <div class="stat-label">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+                Currently invested
             </div>
+            <p class="stat-value maskable">{{ format_currency(total_invested) }}</p>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">💵</div>
-            <div class="stat-content">
-                <h3>Dividends Received ({{ selected_year }})</h3>
-                <p class="stat-value maskable">{{ format_currency(total_annual_dividends) }}</p>
+            <div class="stat-label">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+                Dividends received · {{ selected_year }}
             </div>
+            <p class="stat-value maskable">{{ format_currency(total_annual_dividends) }}</p>
         </div>
         <a href="{{ url_for('main.yield_breakdown', year=selected_year) }}" class="stat-card highlight stat-card-link">
-            <div class="stat-icon">📉</div>
-            <div class="stat-content">
-                <h3>Annualized Yield ({{ selected_year }})</h3>
-                <p class="stat-value">{{ "%.2f"|format(overall_yield) }}%</p>
-                <p class="stat-hint">Click for detailed computation</p>
+            <div class="stat-label">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                Annualized yield · {{ selected_year }}
             </div>
+            <p class="stat-value">{{ "%.2f"|format(overall_yield) }}%</p>
+            <p class="stat-hint">Click for detailed computation →</p>
         </a>
     </div>
 
-    <div class="section">
+    <div class="section section-plain">
         <div class="section-header">
-            <h2>Your Investments</h2>
-            <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">+ Add Investment</a>
+            <h2>Your investments</h2>
+            <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add investment
+            </a>
         </div>
 
         {% if investments %}
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Investment</th>
-                        <th>Ticker</th>
-                        <th>Invested</th>
-                        <th>Received ({{ selected_year }})</th>
-                        <th>Yield <small>(actual | projected)</small></th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for investment in investments %}
-                    <tr>
-                        <td>
-                            <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}">
-                                {{ investment.name }}
-                            </a>
-                        </td>
-                        <td>{{ investment.ticker or '-' }}</td>
-                        <td class="maskable">{{ format_currency(investment.total_invested) }}</td>
-                        <td class="maskable">{{ format_currency(investment.calculate_annual_dividends(selected_year)) }}</td>
-                        <td>
-                            <span class="yield-dual">
-                                <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
-                                    {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year)) }}%
-                                </span>
-                                <span class="yield-separator">|</span>
-                                <span class="yield-badge yield-projected {% if investment.calculate_dividend_yield(selected_year, projected=True) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year, projected=True) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
-                                    {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year, projected=True)) }}%
-                                </span>
+        <div class="investment-list">
+            {% for investment in investments %}
+            <div class="investment-row">
+                <div class="inv-main">
+                    <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="inv-name">{{ investment.name }}</a>
+                    {% if investment.ticker %}
+                    <span class="ticker-badge">{{ investment.ticker }}</span>
+                    {% endif %}
+                </div>
+                <div class="inv-metrics">
+                    <div class="metric">
+                        <div class="metric-label">Invested</div>
+                        <div class="metric-value maskable">{{ format_currency(investment.total_invested) }}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Received {{ selected_year }}</div>
+                        <div class="metric-value maskable">{{ format_currency(investment.calculate_annual_dividends(selected_year)) }}</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Yield act | proj</div>
+                        <div class="metric-value yield-dual">
+                            <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year)) }}%
                             </span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="btn btn-sm btn-success" title="Add Dividend">+💵</a>
-                                <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="btn btn-sm btn-info" title="View Details">👁️</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            <span class="yield-separator">|</span>
+                            <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year, projected=True) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year, projected=True) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year, projected=True)) }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="inv-actions">
+                    <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="icon-btn icon-btn-accent" title="Add Dividend">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </a>
+                    <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="icon-btn" title="View Details">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        
+
         {% if total_pages > 1 or total_items > 5 %}
         <div class="pagination">
             <span class="pagination-info">Showing {{ ((page - 1) * items_per_page) + 1 }}-{{ [page * items_per_page, total_items] | min }} of {{ total_items }}</span>
-            
+
             {% if page > 1 %}
             <a href="#" onclick="goToPage(1); return false;" class="pagination-btn" title="First page">«</a>
             <a href="#" onclick="goToPage({{ page - 1 }}); return false;" class="pagination-btn" title="Previous page">‹</a>
@@ -131,7 +134,7 @@
             <span class="pagination-btn disabled">«</span>
             <span class="pagination-btn disabled">‹</span>
             {% endif %}
-            
+
             {% for p in range(1, total_pages + 1) %}
                 {% if p == page %}
                 <span class="pagination-btn active">{{ p }}</span>
@@ -141,7 +144,7 @@
                 <span class="pagination-ellipsis">...</span>
                 {% endif %}
             {% endfor %}
-            
+
             {% if page < total_pages %}
             <a href="#" onclick="goToPage({{ page + 1 }}); return false;" class="pagination-btn" title="Next page">›</a>
             <a href="#" onclick="goToPage({{ total_pages }}); return false;" class="pagination-btn" title="Last page">»</a>
@@ -149,7 +152,7 @@
             <span class="pagination-btn disabled">›</span>
             <span class="pagination-btn disabled">»</span>
             {% endif %}
-            
+
             <div class="items-per-page">
                 <label for="per-page-select">Per page:</label>
                 <select id="per-page-select" onchange="updateFilters()">
@@ -165,7 +168,9 @@
         {% endif %}
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">📭</div>
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            </div>
             <h3>No investments yet</h3>
             <p>Start tracking your dividends by adding your first investment.</p>
             <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">Add Your First Investment</a>

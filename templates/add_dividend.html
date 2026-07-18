@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="form-page">
-    <h1>Record Dividend</h1>
+    <h1>Record <span>Dividend</span></h1>
     
     <div class="form-container">
         {% if investments %}
@@ -112,7 +112,7 @@
             </div>
 
             <div id="yield-preview" class="yield-preview hidden">
-                <h4>📊 Yield Preview</h4>
+                <h4>Yield Preview</h4>
                 <p>Annualized Dividend: <span id="annual-amount">{{ currency_symbol }}0.00</span></p>
                 <p>Estimated Yield: <span id="estimated-yield">0.00%</span></p>
             </div>
@@ -124,7 +124,9 @@
         </form>
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">📭</div>
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            </div>
             <h3>No investments found</h3>
             <p>You need to add an investment before recording dividends.</p>
             <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">Add Investment First</a>

@@ -6,11 +6,11 @@
 <div class="yield-breakdown">
     <div class="yield-header">
         <div class="yield-title">
-            <h1>Annualized Yield Calculation</h1>
+            <h1>Annualized <span>Yield</span></h1>
             <p class="yield-subtitle">Detailed breakdown for {{ selected_year }}</p>
         </div>
         <div class="yield-actions no-print">
-            <button onclick="window.print()" class="btn btn-primary">🖨️ Print</button>
+            <button onclick="window.print()" class="btn btn-primary">Print</button>
             <a href="{{ url_for('main.index', year=selected_year) }}" class="btn btn-secondary">← Back to Dashboard</a>
         </div>
     </div>
@@ -101,7 +101,9 @@
         </table>
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">📭</div>
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            </div>
             <h3>No dividend data for {{ selected_year }}</h3>
             <p>Add dividends to see the yield calculation breakdown.</p>
         </div>

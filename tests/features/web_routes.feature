@@ -44,7 +44,7 @@ Feature: Web Routes
     Scenario: Yield breakdown page loads
         When I visit "/reports/yield-breakdown"
         Then I should see status code 200
-        And I should see "Annualized Yield Calculation" in the page
+        And I should see "Yield Calculation Breakdown" in the page
 
     Scenario: Yield breakdown with year parameter
         When I visit "/reports/yield-breakdown?year=2025"
@@ -145,7 +145,7 @@ Feature: Web Routes
         Given an investment "Test Investment" with ticker "TEST" exists
         When I visit the edit page for investment "Test Investment"
         Then I should see status code 200
-        And I should see "Edit Investment" in the page
+        And I should see "Edit Test Investment" in the page
 
     Scenario: Edit investment via POST
         Given an investment "Test Investment" with ticker "TEST" and amount 10000 exists

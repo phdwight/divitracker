@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="form-page">
-    <h1>Edit Dividend</h1>
-    <p class="subtitle">Update dividend record for {{ dividend.investment.name }}</p>
+    <h1>Edit <span>Dividend</span></h1>
+    <p class="page-subtitle" style="margin-bottom: 24px;">Update dividend record for {{ dividend.investment.name }}</p>
     
     <div class="form-container">
         <form method="post" action="{{ url_for('dividends.edit_dividend', dividend_id=dividend.id) }}">
