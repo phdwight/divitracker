@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.13-slim AS builder
+FROM python:3.14.9-slim AS builder
 
 WORKDIR /app
 
@@ -16,10 +16,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir gunicorn
+    pip install --no-cache-dir gunicorn==26.2.0
 
 # Production stage
-FROM python:3.13-slim
+FROM python:3.14.9-slim
 
 WORKDIR /app
 

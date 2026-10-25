@@ -104,6 +104,12 @@ input[type="radio"] {
     accent-color: var(--accent);
 }
 
+select option,
+select optgroup {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
 :focus-visible {
     outline: 2px solid rgba(139, 92, 246, 0.7);
     outline-offset: 2px;
@@ -383,12 +389,13 @@ main {
 
 .year-selector select {
     border: none;
-    background: transparent;
+    background-color: var(--bg-color);
     color: var(--text-color);
     font-family: inherit;
     font-size: 14px;
     font-weight: 600;
-    padding: 4px 26px 4px 8px;
+    padding: 4px 26px 4px 10px;
+    border-radius: 999px;
     cursor: pointer;
     appearance: none;
     background-image: var(--chevron);
@@ -937,7 +944,7 @@ main {
 .period-inputs select {
     width: 100%;
     padding: 0.75rem 1rem;
-    background: var(--ctrl-bg);
+    background-color: #242033;
     border: 1px solid var(--ctrl-border);
     border-radius: 14px;
     color: var(--text-color);
@@ -1395,9 +1402,10 @@ main {
 }
 
 .filter-group select {
-    padding: 4px 30px 4px 8px;
+    padding: 4px 30px 4px 10px;
     border: none;
-    background: transparent;
+    border-radius: 999px;
+    background-color: var(--bg-color);
     color: var(--text-color);
     font-family: inherit;
     font-size: 14px;
@@ -1562,7 +1570,7 @@ main {
     font-family: inherit;
     font-size: 13px;
     font-weight: 500;
-    background: var(--ctrl-bg);
+    background-color: #242033;
     color: var(--text-color);
     cursor: pointer;
     appearance: none;

@@ -19,6 +19,7 @@ disable = [
 ]
 
 [tool.pytest.ini_options]
+addopts = "--cov=app --cov-report=term-missing --cov-fail-under=80"
 markers = [
     "edge_cases: marks tests as edge case coverage tests",
     "admin: marks tests for admin functionality",

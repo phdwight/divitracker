@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, current_app, render_template, request, send_from_directory
 
 from app.services.investment_service import InvestmentService
 from app.services.portfolio_service import PortfolioService
@@ -11,6 +11,14 @@ from app.settings import get_user_settings
 from app.utils import paginate
 
 main_bp = Blueprint("main", __name__)
+
+
+@main_bp.route("/favicon.ico")
+def favicon():
+    """Serve the application favicon."""
+    return send_from_directory(
+        current_app.static_folder or "static", "favicon.svg", mimetype="image/svg+xml"
+    )
 
 
 @main_bp.route("/")
@@ -45,12 +53,18 @@ def index(year: int | None = None):
 
     # Filter to hide investments with zero dividends received (for selected year)
     hide_zero = request.args.get("hide_zero", type=str, default="true") == "true"
+    # Filter to hide investments with zero amount invested
+    hide_zero_investments = (
+        request.args.get("hide_zero_investments", type=str, default="true") == "true"
+    )
+
+    filtered_investments = list(investments)
     if hide_zero:
         filtered_investments = [
-            inv for inv in investments if inv.calculate_annual_dividends(selected_year) > 0
+            inv for inv in filtered_investments if inv.calculate_annual_dividends(selected_year) > 0
         ]
-    else:
-        filtered_investments = list(investments)
+    if hide_zero_investments:
+        filtered_investments = [inv for inv in filtered_investments if inv.total_invested > 0]
 
     # Pagination
     items_per_page = request.args.get(
@@ -76,6 +90,7 @@ def index(year: int | None = None):
         selected_year=selected_year,
         years_with_dividends=years_with_dividends,
         hide_zero=hide_zero,
+        hide_zero_investments=hide_zero_investments,
         # Pagination data
         page=pagination.page,
         total_pages=pagination.total_pages,

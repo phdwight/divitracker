@@ -9,7 +9,8 @@ A Flask application for tracking dividend income from your investments. Calculat
 - **Yield Calculation**: Automatic computation of annualized dividend yields
 - **Yield Breakdown Page**: Detailed, printable computation breakdown for yield calculations
 - **Dividend Graph**: Visual bar chart representation of dividends with cumulative line graph and data table, filters by year and investment
-- **Portfolio Dashboard**: Overview of currently invested, annual dividends, and overall yield with year filtering
+- **Portfolio Dashboard**: Overview of currently invested, annual dividends, and overall yield with year filtering and toggles to hide zero-dividend or zero-balance investments
+- **Privacy Mode (Hide Amounts)**: One-click navbar toggle (`Hide amounts` / `Show amounts`) that blurs monetary values across the UI and persists in `localStorage`
 - **Pagination**: Configurable items per page for dashboard and dividend history views
 - **Real-time Preview**: See yield calculations before recording dividends
 - **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
@@ -43,7 +44,8 @@ divitracker/
 │       ├── dividend_service.py
 │       └── portfolio_service.py
 ├── templates/               # Jinja2 templates
-├── static/                  # CSS and static files
+├── static/                  # Static assets (style.css, favicon.svg)
+├── config/                  # User configuration (user_settings.json)
 ├── tests/                   # BDD test suite (pytest-bdd)
 │   ├── conftest.py         # Test fixtures
 │   ├── features/           # Gherkin feature files
@@ -63,6 +65,10 @@ divitracker/
 │       ├── shared_steps.py # Reusable step definitions
 │       └── test_*.py       # Feature-specific steps
 ├── instance/               # Instance-specific data (SQLite DB)
+├── Dockerfile              # Multi-stage Docker image (Python 3.14.9-slim + Gunicorn)
+├── docker-compose.yml      # Docker Compose configuration
+├── pyproject.toml          # Tooling & pytest configuration
+├── VERSION                 # Application version file
 ├── run.py                  # Application entry point
 └── requirements.txt        # Python dependencies
 ```
@@ -112,34 +118,37 @@ divitracker/
 
 2. **Create environment file**:
    ```bash
-   cp .env.example .env
-   # Edit .env and set a strong SECRET_KEY
+   cat <<EOF > .env
+   SECRET_KEY=your-strong-secret-key
+   PORT=8050
+   FLASK_ENV=production
+   EOF
    ```
 
 3. **Build and run with Docker Compose**:
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
-4. **Open your browser** and navigate to `http://127.0.0.1:5000`
+4. **Open your browser** and navigate to `http://localhost:8050` (or the `PORT` configured in `.env`, default `5000`)
 
 #### Docker Commands
 
 ```bash
 # Start the application
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop the application
-docker-compose down
+docker compose down
 
 # Rebuild after code changes
-docker-compose up -d --build
+docker compose up -d --build
 
 # View container status
-docker-compose ps
+docker compose ps
 ```
 
 #### Data Persistence
@@ -152,7 +161,7 @@ docker cp divitracker:/app/instance/dividends.db ./backup_dividends.db
 
 # Restore from backup
 docker cp ./backup_dividends.db divitracker:/app/instance/dividends.db
-docker-compose restart
+docker compose restart
 ```
 
 ## Usage
@@ -185,13 +194,14 @@ The dashboard displays:
 - Total dividends received for the selected year
 - Overall annualized portfolio yield percentage (clickable for detailed breakdown)
 - Year filter to view dividends for specific years
-- Toggle to hide investments with zero dividends received (for selected year)
+- Toggle to hide investments with zero dividends received (for selected year, `hide_zero=true` by default)
+- Toggle to hide investments with zero amount invested (`hide_zero_investments=true` by default)
 - Paginated list of all investments with individual yields (actual | projected format)
 - Configurable items per page selector
 
 ### Dividend Graph
 
-Access the graph page via the "📈 Graph" link in the navigation to view:
+Access the graph page via the **"Graph"** link in the navigation to view:
 - Bar chart visualization of dividend income by month
 - Cumulative line graph showing total earnings growth over time (toggle on/off)
 - Filter by year to see monthly breakdown or view all years
@@ -254,14 +264,16 @@ Tests are organized by actor and domain using tags:
 | `@routes` | Web route navigation |
 | `@models` | Data model behavior |
 | `@validation` | Input validation |
+| `@utilities` | Utility and pagination helper functions |
+| `@edge_cases` | Edge case and boundary condition coverage |
 
 ### Running Tests
 
 ```bash
-# Run all tests (181 scenarios)
+# Run all tests (188 scenarios; automatically enforces >= 80% coverage via pyproject.toml)
 pytest
 
-# Run with coverage report
+# Run with HTML coverage report
 pytest --cov=app --cov-report=html
 
 # Run tests by actor
@@ -282,17 +294,24 @@ pytest -v
 
 ### Test Coverage
 
-Current coverage: **96%** (181 BDD scenarios)
+Current coverage: **95.44%** (188 BDD scenarios; minimum required threshold of **80%** enforced via `pyproject.toml`):
 
 | Module | Coverage |
 |--------|----------|
+| `app/factory.py` | 100% |
 | `app/routes/dividends.py` | 100% |
 | `app/services/investment_service.py` | 100% |
 | `app/services/portfolio_service.py` | 100% |
-| `app/factory.py` | 100% |
-| `app/utils.py` | 100% |
-| `app/models.py` | 97% |
+| `app/exceptions.py` | 100% |
+| `app/extensions.py` | 100% |
 | `app/settings.py` | 98% |
+| `app/models.py` | 97% |
+| `app/routes/admin.py` | 96% |
+| `app/routes/investments.py` | 95% |
+| `app/services/dividend_service.py` | 93% |
+| `app/config.py` | 91% |
+| `app/routes/main.py` | 91% |
+| `app/utils.py` | 82% |
 
 ### Running Tests with Docker
 
@@ -403,15 +422,20 @@ The application supports multiple environments:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `FLASK_ENV` | Environment name | `development` |
-| `SECRET_KEY` | Session secret key | `dev-secret-key...` |
-| `DATABASE_URL` | Database connection URI | SQLite in `instance/` |
+| `FLASK_ENV` | Environment name (`development`, `testing`, `production`) | `development` (`production` in Docker) |
+| `SECRET_KEY` | Session secret key (required in `production` / Docker Compose) | `dev-secret-key-change-in-production` |
+| `DATABASE_URL` | Database connection URI | `sqlite:///.../instance/dividends.db` |
+| `PORT` | Host port mapped by Docker Compose | `5000` |
+| `GITHUB_REPOSITORY` | Image repository name in `docker-compose.yml` | `divitracker` |
+| `IMAGE_TAG` | Image tag in `docker-compose.yml` | `latest` |
 
 ## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | Dashboard (paginated) |
+| GET | `/` | Dashboard (paginated; supports `year`, `hide_zero`, `hide_zero_investments`, `page`, `per_page`) |
+| GET | `/year/<year>` | Dashboard filtered by specific year |
+| GET | `/favicon.ico` | Serves the SVG market-arrow favicon |
 | GET | `/reports/yield-breakdown` | Yield calculation breakdown (printable) |
 | GET | `/reports/dividends-chart` | Dividend visualization with charts |
 | GET | `/investments/new` | Add investment form |
@@ -433,14 +457,15 @@ The application supports multiple environments:
 
 ## Technology Stack
 
-- **Framework**: Flask 3.0
-- **Database**: SQLite with SQLAlchemy ORM
-- **Migrations**: Flask-Migrate
-- **Testing**: pytest-bdd with 96% coverage (181 BDD scenarios)
-- **Styling**: Custom CSS (no external dependencies)
-- **Containerization**: Docker with multi-stage builds
-- **CI/CD**: GitHub Actions (automated builds to GHCR)
-- **Production Server**: Gunicorn WSGI
+- **Runtime**: Python 3.14.9 (in Docker) / Python 3.10+
+- **Framework**: Flask 3.1.3
+- **Database**: SQLite with Flask-SQLAlchemy 3.1.1 ORM
+- **Migrations**: Flask-Migrate 4.1.0
+- **Testing**: pytest 9.1.1, pytest-bdd 9.0.0, pytest-cov 7.1.0 (95.44% coverage, 188 BDD scenarios)
+- **Styling**: Custom CSS (`static/style.css`) with SVG favicon (`static/favicon.svg`)
+- **Containerization**: Docker with multi-stage `python:3.14.9-slim` builds
+- **CI/CD**: GitHub Actions (automated lint, test, CodeQL, and multi-arch builds to GHCR)
+- **Production Server**: Gunicorn 26.2.0 WSGI
 
 ## Docker Architecture
 
