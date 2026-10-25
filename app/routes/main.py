@@ -17,7 +17,7 @@ main_bp = Blueprint("main", __name__)
 def favicon():
     """Serve the application favicon."""
     return send_from_directory(
-        current_app.static_folder, "favicon.svg", mimetype="image/svg+xml"
+        current_app.static_folder or "static", "favicon.svg", mimetype="image/svg+xml"
     )
 
 
@@ -61,14 +61,10 @@ def index(year: int | None = None):
     filtered_investments = list(investments)
     if hide_zero:
         filtered_investments = [
-            inv
-            for inv in filtered_investments
-            if inv.calculate_annual_dividends(selected_year) > 0
+            inv for inv in filtered_investments if inv.calculate_annual_dividends(selected_year) > 0
         ]
     if hide_zero_investments:
-        filtered_investments = [
-            inv for inv in filtered_investments if inv.total_invested > 0
-        ]
+        filtered_investments = [inv for inv in filtered_investments if inv.total_invested > 0]
 
     # Pagination
     items_per_page = request.args.get(
