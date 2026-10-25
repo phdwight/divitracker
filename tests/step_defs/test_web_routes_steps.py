@@ -316,6 +316,12 @@ def check_text_in_page(response, text):
     assert text.encode() in response.data or text.lower().encode() in response.data.lower()
 
 
+@then(parsers.parse('I should not see "{text}" in the page'))
+def check_text_not_in_page(response, text):
+    """Check text is not in the page."""
+    assert text.encode() not in response.data and text.lower().encode() not in response.data.lower()
+
+
 @then("I should see navigation to dashboard")
 def check_navigation_to_dashboard(response):
     """Check navigation to dashboard exists."""

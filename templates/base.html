@@ -6,11 +6,12 @@
     <meta name="description" content="DiviTracker - Track and manage your dividend income from investments">
     <meta name="keywords" content="dividends, investments, portfolio, tracker, income">
     <meta name="theme-color" content="#1c1928">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <title>{% block title %}DiviTracker{% endblock title %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=night2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=night3">
 </head>
 <body>
     {% set ep = request.endpoint or '' %}

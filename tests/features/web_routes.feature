@@ -25,6 +25,11 @@ Feature: Web Routes
         And I should see "error-icon" in the page
 
     # Main Routes
+    Scenario: Favicon loads successfully
+        When I visit "/favicon.ico"
+        Then I should see status code 200
+        And I should see "<svg" in the page
+
     Scenario: Index page loads successfully
         When I visit "/"
         Then I should see status code 200
@@ -99,6 +104,17 @@ Feature: Web Routes
         Given an investment "Test Investment" with ticker "TEST" exists
         When I visit "/?hide_zero=false"
         Then I should see "Hide zero dividends" in the page
+
+    Scenario: Hide zero investments filter checkbox
+        Given an investment "Empty Holding" with ticker "ZERO" and amount 0 exists
+        When I visit "/?hide_zero=false&hide_zero_investments=true"
+        Then I should see "Hide zero investments" in the page
+        And I should not see "Empty Holding" in the page
+
+    Scenario: Show zero investments when filter is disabled
+        Given an investment "Empty Holding" with ticker "ZERO" and amount 0 exists
+        When I visit "/?hide_zero=false&hide_zero_investments=false"
+        Then I should see "Empty Holding" in the page
 
     # Version Display
     Scenario: Footer displays version number

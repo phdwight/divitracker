@@ -26,6 +26,12 @@
                     Hide zero dividends
                 </label>
             </div>
+            <div class="filter-checkbox">
+                <label>
+                    <input type="checkbox" id="hide-zero-investments" {% if hide_zero_investments %}checked{% endif %} onchange="updateFilters()">
+                    Hide zero investments
+                </label>
+            </div>
         </div>
     </div>
 
@@ -33,15 +39,17 @@
         function updateFilters() {
             const year = document.getElementById('year-select')?.value || {{ selected_year }};
             const hideZero = document.getElementById('hide-zero').checked;
+            const hideZeroInvestments = document.getElementById('hide-zero-investments').checked;
             const perPage = document.getElementById('per-page-select')?.value || {{ items_per_page }};
-            window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&per_page=' + perPage;
+            window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&hide_zero_investments=' + hideZeroInvestments + '&per_page=' + perPage;
         }
 
         function goToPage(page) {
             const year = document.getElementById('year-select')?.value || {{ selected_year }};
             const hideZero = document.getElementById('hide-zero').checked;
+            const hideZeroInvestments = document.getElementById('hide-zero-investments').checked;
             const perPage = document.getElementById('per-page-select')?.value || {{ items_per_page }};
-            window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&per_page=' + perPage + '&page=' + page;
+            window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&hide_zero_investments=' + hideZeroInvestments + '&per_page=' + perPage + '&page=' + page;
         }
     </script>
 
