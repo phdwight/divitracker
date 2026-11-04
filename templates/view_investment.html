@@ -52,7 +52,22 @@
         <div class="stat-card">
             <div class="stat-content">
                 <h3>Currently Invested</h3>
-                <p class="stat-value">{{ format_currency(investment.total_invested) }}</p>
+                <p class="stat-value maskable">{{ format_currency(investment.total_invested) }}</p>
+                <p class="paper-gain-loss maskable {% if investment.paper_gain_loss > 0 %}paper-gain{% elif investment.paper_gain_loss < 0 %}paper-loss{% else %}paper-neutral{% endif %}">
+                    {% if investment.paper_gain_loss > 0 %}
+                    +{{ format_currency(investment.paper_gain_loss) }} (+{{ "%.2f"|format(investment.paper_gain_loss_percentage) }}%)
+                    {% elif investment.paper_gain_loss < 0 %}
+                    -{{ format_currency(investment.paper_gain_loss|abs) }} ({{ "%.2f"|format(investment.paper_gain_loss_percentage) }}%)
+                    {% else %}
+                    {{ format_currency(0) }} (0.00%)
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <h3>Current Value</h3>
+                <p class="stat-value maskable">{{ format_currency(investment.effective_current_value) }}</p>
             </div>
         </div>
         <div class="stat-card">

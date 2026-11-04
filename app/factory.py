@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import Flask, render_template
+from sqlalchemy import inspect, text
 from werkzeug.exceptions import HTTPException
 
 from app.config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
@@ -89,10 +90,21 @@ def create_app(config_name: str = "development") -> Flask:
     # Create database tables
     with app.app_context():
         db.create_all()
+        _ensure_schema_columns()
 
     app.logger.info("DiviTracker application initialized successfully")
 
     return app
+
+
+def _ensure_schema_columns() -> None:
+    """Ensure new columns exist in legacy SQLite databases."""
+    inspector = inspect(db.engine)
+    if "investments" in inspector.get_table_names():
+        columns = {col["name"] for col in inspector.get_columns("investments")}
+        if "current_value" not in columns:
+            db.session.execute(text("ALTER TABLE investments ADD COLUMN current_value FLOAT"))
+            db.session.commit()
 
 
 def _register_error_handlers(app: Flask) -> None:

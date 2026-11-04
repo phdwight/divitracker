@@ -39,6 +39,18 @@
                        required>
             </div>
 
+            <div class="form-group">
+                <label for="current_value">Current Value ({{ currency_symbol }}) (Optional)</label>
+                <input type="number" 
+                       id="current_value" 
+                       name="current_value" 
+                       value="{{ investment.current_value if investment.current_value is not none else '' }}"
+                       step="0.01" 
+                       min="0"
+                       placeholder="0.00">
+                <small class="form-help">Current market value to calculate paper gain or loss</small>
+            </div>
+
             <div class="form-actions">
                 <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">Save Changes</button>

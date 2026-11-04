@@ -119,6 +119,72 @@ def try_create_negative_amount(app, name, amount, context):
 
 @when(
     parsers.parse(
+        'I create an investment named "{name}" with ticker "{ticker}" amount {amount:d} and current value {current_value:d}'
+    ),
+    target_fixture="context",
+)
+def create_investment_with_current_value(app, name, ticker, amount, current_value, context):
+    """Create an investment with current value."""
+    with app.app_context():
+        service = InvestmentService()
+        investment, created = service.create_or_update_investment(
+            name=name,
+            ticker=ticker,
+            amount_str=str(amount),
+            current_value_str=str(current_value),
+        )
+        context["investment"] = investment
+        context["investment_id"] = investment.id
+        context["created"] = created
+    return context
+
+
+@when(
+    parsers.parse(
+        'I try to create an investment named "{name}" with invalid current value "{current_value}"'
+    ),
+    target_fixture="context",
+)
+def try_create_invalid_current_value(app, name, current_value, context):
+    """Try to create investment with invalid current value."""
+    with app.app_context():
+        service = InvestmentService()
+        try:
+            service.create_or_update_investment(
+                name=name,
+                ticker="TEST",
+                amount_str="1000",
+                current_value_str=current_value,
+            )
+        except ValidationError as e:
+            context["error"] = str(e)
+    return context
+
+
+@when(
+    parsers.parse(
+        'I try to create an investment named "{name}" with current value "{current_value}"'
+    ),
+    target_fixture="context",
+)
+def try_create_negative_current_value(app, name, current_value, context):
+    """Try to create investment with negative current value."""
+    with app.app_context():
+        service = InvestmentService()
+        try:
+            service.create_or_update_investment(
+                name=name,
+                ticker="TEST",
+                amount_str="1000",
+                current_value_str=current_value,
+            )
+        except ValidationError as e:
+            context["error"] = str(e)
+    return context
+
+
+@when(
+    parsers.parse(
         'I update the investment to name "{name}" ticker "{ticker}" and amount {amount:d}'
     ),
     target_fixture="context",
@@ -132,6 +198,27 @@ def update_investment(app, name, ticker, amount, context):
             name=name,
             ticker=ticker,
             total_invested_str=str(amount),
+        )
+        context["investment"] = investment
+    return context
+
+
+@when(
+    parsers.parse(
+        'I update the investment to name "{name}" ticker "{ticker}" amount {amount:d} and current value {current_value:d}'
+    ),
+    target_fixture="context",
+)
+def update_investment_with_current_value(app, name, ticker, amount, current_value, context):
+    """Update investment details with current value."""
+    with app.app_context():
+        service = InvestmentService()
+        investment = service.update_investment(
+            investment_id=context["investment_id"],
+            name=name,
+            ticker=ticker,
+            total_invested_str=str(amount),
+            current_value_str=str(current_value),
         )
         context["investment"] = investment
     return context
@@ -195,6 +282,24 @@ def verify_investment_amount(app, name, amount):
         service = InvestmentService()
         investment = service.get_investment_by_name(name)
         assert investment.total_invested == float(amount)
+
+
+@then(parsers.parse('the investment "{name}" should have current value of {amount:d} dollars'))
+def verify_investment_current_value(app, name, amount):
+    """Verify investment current value."""
+    with app.app_context():
+        service = InvestmentService()
+        investment = service.get_investment_by_name(name)
+        assert investment.current_value == float(amount)
+
+
+@then(parsers.parse('the investment "{name}" should have paper gain loss of {amount:d} dollars'))
+def verify_investment_paper_gain_loss(app, name, amount):
+    """Verify investment paper gain or loss."""
+    with app.app_context():
+        service = InvestmentService()
+        investment = service.get_investment_by_name(name)
+        assert investment.paper_gain_loss == float(amount)
 
 
 @then(parsers.parse('I should see a validation error containing "{text}"'))

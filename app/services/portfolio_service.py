@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class PortfolioSummary:
+class PortfolioSummary:  # pylint: disable=too-many-instance-attributes
     """Data class representing portfolio-level statistics."""
 
     total_invested: float
@@ -21,6 +21,9 @@ class PortfolioSummary:
     overall_yield: float
     projected_yield: float
     investment_count: int
+    total_current_value: float = 0.0
+    total_paper_gain_loss: float = 0.0
+    total_paper_gain_loss_percentage: float = 0.0
 
 
 class PortfolioService:
@@ -54,6 +57,11 @@ class PortfolioService:
         investments = self._investment_service.get_all_investments()
 
         total_invested = sum(inv.total_invested for inv in investments)
+        total_current_value = sum(inv.effective_current_value for inv in investments)
+        total_paper_gain_loss = total_current_value - total_invested
+        total_paper_gain_loss_percentage = (
+            (total_paper_gain_loss / total_invested) * 100 if total_invested > 0 else 0.0
+        )
         total_annual_dividends = sum(inv.calculate_annual_dividends(year) for inv in investments)
         projected_annual_dividends = sum(
             inv.calculate_projected_annual_dividends(year) for inv in investments
@@ -90,4 +98,7 @@ class PortfolioService:
             overall_yield=overall_yield,
             projected_yield=projected_yield,
             investment_count=len(investments),
+            total_current_value=total_current_value,
+            total_paper_gain_loss=total_paper_gain_loss,
+            total_paper_gain_loss_percentage=total_paper_gain_loss_percentage,
         )

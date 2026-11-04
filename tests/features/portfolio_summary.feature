@@ -44,3 +44,12 @@ Feature: Portfolio Summary
         And the investment "Historical Fund" has quarterly dividends of 150 dollars for year 2024
         When I request the portfolio summary for year 2024
         Then the total annual dividends for 2024 should be 600 dollars
+
+    Scenario: Portfolio summary calculates paper gain and loss
+        Given an investment "Gain Fund" with 10000 dollars and current value 12000 exists
+        And an investment "Loss Fund" with 10000 dollars and current value 9000 exists
+        When I request the portfolio summary
+        Then the total invested should be 20000 dollars
+        And the total current value should be 21000 dollars
+        And the total paper gain loss should be 1000 dollars
+        And the total paper gain loss percentage should be 5.0 percent

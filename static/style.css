@@ -455,6 +455,25 @@ main {
     color: var(--text-color);
 }
 
+.paper-gain-loss {
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 6px;
+    line-height: 1.3;
+}
+
+.paper-gain {
+    color: var(--good);
+}
+
+.paper-loss {
+    color: var(--bad);
+}
+
+.paper-neutral {
+    color: var(--text-muted);
+}
+
 .stat-card.highlight {
     background: linear-gradient(140deg, rgba(139, 92, 246, 0.85), rgba(91, 33, 182, 0.9));
     border: 1px solid rgba(183, 157, 245, 0.4);
@@ -579,7 +598,7 @@ main {
 }
 
 .inv-metrics {
-    flex: 2 1 330px;
+    flex: 2.5 1 420px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
     gap: 14px 24px;
@@ -598,6 +617,13 @@ main {
     font-size: 14.5px;
     font-weight: 400;
     color: var(--text-color);
+}
+
+.metric-subvalue {
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 3px;
+    line-height: 1.25;
 }
 
 .inv-actions {
@@ -2176,6 +2202,12 @@ main {
     .metric-value {
         margin-left: auto;
         text-align: right;
+    }
+
+    .metric-subvalue {
+        flex-basis: 100%;
+        text-align: right;
+        margin-top: 0;
     }
 
     .inv-actions {

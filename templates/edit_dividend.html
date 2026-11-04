@@ -55,9 +55,9 @@
                        id="investment_amount_at_time" 
                        name="investment_amount_at_time" 
                        step="0.01" 
-                       min="0"
+                       min="0.01"
                        value="{{ dividend.investment_amount_at_time or '' }}">
-                <small class="form-help">Optional: The investment value when this dividend was received</small>
+                <small class="form-help">The investment value when this dividend was received (must be greater than zero)</small>
             </div>
 
             <div class="form-group">

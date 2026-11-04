@@ -31,12 +31,14 @@ def add_investment():
         name = request.form.get("name", "").strip()
         ticker = request.form.get("ticker", "").strip().upper() or None
         amount_str = request.form.get("amount", "0")
+        current_value_str = request.form.get("current_value", "").strip() or None
 
         try:
             investment, created = investment_service.create_or_update_investment(
                 name=name,
                 ticker=ticker,
                 amount_str=amount_str,
+                current_value_str=current_value_str,
             )
 
             if created:
@@ -154,6 +156,7 @@ def edit_investment(investment_id: int):
         name = request.form.get("name", investment.name).strip()
         ticker = request.form.get("ticker", "").strip().upper() or None
         amount_str = request.form.get("amount", str(investment.total_invested))
+        current_value_str = request.form.get("current_value", "").strip() or None
 
         try:
             investment_service.update_investment(
@@ -161,6 +164,7 @@ def edit_investment(investment_id: int):
                 name=name,
                 ticker=ticker,
                 total_invested_str=amount_str,
+                current_value_str=current_value_str,
             )
             flash("Investment updated successfully!", "success")
             return redirect(url_for("investments.view_investment", investment_id=investment_id))
