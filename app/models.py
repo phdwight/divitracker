@@ -49,6 +49,9 @@ class InvestmentSummary:
     annual_dividends: float
     dividend_yield: float
     total_received: float
+    current_value: Optional[float] = None
+    paper_gain_loss: float = 0.0
+    paper_gain_loss_percentage: float = 0.0
 
 
 class Investment(db.Model):
@@ -60,6 +63,7 @@ class Investment(db.Model):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     ticker: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     total_invested: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    current_value: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, onupdate=utcnow, nullable=False
@@ -247,6 +251,44 @@ class Investment(db.Model):
         """
         return sum(d.amount for d in self.dividends.all())
 
+    @property
+    def effective_current_value(self) -> float:
+        """
+        Get the effective current value of the investment.
+
+        Defaults to total_invested when current_value is not set.
+
+        Returns:
+            Current market value or total invested.
+        """
+        if self.current_value is not None:
+            return self.current_value
+        return self.total_invested
+
+    @property
+    def paper_gain_loss(self) -> float:
+        """
+        Calculate unrealized paper gain or loss.
+
+        Returns:
+            Difference between current value and total invested (0.0 if current_value unset).
+        """
+        if self.current_value is None:
+            return 0.0
+        return self.current_value - self.total_invested
+
+    @property
+    def paper_gain_loss_percentage(self) -> float:
+        """
+        Calculate unrealized paper gain or loss percentage.
+
+        Returns:
+            Paper gain/loss as a percentage of total_invested (0.0 if unset or no investment).
+        """
+        if self.current_value is None or self.total_invested <= 0:
+            return 0.0
+        return ((self.current_value - self.total_invested) / self.total_invested) * 100
+
     def get_summary(self) -> InvestmentSummary:
         """
         Get a complete summary of the investment.
@@ -259,6 +301,9 @@ class Investment(db.Model):
             annual_dividends=self.calculate_annual_dividends(),
             dividend_yield=self.calculate_dividend_yield(),
             total_received=self.get_total_dividends_received(),
+            current_value=self.current_value,
+            paper_gain_loss=self.paper_gain_loss,
+            paper_gain_loss_percentage=self.paper_gain_loss_percentage,
         )
 
     def to_dict(self) -> dict:
@@ -273,6 +318,9 @@ class Investment(db.Model):
             "name": self.name,
             "ticker": self.ticker,
             "total_invested": self.total_invested,
+            "current_value": self.current_value,
+            "paper_gain_loss": self.paper_gain_loss,
+            "paper_gain_loss_percentage": self.paper_gain_loss_percentage,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

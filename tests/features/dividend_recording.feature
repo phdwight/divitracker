@@ -14,6 +14,11 @@ Feature: Dividend Recording
         Then the dividend should be recorded successfully
         And the dividend should have amount 100 dollars
         And the dividend should have frequency "quarterly"
+        And the dividend investment amount at time should be 10000 dollars
+
+    Scenario: Record dividend with zero investment amount at time fails
+        When I try to record a dividend of 100 dollars with frequency "monthly" and investment balance 0 for "Dividend Stock"
+        Then I should see a validation error containing "zero"
 
     Scenario: Record a monthly dividend with notes
         When I record a dividend of 50 dollars with frequency "monthly" and notes "January payment" for "Dividend Stock"

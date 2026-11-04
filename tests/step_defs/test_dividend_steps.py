@@ -142,6 +142,34 @@ def record_dividend_with_balance(app, amount, frequency, balance, inv_name, cont
 
 @when(
     parsers.parse(
+        'I try to record a dividend of {amount:d} dollars with frequency "{frequency}" and investment balance {balance:d} for "{inv_name}"'
+    ),
+    target_fixture="context",
+)
+def try_record_dividend_with_balance(app, amount, frequency, balance, inv_name, context):
+    """Try to record a dividend with specific investment amount at time."""
+    with app.app_context():
+        service = InvestmentService()
+        investment = service.get_investment_by_name(inv_name)
+        dividend_service = DividendService()
+        try:
+            data = DividendData(
+                amount_str=str(amount),
+                frequency=frequency,
+                investment_amount_at_time_str=str(balance),
+            )
+            dividend, _ = dividend_service.create_dividend(
+                investment_id_str=str(investment.id),
+                data=data,
+            )
+            context["dividend"] = dividend
+        except ValidationError as e:
+            context["error"] = str(e)
+    return context
+
+
+@when(
+    parsers.parse(
         'I try to record a dividend of {amount:d} dollars with frequency "{frequency}" without an investment'
     ),
     target_fixture="context",

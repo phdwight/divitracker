@@ -4,7 +4,8 @@ A Flask application for tracking dividend income from your investments. Calculat
 
 ## Features
 
-- **Investment Management**: Add, edit, and delete investments with ticker symbols
+- **Investment Management**: Add, edit, and delete investments with ticker symbols and current market values
+- **Paper Gain / Loss Tracking**: View unrealized paper gain or loss (amount and percentage) below Currently Invested on the dashboard and investment detail pages
 - **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency
 - **Yield Calculation**: Automatic computation of annualized dividend yields
 - **Yield Breakdown Page**: Detailed, printable computation breakdown for yield calculations
@@ -172,7 +173,8 @@ docker compose restart
 2. Enter the investment name (or select an existing one)
 3. Optionally add a ticker symbol
 4. Enter the amount invested
-5. Click **"Add Investment"**
+5. Optionally enter the current market value to track paper gain or loss
+6. Click **"Add Investment"**
 
 ### Recording a Dividend
 
@@ -190,13 +192,13 @@ docker compose restart
 ### Viewing Portfolio
 
 The dashboard displays:
-- Total amount invested across all holdings
+- Total amount invested across all holdings with overall paper gain/loss (amount and percentage) below it
 - Total dividends received for the selected year
 - Overall annualized portfolio yield percentage (clickable for detailed breakdown)
 - Year filter to view dividends for specific years
 - Toggle to hide investments with zero dividends received (for selected year, `hide_zero=true` by default)
 - Toggle to hide investments with zero amount invested (`hide_zero_investments=true` by default)
-- Paginated list of all investments with individual yields (actual | projected format)
+- Paginated list of all investments with invested amount, paper gain/loss, current value, and individual yields (actual | projected format)
 - Configurable items per page selector
 
 ### Dividend Graph

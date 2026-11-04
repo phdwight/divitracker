@@ -67,6 +67,7 @@ class InvestmentService:
         name: str,
         ticker: str | None,
         amount_str: str,
+        current_value_str: str | None = None,
     ) -> tuple[Investment, bool]:
         """
         Create a new investment or update an existing one.
@@ -75,6 +76,7 @@ class InvestmentService:
             name: Investment name.
             ticker: Optional ticker symbol.
             amount_str: Investment amount as string.
+            current_value_str: Optional current market value as string.
 
         Returns:
             Tuple of (Investment, created) where created is True if new.
@@ -85,6 +87,7 @@ class InvestmentService:
         # Validate inputs
         self._validate_name(name)
         amount = self._validate_amount(amount_str)
+        current_value = self._validate_optional_amount(current_value_str)
 
         # Check if investment exists
         existing = self.get_investment_by_name(name)
@@ -93,6 +96,8 @@ class InvestmentService:
             existing.total_invested += amount
             if ticker:
                 existing.ticker = ticker
+            if current_value is not None:
+                existing.current_value = current_value
             db.session.commit()
             logger.info("Updated investment %s with amount %.2f", sanitize_log_input(name), amount)
             return existing, False
@@ -102,18 +107,20 @@ class InvestmentService:
             name=name,
             ticker=ticker,
             total_invested=amount,
+            current_value=current_value,
         )
         db.session.add(investment)
         db.session.commit()
         logger.info("Created new investment: %s", sanitize_log_input(name))
         return investment, True
 
-    def update_investment(
+    def update_investment(  # pylint: disable=too-many-positional-arguments
         self,
         investment_id: int,
         name: str,
         ticker: str | None,
         total_invested_str: str,
+        current_value_str: str | None = None,
     ) -> Investment:
         """
         Update an existing investment.
@@ -123,6 +130,7 @@ class InvestmentService:
             name: New name.
             ticker: New ticker symbol.
             total_invested_str: New total invested amount as string.
+            current_value_str: Optional new current market value as string.
 
         Returns:
             Updated Investment object.
@@ -135,10 +143,12 @@ class InvestmentService:
 
         self._validate_name(name)
         total_invested = self._validate_amount(total_invested_str)
+        current_value = self._validate_optional_amount(current_value_str)
 
         investment.name = name
         investment.ticker = ticker
         investment.total_invested = total_invested
+        investment.current_value = current_value
 
         db.session.commit()
         logger.info("Updated investment ID %d: %s", investment_id, sanitize_log_input(name))
@@ -200,5 +210,32 @@ class InvestmentService:
 
         if amount < 0:
             raise ValidationError("Amount cannot be negative")
+
+        return amount
+
+    @staticmethod
+    def _validate_optional_amount(amount_str: str | None) -> float | None:
+        """
+        Validate and parse optional amount string.
+
+        Args:
+            amount_str: Optional amount as string.
+
+        Returns:
+            Parsed float amount or None if empty.
+
+        Raises:
+            ValidationError: If amount is invalid or negative.
+        """
+        if amount_str is None or not amount_str.strip():
+            return None
+
+        try:
+            amount = float(amount_str)
+        except ValueError as e:
+            raise ValidationError(f"Invalid current value: {amount_str}") from e
+
+        if amount < 0:
+            raise ValidationError("Current value cannot be negative")
 
         return amount

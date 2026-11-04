@@ -59,6 +59,28 @@ def investment_exists(app, name, amount, test_context):
 
 @given(
     parsers.parse(
+        'an investment "{name}" with {amount:d} dollars and current value {current_value:d} exists'
+    ),
+    target_fixture="test_context",
+)
+def investment_with_current_value_exists(app, name, amount, current_value, test_context):
+    """Create an investment with current value."""
+    with app.app_context():
+        investment = Investment(
+            name=name,
+            ticker=name[:4].upper(),
+            total_invested=float(amount),
+            current_value=float(current_value),
+        )
+        db.session.add(investment)
+        db.session.commit()
+        test_context["investment_ids"][name] = investment.id
+        test_context["current_investment_id"] = investment.id
+    return test_context
+
+
+@given(
+    parsers.parse(
         "the investment has quarterly dividends of {amount:d} dollars for the current year"
     )
 )
@@ -170,3 +192,21 @@ def verify_annual_dividends_year(test_context, year, amount):  # pylint: disable
     """Verify total annual dividends for specific year."""
     # Note: 'year' captured from Gherkin for documentation, actual year is baked in test data
     assert test_context["summary"].total_annual_dividends == float(amount)
+
+
+@then(parsers.parse("the total current value should be {amount:d} dollars"))
+def verify_total_current_value(test_context, amount):
+    """Verify total current value."""
+    assert test_context["summary"].total_current_value == float(amount)
+
+
+@then(parsers.parse("the total paper gain loss should be {amount:d} dollars"))
+def verify_total_paper_gain_loss(test_context, amount):
+    """Verify total paper gain or loss."""
+    assert test_context["summary"].total_paper_gain_loss == float(amount)
+
+
+@then(parsers.parse("the total paper gain loss percentage should be {pct:f} percent"))
+def verify_total_paper_gain_loss_pct(test_context, pct):
+    """Verify total paper gain or loss percentage."""
+    assert test_context["summary"].total_paper_gain_loss_percentage == pytest.approx(pct, rel=0.01)

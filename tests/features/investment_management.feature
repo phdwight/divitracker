@@ -31,6 +31,22 @@ Feature: Investment Management
         When I try to create an investment named "Test" with amount "-1000"
         Then I should see a validation error containing "negative"
 
+    Scenario: Create investment with current value
+        Given no investments exist
+        When I create an investment named "Growth Corp" with ticker "GRW" amount 10000 and current value 12500
+        Then the investment should be created successfully
+        And the investment "Growth Corp" should have 10000 dollars invested
+        And the investment "Growth Corp" should have current value of 12500 dollars
+        And the investment "Growth Corp" should have paper gain loss of 2500 dollars
+
+    Scenario: Create investment with invalid current value fails
+        When I try to create an investment named "Test" with invalid current value "bad_val"
+        Then I should see a validation error containing "invalid"
+
+    Scenario: Create investment with negative current value fails
+        When I try to create an investment named "Test" with current value "-500"
+        Then I should see a validation error containing "negative"
+
     # Updating investments
     Scenario: Update investment details
         Given an investment "Old Name" with ticker "OLD" and 10000 dollars exists
@@ -38,6 +54,12 @@ Feature: Investment Management
         Then the investment should be named "New Name"
         And the investment should have ticker "NEW"
         And the investment should have 15000 dollars invested
+
+    Scenario: Update investment with current value
+        Given an investment "Value Fund" with ticker "VAL" and 10000 dollars exists
+        When I update the investment to name "Value Fund" ticker "VAL" amount 10000 and current value 8500
+        Then the investment "Value Fund" should have current value of 8500 dollars
+        And the investment "Value Fund" should have paper gain loss of -1500 dollars
 
     # Deleting investments
     Scenario: Delete an investment

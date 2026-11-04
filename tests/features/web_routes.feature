@@ -169,6 +169,24 @@ Feature: Web Routes
         Then I should see "updated successfully" in the page
         And the investment "Updated Investment" should exist with ticker "UPD" and amount 15000
 
+    Scenario: Add new investment with current value via POST
+        When I submit new investment with name "Paper Gain Corp" ticker "PGC" amount "10000" and current value "11500"
+        Then I should see "Created new investment" in the page
+        And the investment "Paper Gain Corp" should have current value 11500
+
+    Scenario: View investment details shows current value and paper gain or loss
+        Given an investment "Gain Stock" with ticker "GAIN" amount 10000 and current value 11200 exists
+        When I view the investment "Gain Stock"
+        Then I should see status code 200
+        And I should see "Current Value" in the page
+        And I should see "+12.00%" in the page
+
+    Scenario: View investment details shows paper loss
+        Given an investment "Loss Stock" with ticker "LOSS" amount 10000 and current value 8800 exists
+        When I view the investment "Loss Stock"
+        Then I should see status code 200
+        And I should see "-12.00%" in the page
+
     Scenario: Delete investment
         Given an investment "To Delete" with ticker "DEL" exists
         When I delete investment "To Delete"
@@ -195,6 +213,7 @@ Feature: Web Routes
         Given an investment "Test Investment" with ticker "TEST" exists
         When I visit add dividend page with preselected investment "Test Investment"
         Then I should see "selected" in the page
+        And I should see "10000.00" in the page
 
     Scenario: Add dividend via POST
         Given an investment "Test Investment" with ticker "TEST" exists

@@ -48,6 +48,25 @@ def create_investment_with_amount(app_context, name, ticker, amount):
     return investment
 
 
+@given(
+    parsers.parse(
+        'an investment "{name}" with ticker "{ticker}" amount {amount:d} and current value {current_value:d} exists'
+    ),
+    target_fixture="investment",
+)
+def create_investment_with_current_value(app_context, name, ticker, amount, current_value):
+    """Create an investment with specific amount and current value."""
+    investment = Investment(
+        name=name,
+        ticker=ticker,
+        total_invested=float(amount),
+        current_value=float(current_value),
+    )
+    db.session.add(investment)
+    db.session.commit()
+    return investment
+
+
 @given(parsers.parse('an investment "{name}" with dividends exists'), target_fixture="investment")
 def create_investment_with_dividends(app_context, name):
     """Create an investment with dividends."""
@@ -104,6 +123,26 @@ def submit_new_investment(client, name, ticker, amount):
     return client.post(
         "/investments/new",
         data={"name": name, "ticker": ticker, "amount": amount},
+        follow_redirects=True,
+    )
+
+
+@when(
+    parsers.parse(
+        'I submit new investment with name "{name}" ticker "{ticker}" amount "{amount}" and current value "{current_value}"'
+    ),
+    target_fixture="response",
+)
+def submit_new_investment_with_current_value(client, name, ticker, amount, current_value):
+    """Submit a new investment with current value."""
+    return client.post(
+        "/investments/new",
+        data={
+            "name": name,
+            "ticker": ticker,
+            "amount": amount,
+            "current_value": current_value,
+        },
         follow_redirects=True,
     )
 
@@ -346,6 +385,13 @@ def check_investment_total(app_context, name, total):
     """Check investment total."""
     investment = Investment.query.filter_by(name=name).first()
     assert investment.total_invested == float(total)
+
+
+@then(parsers.parse('the investment "{name}" should have current value {current_value:d}'))
+def check_investment_current_value(app_context, name, current_value):
+    """Check investment current value."""
+    investment = Investment.query.filter_by(name=name).first()
+    assert investment.current_value == float(current_value)
 
 
 @then(parsers.parse('the investment "{name}" should not exist'))

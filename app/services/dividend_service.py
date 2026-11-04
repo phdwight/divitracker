@@ -74,6 +74,12 @@ class DividendService:
         if investment is None:
             raise NotFoundError(f"Investment with ID {investment_id} not found")
 
+        # Default investment_amount_at_time to the investment's total_invested if not provided
+        if investment_amount_at_time is None:
+            if investment.total_invested <= 0:
+                raise ValidationError("Investment amount at time cannot be zero")
+            investment_amount_at_time = investment.total_invested
+
         # Create dividend
         dividend = Dividend(
             investment_id=investment_id,
@@ -258,8 +264,10 @@ class DividendService:
 
         if amount < 0:
             raise ValidationError("Investment amount cannot be negative")
+        if amount == 0:
+            raise ValidationError("Investment amount at time cannot be zero")
 
-        return amount if amount > 0 else None
+        return amount
 
     @staticmethod
     def _validate_period_month(period_month_str: str | None) -> int | None:
