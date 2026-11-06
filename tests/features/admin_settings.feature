@@ -45,6 +45,28 @@ Feature: Admin Settings
         When I save settings with timezone offset "20"
         Then I should see "Timezone offset must be between -12 and +14" in the page
 
+    Scenario: Save settings with invalid sidebar position
+        When I save settings with sidebar position "top"
+        Then I should see "Sidebar position must be left or right" in the page
+
+    Scenario: Update sidebar position via JSON endpoint
+        When I update sidebar position via JSON to "right"
+        Then I should see status code 200
+        And the settings should be saved
+
+    Scenario: Update sidebar position via JSON endpoint with invalid value
+        When I update sidebar position via JSON to "invalid"
+        Then I should see status code 400
+
+    Scenario: Update sidebar position via form submission
+        When I update sidebar position via form to "right"
+        Then I should see status code 200
+        And the settings should be saved
+
+    Scenario: Update sidebar position via form with invalid value
+        When I update sidebar position via form to "invalid"
+        Then I should see "Sidebar position must be left or right" in the page
+
     # Database Download
     Scenario: Download database when file does not exist
         Given the database file does not exist

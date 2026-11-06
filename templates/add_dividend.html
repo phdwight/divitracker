@@ -2,10 +2,13 @@
 
 {% block title %}Add Dividend - DiviTracker{% endblock title %}
 
+{% block page_heading %}
+<h1>Record <span>Dividend</span></h1>
+<p class="page-subtitle">Log a dividend payout for one of your holdings</p>
+{% endblock page_heading %}
+
 {% block content %}
 <div class="form-page">
-    <h1>Record <span>Dividend</span></h1>
-    
     <div class="form-container">
         {% if investments %}
         <form method="post" action="{{ url_for('dividends.add_dividend') }}">

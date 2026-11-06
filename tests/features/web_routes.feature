@@ -116,6 +116,28 @@ Feature: Web Routes
         When I visit "/?hide_zero=false&hide_zero_investments=false"
         Then I should see "Empty Holding" in the page
 
+    # Search, Sort, and Consolidated View Menu
+    Scenario: Dashboard search filters investments by query
+        Given an investment "Alpha Corp" with ticker "ALPH" exists
+        And an investment "Beta Fund" with ticker "BETA" exists
+        When I visit "/?hide_zero=false&q=Alpha"
+        Then I should see status code 200
+        And I should see "Alpha Corp" in the page
+        And I should not see "Beta Fund" in the page
+
+    Scenario: Dashboard supports sorting holdings by column
+        Given an investment "Alpha Corp" with ticker "ALPH" exists
+        When I visit "/?hide_zero=false&sort=yield&dir=desc"
+        Then I should see status code 200
+        And I should see "Alpha Corp" in the page
+
+    Scenario: Consolidated View menu contains display and privacy controls
+        When I visit "/"
+        Then I should see "Holdings filters" in the page
+        And I should see "Hide amounts" in the page
+        And I should see "Hide zero dividends" in the page
+        And I should see "Hide zero investments" in the page
+
     # Version Display
     Scenario: Footer displays version number
         When I visit "/"

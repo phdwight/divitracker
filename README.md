@@ -4,21 +4,22 @@ A Flask application for tracking dividend income from your investments. Calculat
 
 ## Features
 
-- **Investment Management**: Add, edit, and delete investments with ticker symbols and current market values
-- **Paper Gain / Loss Tracking**: View unrealized paper gain or loss (amount and percentage) below Currently Invested on the dashboard and investment detail pages
-- **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency
-- **Yield Calculation**: Automatic computation of annualized dividend yields
-- **Yield Breakdown Page**: Detailed, printable computation breakdown for yield calculations
-- **Dividend Graph**: Visual bar chart representation of dividends with cumulative line graph and data table, filters by year and investment
-- **Portfolio Dashboard**: Overview of currently invested, annual dividends, and overall yield with year filtering and toggles to hide zero-dividend or zero-balance investments
-- **Privacy Mode (Hide Amounts)**: One-click navbar toggle (`Hide amounts` / `Show amounts`) that blurs monetary values across the UI and persists in `localStorage`
-- **Pagination**: Configurable items per page for dashboard and dividend history views
-- **Real-time Preview**: See yield calculations before recording dividends
-- **Historical Tracking**: Track investment amount at time of dividend for accurate yield calculations
+- **Investment Management**: Add, edit, and delete investments with ticker symbols, current market values, and a split-pane **Live Preview** card when adding or topping up holdings
+- **Paper Gain / Loss Tracking**: View unrealized paper gain or loss (amount and percentage) alongside Currently Invested on the dashboard, investment detail pages, and Add Investment live preview
+- **Dividend Tracking**: Record dividends with monthly, quarterly, semi-annual, or yearly frequency and real-time annualized yield preview
+- **Yield Calculation**: Automatic computation of actual and projected annualized dividend yields (`actual | projected`)
+- **Yield Breakdown Page**: Detailed, printable computation breakdown for yield calculations (`/reports/yield-breakdown`)
+- **Dividend Graph**: Interactive Chart.js bar chart and cumulative line graph with clickable period breakdown modal, 4 summary KPI cards, collapsible period data table, and filters by year and investment (`/reports/dividends-chart`)
+- **Portfolio Dashboard**: Unified topbar with inline year pills, 3 KPI summary cards (`Annualized Yield` hero card, `Currently Invested`, `Dividends Received`), compact holdings table with instant search (`?q=`), 5 sortable columns (`?sort=&dir=`), and dismissible filter chips
+- **Configurable Sidebar Navigation**: Vertical icon+label navigation sidebar (`Dashboard`, `Graph`, `+ New` quick-create popover, `Settings`) docked on the left by default and configurable to the right side via the Settings page or the quick sidebar toggle button (adapting into a fixed bottom tab bar on mobile)
+- **Consolidated View & Privacy Menu**: Unified topbar `View` popover menu consolidating `Hide amounts` (privacy blur with hover-to-peek, persisted in `localStorage`), `Hide zero dividends`, `Hide zero investments`, and `Show Cumulative Line` chart toggle with an active count badge
+- **Forest & Amber Dark Theme**: High-contrast dark theme crafted from a 4-color palette — Deep Forest Green (`#09251C`, ~40% canvas/surfaces), Burnt Amber (`#A55704`, ~26% brand & interactive accents), Warm Sand (`#F3D2AF`, ~18% secondary highlights, borders & chart cumulative line), and Soft Cream (`#F8EADC`, ~15% WCAG AAA primary typography)
+- **Pagination**: Configurable items per page (5–100) for dashboard holdings and investment dividend history views
+- **Historical Tracking**: Track investment amount at time of dividend for accurate multi-period yield calculations
 - **Timezone Support**: Configurable timezone for accurate local time display (default: GMT+8)
-- **Settings Page**: Configure currency, formatting, pagination, and timezone; download/upload database backups
-- **RESTful URLs**: SEO-friendly URL structure following best practices (e.g., `/investments/new`, `/dividends/<id>/edit`)
-- **Code Quality**: Templates pass djlint (Jinja2-aware HTML linter) with zero errors
+- **Settings Page**: Sectioned 2-column configuration for currency (16 quick-select presets), number formatting, pagination, timezone, sidebar position (`left`/`right`), and one-click SQLite database backup download/restore
+- **RESTful URLs**: Clean URL structure following best practices (e.g., `/investments/new`, `/dividends/<id>/edit`, `/settings/sidebar-position`)
+- **Code Quality**: Checked with `black`, `isort`, `flake8`, `pylint`, `mypy`, and `djlint` (Jinja2-aware HTML linter)
 
 ## Architecture
 
@@ -26,30 +27,40 @@ A Flask application for tracking dividend income from your investments. Calculat
 divitracker/
 ├── app/                      # Application package
 │   ├── __init__.py          # Package marker
-│   ├── factory.py           # Application factory (create_app)
-│   ├── config.py            # Configuration classes
-│   ├── extensions.py        # Flask extensions
-│   ├── exceptions.py        # Custom exceptions
-│   ├── models.py            # SQLAlchemy models
-│   ├── settings.py          # User settings management
-│   ├── utils.py             # Utility functions
+│   ├── factory.py           # Application factory (create_app) & context processors
+│   ├── config.py            # Environment configuration classes
+│   ├── extensions.py        # Flask extensions (SQLAlchemy, Migrate)
+│   ├── exceptions.py        # Custom domain exceptions
+│   ├── models.py            # SQLAlchemy models (Investment, Dividend)
+│   ├── settings.py          # User settings manager (currency, formatting, timezone, pagination, layout)
+│   ├── utils.py             # Utility & pagination helpers
 │   ├── routes/              # Blueprint routes
 │   │   ├── __init__.py      # Package marker
-│   │   ├── main.py          # Dashboard routes
-│   │   ├── investments.py   # Investment CRUD routes
+│   │   ├── main.py          # Dashboard, search/sort, yield breakdown & dividend chart routes
+│   │   ├── investments.py   # Investment CRUD & JSON autocomplete routes
 │   │   ├── dividends.py     # Dividend CRUD routes
-│   │   └── admin.py         # Admin settings & DB management
+│   │   └── admin.py         # Settings, sidebar position API & DB backup/restore routes
 │   └── services/            # Business logic layer
 │       ├── __init__.py      # Package marker
 │       ├── investment_service.py
 │       ├── dividend_service.py
 │       └── portfolio_service.py
 ├── templates/               # Jinja2 templates
+│   ├── base.html            # App shell (configurable left/right sidebar, unified topbar, View popover)
+│   ├── index.html           # Portfolio dashboard (KPI cards, searchable/sortable holdings table)
+│   ├── add_investment.html  # Split-pane investment form with live preview card
+│   ├── edit_investment.html # Edit investment form
+│   ├── view_investment.html # Holding detail view & paginated dividend history
+│   ├── add_dividend.html    # Record dividend form with live annualized yield preview
+│   ├── edit_dividend.html   # Edit dividend form
+│   ├── dividend_graph.html  # Chart.js bar + cumulative line chart & collapsible breakdown table
+│   ├── yield_breakdown.html # Printable step-by-step yield calculation breakdown
+│   └── errors.html          # Custom 400/403/404/500 error page
 ├── static/                  # Static assets (style.css, favicon.svg)
 ├── config/                  # User configuration (user_settings.json)
-├── tests/                   # BDD test suite (pytest-bdd)
-│   ├── conftest.py         # Test fixtures
-│   ├── features/           # Gherkin feature files
+├── tests/                   # BDD test suite (pytest-bdd, 208 scenarios)
+│   ├── conftest.py          # Shared test fixtures
+│   ├── features/            # Gherkin feature files (12 feature suites)
 │   │   ├── admin_settings.feature
 │   │   ├── annual_dividends.feature
 │   │   ├── dividend_recording.feature
@@ -62,16 +73,18 @@ divitracker/
 │   │   ├── user_settings.feature
 │   │   ├── utility_functions.feature
 │   │   └── web_routes.feature
-│   └── step_defs/          # Step definitions
-│       ├── shared_steps.py # Reusable step definitions
-│       └── test_*.py       # Feature-specific steps
-├── instance/               # Instance-specific data (SQLite DB)
-├── Dockerfile              # Multi-stage Docker image (Python 3.14.9-slim + Gunicorn)
-├── docker-compose.yml      # Docker Compose configuration
-├── pyproject.toml          # Tooling & pytest configuration
-├── VERSION                 # Application version file
-├── run.py                  # Application entry point
-└── requirements.txt        # Python dependencies
+│   └── step_defs/           # Step definitions
+│       ├── shared_steps.py  # Reusable step definitions
+│       └── test_*.py        # Feature-specific steps
+├── .github/workflows/       # GitHub Actions CI & multi-arch Docker build workflows
+├── instance/                # Instance-specific data (SQLite DB)
+├── Dockerfile               # Multi-stage Docker image (Python 3.14.9-slim + Gunicorn)
+├── docker-compose.yml       # Docker Compose configuration
+├── pyproject.toml           # Tooling & pytest configuration
+├── instructions.md          # Engineering & GenAI code generation guidelines
+├── VERSION                  # Application version file
+├── run.py                   # Application entry point
+└── requirements.txt         # Python dependencies
 ```
 
 ## Setup Instructions
@@ -169,16 +182,17 @@ docker compose restart
 
 ### Adding an Investment
 
-1. Click **"Add Investment"** in the navigation
-2. Enter the investment name (or select an existing one)
+1. Click **`+ New` → `New Investment`** in the sidebar navigation (or **`+ Investment`** on the dashboard)
+2. Enter the investment name (or select an existing holding to top up)
 3. Optionally add a ticker symbol
 4. Enter the amount invested
 5. Optionally enter the current market value to track paper gain or loss
-6. Click **"Add Investment"**
+6. Review the **Live Preview** card on the right (showing whether a new holding will be created or an existing one updated, along with live Total Invested, Current Market Value, and Paper Gain / Loss)
+7. Click **"Save Investment"**
 
 ### Recording a Dividend
 
-1. Click **"Add Dividend"** in the navigation
+1. Click **`+ New` → `Record Dividend`** in the sidebar navigation (or **`+ Dividend`** on the dashboard / holding detail page)
 2. Select the investment from the dropdown
 3. Enter the dividend amount received
 4. Select the frequency:
@@ -187,33 +201,37 @@ docker compose restart
    - **Semi-Annual**: Paid every 6 months (×2 annually)
    - **Yearly**: Paid once per year
 5. Optionally specify the period (month/year) and investment amount at time
-6. Click **"Record Dividend"**
+6. Review the real-time **Annualized Yield Preview** box
+7. Click **"Record Dividend"**
 
 ### Viewing Portfolio
 
 The dashboard displays:
-- Total amount invested across all holdings with overall paper gain/loss (amount and percentage) below it
-- Total dividends received for the selected year
-- Overall annualized portfolio yield percentage (clickable for detailed breakdown)
-- Year filter to view dividends for specific years
-- Toggle to hide investments with zero dividends received (for selected year, `hide_zero=true` by default)
-- Toggle to hide investments with zero amount invested (`hide_zero_investments=true` by default)
-- Paginated list of all investments with invested amount, paper gain/loss, current value, and individual yields (actual | projected format)
-- Configurable items per page selector
+- **Unified Topbar**: Inline segmented year pills (`2026`, `2025`, ...) and a consolidated **`View`** popover menu with an active count badge:
+  - **Hide amounts**: Blurs sensitive currency figures across the app (hover to peek; persisted in `localStorage`)
+  - **Hide zero dividends**: Filters out holdings with zero dividends received in the selected year (`hide_zero=true` by default)
+  - **Hide zero investments**: Filters out holdings with zero amount invested (`hide_zero_investments=true` by default)
+- **3 KPI Summary Cards**:
+  - **Annualized Yield** (hero card): Displays overall actual yield and projected yield (`Projected: X%`) and links directly to the detailed Yield Breakdown report
+  - **Currently Invested**: Displays total invested capital alongside overall unrealized paper gain/loss (amount and percentage) and current market value
+  - **Dividends Received (`<Year>`)**: Displays total dividends collected in the selected year and projected full-year payout
+- **Holdings Table**:
+  - Live search input (`?q=`) filtering by holding name or ticker symbol
+  - 5 sortable columns (`Holding`, `Invested`, `Current value`, `Received <Year>`, `Yield act | proj` via `?sort=&dir=`)
+  - Dismissible active filter chips and quick **`Reset`** link when search/filters are modified
+  - Configurable pagination (`5` to `100` items per page) and inline row actions (`+`, `Edit`, `×`)
 
 ### Dividend Graph
 
-Access the graph page via the **"Graph"** link in the navigation to view:
-- Bar chart visualization of dividend income by month
-- Cumulative line graph showing total earnings growth over time (toggle on/off)
-- Filter by year to see monthly breakdown or view all years
-- Filter by specific investment (dropdown limited to prevent overflow with long names)
-- Summary statistics: Total Displayed and Highest dividend amounts
-- Data table with Period, Amount, and Cumulative Total columns
+Access the graph page via **"Graph"** in the sidebar navigation (`/reports/dividends-chart`) to view:
+- **Unified Topbar Controls**: Inline year pills (`All`, `2026`, `2025`, ...), holding filter dropdown, and the **`View`** popover menu (`Hide amounts` and **`Show Cumulative Line`** toggles)
+- **4 Summary KPI Cards**: `Total Displayed`, `Average / Period`, `Highest Period`, and `Periods w/ Payouts`
+- **Interactive Chart.js Visualization**: Combined bar chart (`#C46B0B` → `#A55704` amber bars) and cumulative growth line (`#F3D2AF` warm sand line with `#F8EADC` cream points); click any bar to open a modal breakdown of individual payouts for that period
+- **Collapsible Period Breakdown Table**: Expandable `<details>` table showing `Period`, `Dividends Received`, `Cumulative Total`, and `Share of Total` percentage bars
 
 ### Yield Breakdown Page
 
-Click on the "Annualized Yield" card in the dashboard to view:
+Click on the **"Annualized Yield"** hero card on the dashboard (`/reports/yield-breakdown`) to view:
 - The complete yield calculation formula
 - Step-by-step computation with actual values
 - Per-investment breakdown showing contribution to overall yield
@@ -272,7 +290,7 @@ Tests are organized by actor and domain using tags:
 ### Running Tests
 
 ```bash
-# Run all tests (188 scenarios; automatically enforces >= 80% coverage via pyproject.toml)
+# Run all tests (208 scenarios; automatically enforces >= 80% coverage via pyproject.toml)
 pytest
 
 # Run with HTML coverage report
@@ -296,23 +314,23 @@ pytest -v
 
 ### Test Coverage
 
-Current coverage: **95.44%** (188 BDD scenarios; minimum required threshold of **80%** enforced via `pyproject.toml`):
+Current coverage: **95.02%** (208 BDD scenarios; minimum required threshold of **80%** enforced via `pyproject.toml`):
 
 | Module | Coverage |
 |--------|----------|
-| `app/factory.py` | 100% |
 | `app/routes/dividends.py` | 100% |
-| `app/services/investment_service.py` | 100% |
 | `app/services/portfolio_service.py` | 100% |
 | `app/exceptions.py` | 100% |
 | `app/extensions.py` | 100% |
-| `app/settings.py` | 98% |
+| `app/services/investment_service.py` | 99% |
+| `app/factory.py` | 97% |
 | `app/models.py` | 97% |
-| `app/routes/admin.py` | 96% |
+| `app/routes/admin.py` | 97% |
+| `app/settings.py` | 96% |
 | `app/routes/investments.py` | 95% |
-| `app/services/dividend_service.py` | 93% |
+| `app/services/dividend_service.py` | 92% |
 | `app/config.py` | 91% |
-| `app/routes/main.py` | 91% |
+| `app/routes/main.py` | 90% |
 | `app/utils.py` | 82% |
 
 ### Running Tests with Docker
@@ -320,13 +338,34 @@ Current coverage: **95.44%** (188 BDD scenarios; minimum required threshold of *
 ```bash
 # Build test image and run tests
 docker build -t divitracker-test .
-docker run --rm divitracker-test pytest tests/ -v
+docker run --rm -e FLASK_ENV=testing divitracker-test pytest -v
 
 # Run tests with coverage
-docker run --rm divitracker-test pytest tests/ -v --cov=app --cov-report=term-missing
+docker run --rm -e FLASK_ENV=testing divitracker-test pytest -v --cov=app --cov-report=term-missing
 ```
 
-## Linting
+## Linting & Static Analysis
+
+### Python Formatting, Linting & Type Checking
+
+The project enforces code formatting, import ordering, linting, and static type checking in CI:
+
+```bash
+# Check code formatting (Black, line-length 100)
+black --check --diff app/ tests/
+
+# Check import ordering (isort)
+isort --check-only --diff app/ tests/
+
+# Lint with flake8
+flake8 app/ tests/ --max-line-length=100 --extend-ignore=E203,W503
+
+# Lint with pylint
+pylint app/ --rcfile=.pylintrc
+
+# Type check with mypy
+mypy app/ --config-file=mypy.ini
+```
 
 ### Template Linting (HTML/Jinja2)
 
@@ -343,13 +382,11 @@ djlint templates/ --profile=jinja --lint
 djlint templates/ --profile=jinja --reformat
 ```
 
-All templates pass djlint with zero errors.
-
 ## Configuration
 
-### User Settings (Currency & Formatting)
+### User Settings (Currency, Formatting & Layout)
 
-The application supports customizable currency and number formatting through a configuration file:
+The application supports customizable currency, number formatting, timezone, pagination, and sidebar layout through the **Settings UI (`/settings/`)** or via `config/user_settings.json`:
 
 **File**: `config/user_settings.json`
 
@@ -371,21 +408,30 @@ The application supports customizable currency and number formatting through a c
     },
     "pagination": {
         "items_per_page": 10
+    },
+    "layout": {
+        "sidebar_position": "left"
     }
 }
 ```
 
+#### Layout Configuration
+
+The `layout` setting controls where the vertical navigation sidebar is docked:
+- `sidebar_position`: `"left"` (default) or `"right"`
+- Can be changed in the Settings page (`/settings/`) or toggled anytime using the quick button at the bottom of the sidebar
+
 #### Pagination Configuration
 
 The `pagination` setting controls the default number of items per page:
-- `items_per_page`: Number of items to show per page (5-100, default: 10)
+- `items_per_page`: Number of items to show per page (5–100, default: 10)
 - Can be overridden per-request using the page selector dropdown
 
 #### Timezone Configuration
 
 The `timezone` setting controls the local time displayed in reports:
-- `offset_hours`: Hours offset from UTC (e.g., 8 for GMT+8, -5 for EST)
-- `name`: Display name shown in the UI (e.g., "GMT+8", "EST")
+- `offset_hours`: Hours offset from UTC (`-12` to `+14`, e.g., `8` for GMT+8, `-5` for EST)
+- `name`: Display name shown in the UI (e.g., `"GMT+8"`, `"EST"`)
 
 #### Available Currency Presets
 
@@ -408,7 +454,7 @@ The `timezone` setting controls the local time displayed in reports:
 | IDR | Rp | Indonesian Rupiah |
 | VND | ₫ | Vietnamese Dong |
 
-To change currency, edit the `config/user_settings.json` file.
+To change currency, select a preset on the **Settings page (`/settings/`)** or edit `config/user_settings.json`.
 
 ### Environment Configuration
 
@@ -435,27 +481,28 @@ The application supports multiple environments:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | Dashboard (paginated; supports `year`, `hide_zero`, `hide_zero_investments`, `page`, `per_page`) |
-| GET | `/year/<year>` | Dashboard filtered by specific year |
+| GET | `/` | Dashboard (paginated; supports `year`, `q`, `sort`, `dir`, `hide_zero`, `hide_zero_investments`, `page`, `per_page`) |
+| GET | `/year/<year>` | Dashboard filtered by specific year (supports `q`, `sort`, `dir`, `hide_zero`, `hide_zero_investments`, `page`, `per_page`) |
 | GET | `/favicon.ico` | Serves the SVG market-arrow favicon |
-| GET | `/reports/yield-breakdown` | Yield calculation breakdown (printable) |
-| GET | `/reports/dividends-chart` | Dividend visualization with charts |
-| GET | `/investments/new` | Add investment form |
-| POST | `/investments/new` | Create/update investment |
-| GET | `/investments/<id>` | View investment details (paginated dividend history) |
+| GET | `/reports/yield-breakdown` | Printable yield calculation breakdown (supports `year`) |
+| GET | `/reports/dividends-chart` | Dividend visualization with charts (supports `year`, `investment_id`) |
+| GET | `/investments/new` | Add investment form with live preview |
+| POST | `/investments/new` | Create or top up an investment |
+| GET | `/investments/<id>` | View investment details & paginated dividend history (supports `year`, `page`, `per_page`) |
 | GET | `/investments/<id>/edit` | Edit investment form |
 | POST | `/investments/<id>/edit` | Update investment |
 | POST | `/investments/<id>/delete` | Delete investment |
 | GET | `/investments/api` | JSON list of investments |
-| GET | `/dividends/new` | Add dividend form |
+| GET | `/dividends/new` | Add dividend form (supports `investment_id`) |
 | POST | `/dividends/new` | Create dividend record |
 | GET | `/dividends/<id>/edit` | Edit dividend form |
 | POST | `/dividends/<id>/edit` | Update dividend record |
 | POST | `/dividends/<id>/delete` | Delete dividend record |
-| GET | `/settings/` | Settings page |
+| GET | `/settings/` | Settings & database management page |
 | POST | `/settings/save` | Save configuration settings |
-| GET | `/settings/database/download` | Download database backup |
-| POST | `/settings/database/upload` | Upload/restore database |
+| POST | `/settings/sidebar-position` | Update sidebar navigation position (`left` or `right`, JSON or form) |
+| GET | `/settings/database/download` | Download SQLite database backup |
+| POST | `/settings/database/upload` | Upload/restore SQLite database |
 
 ## Technology Stack
 
@@ -463,8 +510,8 @@ The application supports multiple environments:
 - **Framework**: Flask 3.1.3
 - **Database**: SQLite with Flask-SQLAlchemy 3.1.1 ORM
 - **Migrations**: Flask-Migrate 4.1.0
-- **Testing**: pytest 9.1.1, pytest-bdd 9.0.0, pytest-cov 7.1.0 (95.44% coverage, 188 BDD scenarios)
-- **Styling**: Custom CSS (`static/style.css`) with SVG favicon (`static/favicon.svg`)
+- **Testing**: pytest 9.1.1, pytest-bdd 9.0.0, pytest-cov 7.1.0 (95.02% coverage, 208 BDD scenarios)
+- **Frontend & Styling**: Jinja2 templates, Chart.js 4.4.0, custom CSS (`static/style.css`) with Forest & Amber dark theme (`#09251C`, `#A55704`, `#F3D2AF`, `#F8EADC`), and SVG favicon (`static/favicon.svg`)
 - **Containerization**: Docker with multi-stage `python:3.14.9-slim` builds
 - **CI/CD**: GitHub Actions (automated lint, test, CodeQL, and multi-arch builds to GHCR)
 - **Production Server**: Gunicorn 26.2.0 WSGI

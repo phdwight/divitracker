@@ -81,6 +81,7 @@ def create_app(config_name: str = "development") -> Flask:
             "format_currency": format_currency,
             "now": get_local_time,
             "timezone_name": settings.timezone.name,
+            "sidebar_position": settings.layout.sidebar_position,
             "app_version": app_version,
         }
 

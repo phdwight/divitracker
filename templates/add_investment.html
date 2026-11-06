@@ -2,99 +2,185 @@
 
 {% block title %}Add Investment - DiviTracker{% endblock title %}
 
+{% block page_heading %}
+<h1>Add <span>Investment</span></h1>
+<p class="page-subtitle">Create a new holding or top up an existing position</p>
+{% endblock page_heading %}
+
 {% block content %}
-<div class="form-page">
-    <h1>Add <span>Investment</span></h1>
-    
+<div class="split-form-layout">
     <div class="form-container">
         <form method="post" action="{{ url_for('investments.add_investment') }}">
             <div class="form-group">
                 <label for="name">Investment Name *</label>
-                <input type="text" 
-                       id="name" 
-                       name="name" 
+                <input type="text"
+                       id="name"
+                       name="name"
                        list="investment-list"
                        placeholder="e.g., Apple Inc., Vanguard S&amp;P 500 ETF"
                        required
                        autocomplete="off">
                 <datalist id="investment-list">
                     {% for inv in investments %}
-                    <option value="{{ inv.name }}">{{ inv.ticker }}</option>
+                    <option value="{{ inv.name }}" data-ticker="{{ inv.ticker or '' }}">{{ inv.ticker }}</option>
                     {% endfor %}
                 </datalist>
-                <small class="form-help">Select an existing investment or type a new name</small>
+                <small class="form-help">Type a new holding name or pick an existing one to add to its balance</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ticker">Ticker Symbol (Optional)</label>
+                    <input type="text"
+                           id="ticker"
+                           name="ticker"
+                           placeholder="e.g., AAPL, AREIT"
+                           maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label for="amount">Investment Amount ({{ currency_symbol }}) *</label>
+                    <input type="number"
+                           id="amount"
+                           name="amount"
+                           step="0.01"
+                           min="0"
+                           placeholder="0.00"
+                           required>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="ticker">Ticker Symbol (Optional)</label>
-                <input type="text" 
-                       id="ticker" 
-                       name="ticker" 
-                       placeholder="e.g., AAPL, VOO"
-                       maxlength="20">
-            </div>
-
-            <div class="form-group">
-                <label for="amount">Investment Amount ({{ currency_symbol }}) *</label>
-                <input type="number" 
-                       id="amount" 
-                       name="amount" 
-                       step="0.01" 
+                <label for="current_value">Current Market Value ({{ currency_symbol }}) (Optional)</label>
+                <input type="number"
+                       id="current_value"
+                       name="current_value"
+                       step="0.01"
                        min="0"
-                       placeholder="0.00"
-                       required>
-                <small class="form-help">Amount invested (will be added to existing investment if selected)</small>
-            </div>
-
-            <div class="form-group">
-                <label for="current_value">Current Value ({{ currency_symbol }}) (Optional)</label>
-                <input type="number" 
-                       id="current_value" 
-                       name="current_value" 
-                       step="0.01" 
-                       min="0"
-                       placeholder="0.00">
-                <small class="form-help">Optional: Current market value to track paper gain or loss</small>
+                       placeholder="Leave blank if unchanged">
+                <small class="form-help">Used to calculate unrealized paper gain or loss</small>
             </div>
 
             <div class="form-actions">
                 <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Add Investment</button>
+                <button type="submit" class="btn btn-primary" id="submit-btn">Add Investment</button>
             </div>
         </form>
     </div>
 
-    {% if investments %}
-    <div class="existing-list">
-        <h3>Existing Investments</h3>
-        <div class="investment-chips">
-            {% for inv in investments %}
-            <button type="button" class="chip" onclick="selectInvestment('{{ inv.name }}', '{{ inv.ticker }}')">
-                {{ inv.name }} {% if inv.ticker %}({{ inv.ticker }}){% endif %}
-            </button>
-            {% endfor %}
+    <aside class="holding-preview-card card">
+        <div class="preview-card-header">
+            <span class="preview-badge" id="preview-mode-badge">New Holding</span>
+            <h3 id="preview-name">Position Summary</h3>
+            <span class="ticker-badge hidden" id="preview-ticker"></span>
         </div>
-    </div>
-    {% endif %}
+        <div class="preview-metrics">
+            <div class="preview-metric-row">
+                <span class="preview-metric-label">Current Invested</span>
+                <span class="preview-metric-val maskable" id="preview-current-invested">{{ currency_symbol }}0.00</span>
+            </div>
+            <div class="preview-metric-row">
+                <span class="preview-metric-label">Amount to Add</span>
+                <span class="preview-metric-val maskable" id="preview-adding">+{{ currency_symbol }}0.00</span>
+            </div>
+            <div class="preview-metric-row preview-metric-total">
+                <span class="preview-metric-label">New Total Invested</span>
+                <span class="preview-metric-val maskable" id="preview-new-total">{{ currency_symbol }}0.00</span>
+            </div>
+            <div class="preview-metric-row" id="preview-dividends-row">
+                <span class="preview-metric-label">All-Time Dividends</span>
+                <span class="preview-metric-val maskable" id="preview-dividends">{{ currency_symbol }}0.00</span>
+            </div>
+        </div>
+        {% if investments %}
+        <div class="quick-pick-section">
+            <div class="popover-label">Quick select existing ({{ investments | length }})</div>
+            <div class="investment-chips">
+                {% for inv in investments[:8] %}
+                <button type="button" class="chip" onclick="selectInvestment('{{ inv.name }}', '{{ inv.ticker or '' }}')">
+                    {{ inv.ticker or inv.name }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </aside>
 </div>
 {% endblock content %}
 
 {% block scripts %}
 <script>
+const existingHoldings = {{ (investments_json or []) | tojson }};
+const currencySymbol = '{{ currency_symbol }}';
+
+function fmt(num) {
+    return currencySymbol + Number(num || 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function updateHoldingPreview() {
+    const nameVal = document.getElementById('name').value.trim();
+    const tickerInput = document.getElementById('ticker');
+    const amountVal = parseFloat(document.getElementById('amount').value) || 0;
+    const match = existingHoldings.find(h => h.name.toLowerCase() === nameVal.toLowerCase());
+
+    const badgeEl = document.getElementById('preview-mode-badge');
+    const nameEl = document.getElementById('preview-name');
+    const tickerEl = document.getElementById('preview-ticker');
+    const curInvEl = document.getElementById('preview-current-invested');
+    const addEl = document.getElementById('preview-adding');
+    const newTotalEl = document.getElementById('preview-new-total');
+    const divEl = document.getElementById('preview-dividends');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (match) {
+        if (!tickerInput.value && match.ticker) {
+            tickerInput.value = match.ticker;
+        }
+        badgeEl.textContent = 'Top-up Existing';
+        badgeEl.classList.add('badge-topup');
+        nameEl.textContent = match.name;
+        if (match.ticker) {
+            tickerEl.textContent = match.ticker;
+            tickerEl.classList.remove('hidden');
+        } else {
+            tickerEl.classList.add('hidden');
+        }
+        curInvEl.textContent = fmt(match.total_invested);
+        addEl.textContent = '+' + fmt(amountVal);
+        newTotalEl.textContent = fmt(match.total_invested + amountVal);
+        divEl.textContent = fmt(match.total_received);
+        submitBtn.textContent = 'Top Up Holding';
+    } else {
+        badgeEl.textContent = 'New Holding';
+        badgeEl.classList.remove('badge-topup');
+        nameEl.textContent = nameVal || 'Position Summary';
+        const t = tickerInput.value.trim().toUpperCase();
+        if (t) {
+            tickerEl.textContent = t;
+            tickerEl.classList.remove('hidden');
+        } else {
+            tickerEl.classList.add('hidden');
+        }
+        curInvEl.textContent = fmt(0);
+        addEl.textContent = '+' + fmt(amountVal);
+        newTotalEl.textContent = fmt(amountVal);
+        divEl.textContent = fmt(0);
+        submitBtn.textContent = 'Add Investment';
+    }
+}
+
 function selectInvestment(name, ticker) {
     document.getElementById('name').value = name;
     document.getElementById('ticker').value = ticker;
+    updateHoldingPreview();
     document.getElementById('amount').focus();
 }
 
-// Auto-fill ticker when selecting from datalist
-document.getElementById('name').addEventListener('change', function() {
-    const options = document.querySelectorAll('#investment-list option');
-    options.forEach(option => {
-        if (option.value === this.value) {
-            document.getElementById('ticker').value = option.dataset.ticker || '';
-        }
-    });
+['name', 'ticker', 'amount'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateHoldingPreview);
+    document.getElementById(id).addEventListener('change', updateHoldingPreview);
 });
 </script>
 {% endblock scripts %}

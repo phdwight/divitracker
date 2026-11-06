@@ -2,40 +2,44 @@
 
 {% block title %}Dividend Graph - DiviTracker{% endblock title %}
 
+{% block page_heading %}
+<h1>Dividend <span>Graph</span></h1>
+<p class="page-subtitle">Visual representation of your dividend income</p>
+{% endblock page_heading %}
+
+{% block page_actions %}
+<div class="filter-group">
+    <label for="year-filter">Year</label>
+    <select id="year-filter" onchange="updateGraphFilters()">
+        <option value="">All Years</option>
+        {% for y in years_with_dividends %}
+        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="filter-group">
+    <label for="investment-filter">Holding</label>
+    <select id="investment-filter" onchange="updateGraphFilters()">
+        <option value="">All Investments</option>
+        {% for inv in investments %}
+        <option value="{{ inv.id }}" {% if inv.id == selected_investment_id %}selected{% endif %}>{{ inv.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endblock page_actions %}
+
+{% block view_menu_filters %}
+<div class="popover-section">
+    <div class="popover-label">Chart options</div>
+    <label class="switch-row">
+        <span class="switch-text">Show Cumulative Line<small>Overlay running total on chart</small></span>
+        <input type="checkbox" id="show-cumulative" class="switch" onchange="toggleCumulative()" checked>
+    </label>
+</div>
+{% endblock view_menu_filters %}
+
 {% block content %}
 <div class="dividend-graph-page">
-    <div class="page-header">
-        <h1>Dividend <span>Graph</span></h1>
-        <p class="text-muted">Visual representation of your dividend income</p>
-    </div>
-
-    <div class="graph-filters">
-        <div class="filter-group">
-            <label for="year-filter">Year:</label>
-            <select id="year-filter" onchange="updateGraphFilters()">
-                <option value="">All Years</option>
-                {% for y in years_with_dividends %}
-                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="filter-group">
-            <label for="investment-filter">Investment:</label>
-            <select id="investment-filter" onchange="updateGraphFilters()">
-                <option value="">All Investments</option>
-                {% for inv in investments %}
-                <option value="{{ inv.id }}" {% if inv.id == selected_investment_id %}selected{% endif %}>{{ inv.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="filter-group">
-            <label class="checkbox-label">
-                <input type="checkbox" id="show-cumulative" onchange="toggleCumulative()" checked>
-                Show Cumulative Line
-            </label>
-        </div>
-    </div>
-
     <script>
         function updateGraphFilters() {
             const year = document.getElementById('year-filter').value;
@@ -47,31 +51,40 @@
         }
     </script>
 
+    <div class="stats-grid graph-kpi-strip">
+        <div class="stat-card stat-card-dividends">
+            <div class="stat-label">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+                <h3>Total Displayed</h3>
+            </div>
+            <p class="stat-value maskable" id="totalValue">{{ format_currency(chart_data | sum(attribute='value')) }}</p>
+        </div>
+        <div class="stat-card stat-card-invested">
+            <div class="stat-label">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                <h3>Highest</h3>
+            </div>
+            <p class="stat-value maskable" id="maxValue">
+                {% if chart_data %}
+                {{ format_currency(chart_data | map(attribute='value') | max) }}
+                {% else %}
+                {{ format_currency(0) }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
     <div class="graph-container">
         <div class="chart-wrapper maskable">
             <canvas id="dividendChart"></canvas>
         </div>
-        
-        <div class="chart-summary">
-            <div class="summary-card">
-                <h3>Total Displayed</h3>
-                <p class="summary-value maskable" id="totalValue">{{ format_currency(chart_data | sum(attribute='value')) }}</p>
-            </div>
-            <div class="summary-card">
-                <h3>Highest</h3>
-                <p class="summary-value maskable" id="maxValue">
-                    {% if chart_data %}
-                    {{ format_currency(chart_data | map(attribute='value') | max) }}
-                    {% else %}
-                    {{ format_currency(0) }}
-                    {% endif %}
-                </p>
-            </div>
-        </div>
     </div>
 
-    <div class="data-table-section">
-        <h2>Data Table</h2>
+    <details class="data-table-section collapsible-section" open>
+        <summary class="collapsible-header">
+            <h2>Data Table</h2>
+            <span class="collapsible-chevron">▾</span>
+        </summary>
         <div class="table-container">
             <table class="data-table">
                 <thead>
@@ -101,11 +114,7 @@
                 </tfoot>
             </table>
         </div>
-    </div>
-
-    <div class="back-link">
-        <a href="{{ url_for('main.index') }}">← Back to Dashboard</a>
-    </div>
+    </details>
 
     <!-- Modal for dividend details -->
     <div id="dividendModal" class="modal" style="display: none;">
@@ -145,32 +154,32 @@
     const chartData = {{ chart_data | tojson }};
     const labels = chartData.map(d => d.label);
     const values = chartData.map(d => d.value);
-    
+
     // Calculate cumulative values
     let cumulative = 0;
     const cumulativeValues = values.map(v => {
         cumulative += v;
         return cumulative;
     });
-    
+
     const ctx = document.getElementById('dividendChart').getContext('2d');
 
-    // Night theme chart defaults
-    Chart.defaults.color = '#948fa8';
-    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.07)';
+    // Forest & Amber theme chart defaults (color1.tiff palette)
+    Chart.defaults.color = '#B89F84';
+    Chart.defaults.borderColor = 'rgba(243, 210, 175, 0.09)';
     Chart.defaults.font.family = "'Manrope', -apple-system, sans-serif";
 
-    // Calculate gradient for bars
+    // Calculate gradient for bars (#A55704 burnt amber)
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.85)');
-    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
-    
+    gradient.addColorStop(0, 'rgba(196, 107, 11, 0.90)');
+    gradient.addColorStop(1, 'rgba(165, 87, 4, 0.12)');
+
     const currencySymbol = '{{ settings.currency.symbol if settings else "₱" }}';
-    
+
     function formatCurrency(value) {
         return currencySymbol + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
-    
+
     const dividendChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -180,7 +189,7 @@
                     label: 'Dividend Amount',
                     data: values,
                     backgroundColor: gradient,
-                    borderColor: 'rgba(167, 139, 250, 1)',
+                    borderColor: '#D98A36',
                     borderWidth: 1,
                     borderRadius: 6,
                     order: 2,
@@ -190,11 +199,11 @@
                     label: 'Cumulative Total',
                     data: cumulativeValues,
                     type: 'line',
-                    borderColor: 'rgba(52, 199, 123, 1)',
-                    backgroundColor: 'rgba(52, 199, 123, 0.08)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(52, 199, 123, 1)',
-                    pointBorderColor: '#1c1928',
+                    borderColor: '#F3D2AF',
+                    backgroundColor: 'rgba(243, 210, 175, 0.10)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#F8EADC',
+                    pointBorderColor: '#09251C',
                     pointBorderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,
@@ -283,7 +292,7 @@
             }
         }
     });
-    
+
     // Toggle cumulative line visibility
     function toggleCumulative() {
         const showCumulative = document.getElementById('show-cumulative').checked;
@@ -291,17 +300,17 @@
         dividendChart.options.scales.y1.display = showCumulative;
         dividendChart.update();
     }
-    
+
     // Modal functions
     function showDividendDetails(period, details, total) {
         const modal = document.getElementById('dividendModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalTableBody = document.getElementById('modalTableBody');
         const modalTotal = document.getElementById('modalTotal');
-        
+
         modalTitle.textContent = 'Dividend Details - ' + period;
         modalTotal.textContent = formatCurrency(total);
-        
+
         // Build table rows
         modalTableBody.innerHTML = details.map(d => `
             <tr>
@@ -310,21 +319,21 @@
                 <td>${d.frequency}</td>
             </tr>
         `).join('');
-        
+
         modal.style.display = 'flex';
     }
-    
+
     function closeModal() {
         document.getElementById('dividendModal').style.display = 'none';
     }
-    
+
     // Close modal when clicking outside
     document.getElementById('dividendModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeModal();
         }
     });
-    
+
     // Close modal on escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {

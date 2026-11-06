@@ -9,6 +9,7 @@ from flask import (
     Blueprint,
     Response,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -20,8 +21,10 @@ from werkzeug.wrappers import Response as WerkzeugResponse
 
 from app.settings import (
     CURRENCY_PRESETS,
+    VALID_SIDEBAR_POSITIONS,
     CurrencySettings,
     FormattingSettings,
+    LayoutSettings,
     PaginationSettings,
     TimezoneSettings,
     UserSettings,
@@ -89,6 +92,7 @@ def save_settings() -> WerkzeugResponse:
         timezone_name = request.form.get("timezone_name", "GMT+8")
 
         items_per_page = int(request.form.get("items_per_page", "10"))
+        sidebar_position = request.form.get("sidebar_position", "left").strip().lower()
 
         # Validate
         if decimal_places < 0 or decimal_places > 4:
@@ -101,6 +105,10 @@ def save_settings() -> WerkzeugResponse:
 
         if items_per_page < 5 or items_per_page > 100:
             flash("Items per page must be between 5 and 100", "error")
+            return redirect(url_for("admin.admin_index"))
+
+        if sidebar_position not in VALID_SIDEBAR_POSITIONS:
+            flash("Sidebar position must be left or right", "error")
             return redirect(url_for("admin.admin_index"))
 
         # Create settings object
@@ -122,6 +130,9 @@ def save_settings() -> WerkzeugResponse:
             pagination=PaginationSettings(
                 items_per_page=items_per_page,
             ),
+            layout=LayoutSettings(
+                sidebar_position=sidebar_position,
+            ),
         )
 
         # Save settings
@@ -136,6 +147,40 @@ def save_settings() -> WerkzeugResponse:
         flash(f"Error saving settings: {e}", "error")
 
     return redirect(url_for("admin.admin_index"))
+
+
+@admin_bp.route("/sidebar-position", methods=["POST"])
+def update_sidebar_position() -> Response | WerkzeugResponse | tuple[Response, int]:
+    """
+    Update the sidebar navigation position (left or right).
+
+    Returns:
+        JSON response or redirect with updated sidebar position.
+    """
+    payload = request.get_json(silent=True) or {}
+    raw_pos = payload.get("sidebar_position") or request.form.get("sidebar_position", "")
+    sidebar_position = str(raw_pos).strip().lower()
+
+    if sidebar_position not in VALID_SIDEBAR_POSITIONS:
+        if request.is_json:
+            return jsonify({"status": "error", "message": "Invalid sidebar position"}), 400
+        flash("Sidebar position must be left or right", "error")
+        return redirect(url_for("admin.admin_index"))
+
+    settings_manager = get_settings_manager()
+    current = settings_manager.settings
+    updated = UserSettings(
+        currency=current.currency,
+        formatting=current.formatting,
+        timezone=current.timezone,
+        pagination=current.pagination,
+        layout=LayoutSettings(sidebar_position=sidebar_position),
+    )
+    settings_manager.save_settings(updated)
+
+    if request.is_json:
+        return jsonify({"status": "ok", "sidebar_position": sidebar_position})
+    return redirect(url_for("main.index"))
 
 
 @admin_bp.route("/database/download")

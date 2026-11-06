@@ -123,6 +123,62 @@ def save_settings_timezone(client, offset):
     )
 
 
+@when(
+    parsers.parse('I save settings with sidebar position "{position}"'),
+    target_fixture="response",
+)
+def save_settings_sidebar_position(client, position):
+    """Save settings with specific sidebar position."""
+    return client.post(
+        "/settings/save",
+        data={
+            "currency_code": "USD",
+            "currency_symbol": "$",
+            "currency_name": "US Dollar",
+            "thousands_separator": ",",
+            "decimal_separator": ".",
+            "decimal_places": "2",
+            "timezone_offset": "0",
+            "timezone_name": "UTC",
+            "sidebar_position": position,
+        },
+        follow_redirects=True,
+    )
+
+
+@when(
+    parsers.parse('I update sidebar position via JSON to "{position}"'),
+    target_fixture="response",
+)
+def update_sidebar_position_json(client, position, context):
+    """Update sidebar position via JSON."""
+    with patch("app.routes.admin.get_settings_manager") as mock_manager:
+        mock_instance = MagicMock()
+        mock_manager.return_value = mock_instance
+        context["mock_settings_manager"] = mock_instance
+        return client.post(
+            "/settings/sidebar-position",
+            json={"sidebar_position": position},
+        )
+
+
+@when(
+    parsers.parse('I update sidebar position via form to "{position}"'),
+    target_fixture="response",
+)
+def update_sidebar_position_form(client, position, context):
+    """Update sidebar position via form."""
+    with patch("app.routes.admin.get_settings_manager") as mock_manager:
+        mock_instance = MagicMock()
+        mock_manager.return_value = mock_instance
+        context["mock_settings_manager"] = mock_instance
+        return client.post(
+            "/settings/sidebar-position",
+            data={"sidebar_position": position},
+            follow_redirects=True,
+        )
+
+
 @when("I request database download", target_fixture="response")
 def request_db_download(client, context):
     """Request database download."""

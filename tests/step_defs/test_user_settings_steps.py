@@ -13,6 +13,7 @@ from app.settings import (
     DEFAULT_SETTINGS,
     CurrencySettings,
     FormattingSettings,
+    LayoutSettings,
     PaginationSettings,
     SettingsManager,
     TimezoneSettings,
@@ -152,6 +153,43 @@ def create_pagination_settings(context, items):
 def check_items_per_page(context, expected):
     """Check items per page."""
     assert context["pagination_settings"].items_per_page == expected
+
+
+# Layout Settings steps
+@when("I create default layout settings")
+def create_default_layout_settings(context):
+    """Create default layout settings."""
+    context["layout_settings"] = LayoutSettings()
+
+
+@when(parsers.parse('I create layout settings with sidebar position "{position}"'))
+def create_layout_settings(context, position):
+    """Create layout settings with position."""
+    context["layout_settings"] = LayoutSettings(sidebar_position=position)
+
+
+@then(parsers.parse('the sidebar position should be "{expected}"'))
+def check_sidebar_position(context, expected):
+    """Check sidebar position."""
+    assert context["layout_settings"].sidebar_position == expected
+
+
+@given("a settings file with invalid sidebar position exists")
+def settings_file_invalid_sidebar(context):
+    """Create settings file with invalid sidebar position."""
+    context["temp_dir"] = tempfile.mkdtemp()
+    context["config_path"] = Path(context["temp_dir"]) / "settings.json"
+    data = {
+        "layout": {"sidebar_position": "bottom"},
+    }
+    with context["config_path"].open("w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+
+@then(parsers.parse('the loaded sidebar position should be "{expected}"'))
+def check_loaded_sidebar_position(context, expected):
+    """Check loaded sidebar position."""
+    assert context["settings"].layout.sidebar_position == expected
 
 
 # User Settings Currency Formatting steps
