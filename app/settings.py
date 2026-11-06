@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+VALID_SIDEBAR_POSITIONS: tuple[str, ...] = ("left", "right")
 
 # Default settings
 DEFAULT_SETTINGS: dict[str, Any] = {
@@ -28,6 +30,9 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     },
     "pagination": {
         "items_per_page": 10,
+    },
+    "layout": {
+        "sidebar_position": "left",
     },
 }
 
@@ -86,6 +91,13 @@ class PaginationSettings:
 
 
 @dataclass
+class LayoutSettings:
+    """UI layout configuration."""
+
+    sidebar_position: str = "left"
+
+
+@dataclass
 class UserSettings:
     """Complete user settings."""
 
@@ -93,6 +105,7 @@ class UserSettings:
     formatting: FormattingSettings
     timezone: TimezoneSettings
     pagination: PaginationSettings
+    layout: LayoutSettings = field(default_factory=LayoutSettings)
 
     def format_currency(self, amount: float) -> str:
         """
@@ -138,12 +151,22 @@ class SettingsManager:
             config_path = Path(__file__).parent.parent / "config" / "user_settings.json"
         self._config_path = config_path
         self._settings: UserSettings | None = None
+        self._last_mtime: float | None = None
+
+    def _get_file_mtime(self) -> float | None:
+        """Return file modification timestamp if config file exists."""
+        try:
+            return self._config_path.stat().st_mtime if self._config_path.exists() else None
+        except OSError:
+            return None
 
     @property
     def settings(self) -> UserSettings:
-        """Get current user settings, loading if necessary."""
-        if self._settings is None:
+        """Get current user settings, loading or refreshing if file changed."""
+        current_mtime = self._get_file_mtime()
+        if self._settings is None or current_mtime != self._last_mtime:
             self._settings = self._load_settings()
+            self._last_mtime = current_mtime
         return self._settings
 
     def _load_settings(self) -> UserSettings:
@@ -177,11 +200,17 @@ class SettingsManager:
                     e,
                 )
 
+        raw_position = str(settings_dict["layout"].get("sidebar_position", "left")).lower()
+        if raw_position not in VALID_SIDEBAR_POSITIONS:
+            raw_position = "left"
+        settings_dict["layout"]["sidebar_position"] = raw_position
+
         return UserSettings(
             currency=CurrencySettings(**settings_dict["currency"]),
             formatting=FormattingSettings(**settings_dict["formatting"]),
             timezone=TimezoneSettings(**settings_dict["timezone"]),
             pagination=PaginationSettings(**settings_dict["pagination"]),
+            layout=LayoutSettings(**settings_dict["layout"]),
         )
 
     def save_settings(self, settings: UserSettings) -> None:
@@ -209,6 +238,9 @@ class SettingsManager:
             "pagination": {
                 "items_per_page": settings.pagination.items_per_page,
             },
+            "layout": {
+                "sidebar_position": settings.layout.sidebar_position,
+            },
         }
 
         # Ensure config directory exists
@@ -218,6 +250,7 @@ class SettingsManager:
             json.dump(settings_dict, f, indent=4, ensure_ascii=False)
 
         self._settings = settings
+        self._last_mtime = self._get_file_mtime()
         logger.info("Saved user settings to %s", self._config_path)
 
     def reload(self) -> UserSettings:
@@ -228,6 +261,7 @@ class SettingsManager:
             Reloaded UserSettings.
         """
         self._settings = None
+        self._last_mtime = None
         return self.settings
 
 

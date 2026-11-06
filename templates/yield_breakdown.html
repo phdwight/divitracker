@@ -2,18 +2,18 @@
 
 {% block title %}Yield Calculation Breakdown - DiviTracker{% endblock title %}
 
+{% block page_heading %}
+<h1>Annualized <span>Yield</span></h1>
+<p class="page-subtitle">Detailed breakdown for {{ selected_year }}</p>
+{% endblock page_heading %}
+
+{% block page_actions %}
+<button onclick="window.print()" class="btn btn-primary btn-sm no-print">Print</button>
+<a href="{{ url_for('main.index', year=selected_year) }}" class="btn btn-secondary btn-sm no-print">← Back to Dashboard</a>
+{% endblock page_actions %}
+
 {% block content %}
 <div class="yield-breakdown">
-    <div class="yield-header">
-        <div class="yield-title">
-            <h1>Annualized <span>Yield</span></h1>
-            <p class="yield-subtitle">Detailed breakdown for {{ selected_year }}</p>
-        </div>
-        <div class="yield-actions no-print">
-            <button onclick="window.print()" class="btn btn-primary">Print</button>
-            <a href="{{ url_for('main.index', year=selected_year) }}" class="btn btn-secondary">← Back to Dashboard</a>
-        </div>
-    </div>
 
     <div class="yield-summary-box">
         <div class="yield-formula">

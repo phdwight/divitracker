@@ -2,75 +2,93 @@
 
 {% block title %}Dashboard - DiviTracker{% endblock title %}
 
+{% block page_heading %}
+<h1>Dividend <span>Dashboard</span></h1>
+<p class="page-subtitle">Tracking {{ selected_year }} payouts across your portfolio</p>
+{% endblock page_heading %}
+
+{% block page_actions %}
+{% if years_with_dividends %}
+<div class="year-selector">
+    <label for="year-select">Year</label>
+    <select id="year-select" onchange="updateFilters()">
+        {% for y in years_with_dividends %}
+        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+</div>
+{% endif %}
+{% endblock page_actions %}
+
+{% block view_menu_filters %}
+<div class="popover-section">
+    <div class="popover-label">Holdings filters</div>
+    <label class="switch-row">
+        <span class="switch-text">Hide zero dividends<small>Only holdings with {{ selected_year }} payouts</small></span>
+        <input type="checkbox" id="hide-zero" class="switch" data-view-toggle {% if hide_zero %}checked{% endif %} onchange="updateFilters()">
+    </label>
+    <label class="switch-row">
+        <span class="switch-text">Hide zero investments<small>Only holdings with balance &gt; 0</small></span>
+        <input type="checkbox" id="hide-zero-investments" class="switch" data-view-toggle {% if hide_zero_investments %}checked{% endif %} onchange="updateFilters()">
+    </label>
+</div>
+{% endblock view_menu_filters %}
+
 {% block content %}
 <div class="dashboard">
-    <div class="dashboard-header">
-        <div>
-            <h1>Dividend <span>Dashboard</span></h1>
-            <p class="page-subtitle">Tracking {{ selected_year }} payouts across your portfolio</p>
-        </div>
-        <div class="dashboard-filters">
-            {% if years_with_dividends %}
-            <div class="year-selector">
-                <label for="year-select">Year</label>
-                <select id="year-select" onchange="updateFilters()">
-                    {% for y in years_with_dividends %}
-                    <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            {% endif %}
-            <div class="filter-checkbox">
-                <label>
-                    <input type="checkbox" id="hide-zero" {% if hide_zero %}checked{% endif %} onchange="updateFilters()">
-                    Hide zero dividends
-                </label>
-            </div>
-            <div class="filter-checkbox">
-                <label>
-                    <input type="checkbox" id="hide-zero-investments" {% if hide_zero_investments %}checked{% endif %} onchange="updateFilters()">
-                    Hide zero investments
-                </label>
-            </div>
-        </div>
-    </div>
-
     <script>
-        function updateFilters() {
+        function buildDashboardUrl(pageOverride) {
             const year = document.getElementById('year-select')?.value || {{ selected_year }};
-            const hideZero = document.getElementById('hide-zero').checked;
-            const hideZeroInvestments = document.getElementById('hide-zero-investments').checked;
+            const hideZero = document.getElementById('hide-zero')?.checked ?? {{ 'true' if hide_zero else 'false' }};
+            const hideZeroInvestments = document.getElementById('hide-zero-investments')?.checked ?? {{ 'true' if hide_zero_investments else 'false' }};
             const perPage = document.getElementById('per-page-select')?.value || {{ items_per_page }};
-            window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&hide_zero_investments=' + hideZeroInvestments + '&per_page=' + perPage;
+            const q = document.getElementById('holdings-search-input')?.value.trim() || '';
+            const params = new URLSearchParams();
+            params.set('hide_zero', hideZero);
+            params.set('hide_zero_investments', hideZeroInvestments);
+            params.set('per_page', perPage);
+            params.set('sort', '{{ sort_key }}');
+            params.set('dir', '{{ sort_dir }}');
+            if (q) params.set('q', q);
+            if (pageOverride) params.set('page', pageOverride);
+            return '/year/' + year + '?' + params.toString();
+        }
+
+        function updateFilters() {
+            window.location.href = buildDashboardUrl();
         }
 
         function goToPage(page) {
-            const year = document.getElementById('year-select')?.value || {{ selected_year }};
-            const hideZero = document.getElementById('hide-zero').checked;
-            const hideZeroInvestments = document.getElementById('hide-zero-investments').checked;
-            const perPage = document.getElementById('per-page-select')?.value || {{ items_per_page }};
-            window.location.href = '/year/' + year + '?hide_zero=' + hideZero + '&hide_zero_investments=' + hideZeroInvestments + '&per_page=' + perPage + '&page=' + page;
+            window.location.href = buildDashboardUrl(page);
+        }
+
+        function toggleFilterChip(checkboxId) {
+            const el = document.getElementById(checkboxId);
+            if (el) {
+                el.checked = !el.checked;
+                updateFilters();
+            }
         }
     </script>
 
     <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card stat-card-invested">
             <div class="stat-label">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
                 Currently invested
             </div>
             <p class="stat-value maskable">{{ format_currency(total_invested) }}</p>
-            <p class="paper-gain-loss maskable {% if total_paper_gain_loss > 0 %}paper-gain{% elif total_paper_gain_loss < 0 %}paper-loss{% else %}paper-neutral{% endif %}">
+            {% if has_current_values and total_paper_gain_loss != 0 %}
+            <p class="paper-gain-loss maskable {% if total_paper_gain_loss > 0 %}paper-gain{% else %}paper-loss{% endif %}">
                 {% if total_paper_gain_loss > 0 %}
                 +{{ format_currency(total_paper_gain_loss) }} (+{{ "%.2f"|format(total_paper_gain_loss_percentage) }}%)
-                {% elif total_paper_gain_loss < 0 %}
-                -{{ format_currency(total_paper_gain_loss|abs) }} ({{ "%.2f"|format(total_paper_gain_loss_percentage) }}%)
                 {% else %}
-                {{ format_currency(0) }} (0.00%)
+                -{{ format_currency(total_paper_gain_loss|abs) }} ({{ "%.2f"|format(total_paper_gain_loss_percentage) }}%)
                 {% endif %}
             </p>
+            {% endif %}
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-dividends">
             <div class="stat-label">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
                 Dividends received · {{ selected_year }}
@@ -88,69 +106,124 @@
     </div>
 
     <div class="section section-plain">
-        <div class="section-header">
-            <h2>Your investments</h2>
-            <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Add investment
-            </a>
+        <div class="holdings-toolbar">
+            <div class="holdings-toolbar-left">
+                <h2>Your investments</h2>
+                <div class="active-filter-chips">
+                    {% if hide_zero %}
+                    <button type="button" class="filter-chip" onclick="toggleFilterChip('hide-zero')" title="Click to show holdings with zero dividends">
+                        Zero dividends hidden <span class="chip-x">×</span>
+                    </button>
+                    {% endif %}
+                    {% if hide_zero_investments %}
+                    <button type="button" class="filter-chip" onclick="toggleFilterChip('hide-zero-investments')" title="Click to show holdings with zero balance">
+                        Zero balance hidden <span class="chip-x">×</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="holdings-toolbar-right">
+                <form class="holdings-search" onsubmit="updateFilters(); return false;">
+                    <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="search" id="holdings-search-input" name="q" value="{{ search_query }}" placeholder="Search holding or ticker…" aria-label="Search holdings">
+                </form>
+                <a href="{{ url_for('investments.add_investment') }}" class="btn btn-primary btn-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add investment
+                </a>
+            </div>
         </div>
 
         {% if investments %}
-        <div class="investment-list">
-            {% for investment in investments %}
-            <div class="investment-row">
-                <div class="inv-main">
-                    <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="inv-name">{{ investment.name }}</a>
-                    {% if investment.ticker %}
-                    <span class="ticker-badge">{{ investment.ticker }}</span>
-                    {% endif %}
-                </div>
-                <div class="inv-metrics">
-                    <div class="metric">
-                        <div class="metric-label">Invested</div>
-                        <div class="metric-value maskable">{{ format_currency(investment.total_invested) }}</div>
-                        <div class="metric-subvalue maskable {% if investment.paper_gain_loss > 0 %}paper-gain{% elif investment.paper_gain_loss < 0 %}paper-loss{% else %}paper-neutral{% endif %}">
-                            {% if investment.paper_gain_loss > 0 %}
-                            +{{ format_currency(investment.paper_gain_loss) }} (+{{ "%.2f"|format(investment.paper_gain_loss_percentage) }}%)
-                            {% elif investment.paper_gain_loss < 0 %}
-                            -{{ format_currency(investment.paper_gain_loss|abs) }} ({{ "%.2f"|format(investment.paper_gain_loss_percentage) }}%)
-                            {% else %}
-                            {{ format_currency(0) }} (0.00%)
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">Current value</div>
-                        <div class="metric-value maskable">{{ format_currency(investment.effective_current_value) }}</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">Received {{ selected_year }}</div>
-                        <div class="metric-value maskable">{{ format_currency(investment.calculate_annual_dividends(selected_year)) }}</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">Yield act | proj</div>
-                        <div class="metric-value yield-dual">
-                            <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
-                                {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year)) }}%
-                            </span>
-                            <span class="yield-separator">|</span>
-                            <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year, projected=True) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year, projected=True) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
-                                {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year, projected=True)) }}%
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="inv-actions">
-                    <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="icon-btn icon-btn-accent" title="Add Dividend">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </a>
-                    <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="icon-btn" title="View Details">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </a>
-                </div>
+        <div class="holdings-table-card">
+            <div class="table-container">
+                <table class="holdings-table">
+                    <thead>
+                        <tr>
+                            {% for col in sort_columns %}
+                            <th class="{{ 'col-num' if col.key in ('invested', 'current', 'received') else ('col-yield' if col.key == 'yield' else 'col-holding') }}">
+                                <a href="{{ col.url }}" class="sort-link {{ 'active' if col.active else '' }}">
+                                    <span>{{ col.label }}</span>
+                                    {% if col.active %}
+                                    <span class="sort-arrow">{{ '↑' if col.dir == 'asc' else '↓' }}</span>
+                                    {% else %}
+                                    <span class="sort-arrow sort-arrow-idle">↕</span>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            {% endfor %}
+                            <th class="col-actions"><span class="sr-only">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for investment in investments %}
+                        <tr class="investment-row">
+                            <td class="col-holding" data-label="Holding">
+                                <div class="holding-cell">
+                                    <span class="holding-avatar">{{ (investment.ticker or investment.name)[:2] | upper }}</span>
+                                    <div class="holding-meta">
+                                        <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="inv-name">{{ investment.name }}</a>
+                                        {% if investment.ticker %}
+                                        <span class="ticker-badge">{{ investment.ticker }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-num" data-label="Invested">
+                                <div class="metric-value maskable">{{ format_currency(investment.total_invested) }}</div>
+                                {% if investment.current_value is not none and investment.paper_gain_loss != 0 %}
+                                <div class="metric-subvalue maskable {% if investment.paper_gain_loss > 0 %}paper-gain{% else %}paper-loss{% endif %}">
+                                    {% if investment.paper_gain_loss > 0 %}
+                                    +{{ format_currency(investment.paper_gain_loss) }} (+{{ "%.2f"|format(investment.paper_gain_loss_percentage) }}%)
+                                    {% else %}
+                                    -{{ format_currency(investment.paper_gain_loss|abs) }} ({{ "%.2f"|format(investment.paper_gain_loss_percentage) }}%)
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td class="col-num" data-label="Current value">
+                                <div class="metric-value maskable">{{ format_currency(investment.effective_current_value) }}</div>
+                            </td>
+                            <td class="col-num" data-label="Received {{ selected_year }}">
+                                <div class="metric-value maskable">{{ format_currency(investment.calculate_annual_dividends(selected_year)) }}</div>
+                            </td>
+                            <td class="col-yield" data-label="Yield act | proj">
+                                <div class="metric-value yield-dual">
+                                    <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                        {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year)) }}%
+                                    </span>
+                                    <span class="yield-separator">|</span>
+                                    <span class="yield-badge {% if investment.calculate_dividend_yield(selected_year, projected=True) >= 5 %}yield-high{% elif investment.calculate_dividend_yield(selected_year, projected=True) >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                        {{ "%.2f"|format(investment.calculate_dividend_yield(selected_year, projected=True)) }}%
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="col-actions">
+                                <details class="popover row-menu" data-popover>
+                                    <summary class="icon-btn row-menu-btn" title="Actions for {{ investment.name }}" aria-label="Actions for {{ investment.name }}">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+                                    </summary>
+                                    <div class="popover-panel row-menu-panel" role="menu">
+                                        <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="menu-item" role="menuitem">
+                                            <span class="menu-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+                                            <span>Record dividend</span>
+                                        </a>
+                                        <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="menu-item" role="menuitem">
+                                            <span class="menu-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                                            <span>View details</span>
+                                        </a>
+                                        <a href="{{ url_for('investments.edit_investment', investment_id=investment.id) }}" class="menu-item" role="menuitem">
+                                            <span class="menu-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span>
+                                            <span>Edit holding</span>
+                                        </a>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% endfor %}
         </div>
 
         {% if total_pages > 1 or total_items > 5 %}
@@ -210,4 +283,8 @@
 </div>
 {% endblock content %}
 
-{% block scripts %}{% endblock scripts %}
+{% block scripts %}
+<script>
+    if (window.updateViewBadge) window.updateViewBadge();
+</script>
+{% endblock scripts %}

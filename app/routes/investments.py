@@ -60,7 +60,19 @@ def add_investment():
             return redirect(url_for("investments.add_investment"))
 
     investments = investment_service.get_all_investments()
-    return render_template("add_investment.html", investments=investments)
+    investments_json = [
+        {
+            "name": inv.name,
+            "ticker": inv.ticker or "",
+            "total_invested": inv.total_invested,
+            "current_value": inv.current_value,
+            "total_received": inv.get_total_dividends_received(),
+        }
+        for inv in investments
+    ]
+    return render_template(
+        "add_investment.html", investments=investments, investments_json=investments_json
+    )
 
 
 @investments_bp.route("/<int:investment_id>")

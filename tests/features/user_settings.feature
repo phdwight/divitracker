@@ -41,6 +41,20 @@ Feature: User Settings
         When I create pagination settings with 25 items per page
         Then the items per page should be 25
 
+    # Layout Settings
+    Scenario: Create default layout settings
+        When I create default layout settings
+        Then the sidebar position should be "left"
+
+    Scenario: Create custom layout settings
+        When I create layout settings with sidebar position "right"
+        Then the sidebar position should be "right"
+
+    Scenario: Invalid sidebar position falls back to left
+        Given a settings file with invalid sidebar position exists
+        When I load settings
+        Then the loaded sidebar position should be "left"
+
     # User Settings Currency Formatting
     Scenario: Format currency with default PHP settings
         Given user settings with PHP currency

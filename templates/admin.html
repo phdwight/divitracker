@@ -2,19 +2,32 @@
 
 {% block title %}Admin Settings - DiviTracker{% endblock title %}
 
-{% block content %}
-<div class="page-header">
-    <h1>Admin <span>Settings</span></h1>
-    <p class="text-muted">Manage application settings and database</p>
-</div>
+{% block page_heading %}
+<h1>Admin <span>Settings</span></h1>
+<p class="page-subtitle">Manage application settings and database</p>
+{% endblock page_heading %}
 
-<div class="admin-grid">
-    <!-- Settings Section -->
-    <div class="card admin-card">
-        <h2>Currency & Formatting</h2>
-        <form action="{{ url_for('admin.save_settings') }}" method="post" class="admin-form">
-            <div class="form-section">
-                <h3>Currency</h3>
+{% block page_actions %}
+<button type="submit" form="settings-form" class="btn btn-primary btn-sm">Save Settings</button>
+{% endblock page_actions %}
+
+{% block content %}
+<div class="settings-layout">
+    <aside class="settings-nav" aria-label="Settings sections">
+        <a href="#sec-currency" class="settings-nav-item active">Currency</a>
+        <a href="#sec-formatting" class="settings-nav-item">Formatting</a>
+        <a href="#sec-layout" class="settings-nav-item">Layout</a>
+        <a href="#sec-timezone" class="settings-nav-item">Timezone &amp; Paging</a>
+        <a href="#sec-database" class="settings-nav-item">Database</a>
+    </aside>
+
+    <div class="settings-content">
+        <form id="settings-form" action="{{ url_for('admin.save_settings') }}" method="post" class="admin-form">
+            <section id="sec-currency" class="card admin-card settings-section">
+                <div class="settings-section-head">
+                    <h2>Currency &amp; Formatting</h2>
+                    <p class="text-muted">Choose the currency symbol and ISO code used across your portfolio.</p>
+                </div>
                 <div class="form-group">
                     <label for="currency_preset">Currency Preset</label>
                     <select id="currency_preset" class="form-control" onchange="applyCurrencyPreset(this.value)">
@@ -29,24 +42,27 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="currency_code">Code</label>
-                        <input type="text" id="currency_code" name="currency_code" 
+                        <input type="text" id="currency_code" name="currency_code"
                                value="{{ settings.currency.code }}" class="form-control" required maxlength="5">
                     </div>
                     <div class="form-group">
                         <label for="currency_symbol">Symbol</label>
-                        <input type="text" id="currency_symbol" name="currency_symbol" 
+                        <input type="text" id="currency_symbol" name="currency_symbol"
                                value="{{ settings.currency.symbol }}" class="form-control" required maxlength="5">
                     </div>
                     <div class="form-group">
                         <label for="currency_name">Name</label>
-                        <input type="text" id="currency_name" name="currency_name" 
+                        <input type="text" id="currency_name" name="currency_name"
                                value="{{ settings.currency.name }}" class="form-control" required>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="form-section">
-                <h3>Number Formatting</h3>
+            <section id="sec-formatting" class="card admin-card settings-section">
+                <div class="settings-section-head">
+                    <h2>Number Formatting</h2>
+                    <p class="text-muted">Control separators and decimal precision for monetary values.</p>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="thousands_separator">Thousands Separator</label>
@@ -79,29 +95,67 @@
                     <span class="preview-label">Preview:</span>
                     <span id="format_preview" class="preview-value">{{ settings.currency.symbol }}1,234.56</span>
                 </div>
-            </div>
+            </section>
 
-            <div class="form-section">
-                <h3>Timezone</h3>
+            <section id="sec-layout" class="card admin-card settings-section">
+                <div class="settings-section-head">
+                    <h2>Layout &amp; Navigation</h2>
+                    <p class="text-muted">Dock the vertical navigation rail on the left or right side of the workspace.</p>
+                </div>
+                <div class="layout-segmented" role="radiogroup" aria-label="Sidebar position">
+                    <label class="layout-option">
+                        <input type="radio" name="sidebar_position" value="left" {% if settings.layout.sidebar_position == 'left' %}checked{% endif %}>
+                        <span class="layout-option-card">
+                            <span class="layout-thumb layout-thumb-left" aria-hidden="true">
+                                <span class="thumb-rail"></span>
+                                <span class="thumb-body">
+                                    <span class="thumb-bar"></span>
+                                    <span class="thumb-cards"></span>
+                                </span>
+                            </span>
+                            <span class="layout-option-meta">
+                                <strong>Left side</strong>
+                                <small>Default navigation rail on the left</small>
+                            </span>
+                        </span>
+                    </label>
+                    <label class="layout-option">
+                        <input type="radio" name="sidebar_position" value="right" {% if settings.layout.sidebar_position == 'right' %}checked{% endif %}>
+                        <span class="layout-option-card">
+                            <span class="layout-thumb layout-thumb-right" aria-hidden="true">
+                                <span class="thumb-body">
+                                    <span class="thumb-bar"></span>
+                                    <span class="thumb-cards"></span>
+                                </span>
+                                <span class="thumb-rail"></span>
+                            </span>
+                            <span class="layout-option-meta">
+                                <strong>Right side</strong>
+                                <small>Dock navigation rail on the right</small>
+                            </span>
+                        </span>
+                    </label>
+                </div>
+            </section>
+
+            <section id="sec-timezone" class="card admin-card settings-section">
+                <div class="settings-section-head">
+                    <h2>Timezone &amp; Pagination</h2>
+                    <p class="text-muted">Set your local timezone offset and default table page size.</p>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="timezone_offset">UTC Offset (hours)</label>
-                        <input type="number" id="timezone_offset" name="timezone_offset" 
-                               value="{{ settings.timezone.offset_hours }}" class="form-control" 
+                        <input type="number" id="timezone_offset" name="timezone_offset"
+                               value="{{ settings.timezone.offset_hours }}" class="form-control"
                                min="-12" max="14" required>
                     </div>
                     <div class="form-group">
                         <label for="timezone_name">Timezone Name</label>
-                        <input type="text" id="timezone_name" name="timezone_name" 
+                        <input type="text" id="timezone_name" name="timezone_name"
                                value="{{ settings.timezone.name }}" class="form-control" required
                                placeholder="e.g., GMT+8, PST, EST">
                     </div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h3>Pagination</h3>
-                <div class="form-row">
                     <div class="form-group">
                         <label for="items_per_page">Items Per Page</label>
                         <select id="items_per_page" name="items_per_page" class="form-control">
@@ -113,88 +167,86 @@
                             <option value="50" {% if settings.pagination.items_per_page == 50 %}selected{% endif %}>50</option>
                             <option value="100" {% if settings.pagination.items_per_page == 100 %}selected{% endif %}>100</option>
                         </select>
-                        <span class="form-help">Number of items to display per page on Dashboard and Dividend History</span>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    Save Settings
-                </button>
+            <div class="settings-save-bar">
+                <span class="save-bar-hint">Changes apply across all portfolio views.</span>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
             </div>
         </form>
-    </div>
 
-    <!-- Database Section -->
-    <div class="card admin-card">
-        <h2>Database Management</h2>
-        
-        <div class="db-info">
-            {% if db_exists %}
-            <div class="db-status db-status-ok">
-                <span class="status-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                </span>
-                <div class="status-details">
-                    <strong>Database Active</strong>
-                    <p>File: dividends.db</p>
-                    <p>Size: {{ "%.2f"|format(db_size / 1024) }} KB</p>
-                    <p>Last Modified: {{ db_modified.strftime('%Y-%m-%d %H:%M:%S') if db_modified else 'N/A' }} UTC</p>
-                </div>
+        <section id="sec-database" class="card admin-card settings-section">
+            <div class="settings-section-head">
+                <h2>Database Management</h2>
+                <p class="text-muted">Download SQLite backups or restore from an existing `.db` snapshot.</p>
             </div>
-            {% else %}
-            <div class="db-status db-status-warning">
-                <span class="status-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                </span>
-                <div class="status-details">
-                    <strong>No Database Found</strong>
-                    <p>The database file does not exist yet.</p>
-                </div>
-            </div>
-            {% endif %}
-        </div>
 
-        <div class="db-actions">
-            <div class="db-action-card">
-                <h3>Download Backup</h3>
-                <p>Download a backup copy of your database file.</p>
+            <div class="db-info">
                 {% if db_exists %}
-                <a href="{{ url_for('admin.download_db') }}" class="btn btn-primary">
-                    Download Database
-                </a>
+                <div class="db-status db-status-ok">
+                    <span class="status-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </span>
+                    <div class="status-details">
+                        <strong>Database Active</strong>
+                        <p>File: dividends.db · Size: {{ "%.2f"|format(db_size / 1024) }} KB · Last Modified: {{ db_modified.strftime('%Y-%m-%d %H:%M:%S') if db_modified else 'N/A' }} UTC</p>
+                    </div>
+                </div>
                 {% else %}
-                <button class="btn btn-secondary" disabled>No Database to Download</button>
+                <div class="db-status db-status-warning">
+                    <span class="status-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </span>
+                    <div class="status-details">
+                        <strong>No Database Found</strong>
+                        <p>The database file does not exist yet.</p>
+                    </div>
+                </div>
                 {% endif %}
             </div>
 
-            <div class="db-action-card">
-                <h3>Restore / Upload</h3>
-                <p>Upload a database file to replace the current one. A backup will be created automatically.</p>
-                <form action="{{ url_for('admin.upload_db') }}" method="post" enctype="multipart/form-data" 
-                      onsubmit="return confirmUpload()">
-                    <div class="file-upload">
-                        <input type="file" id="db_file" name="db_file" accept=".db" required>
-                        <label for="db_file" class="file-label">
-                            <span class="file-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
-                            </span>
-                            <span class="file-text">Choose .db file</span>
-                        </label>
-                        <span id="file_name" class="file-name"></span>
-                    </div>
-                    <button type="submit" class="btn btn-warning">
-                        Upload & Replace
-                    </button>
-                </form>
-            </div>
-        </div>
+            <div class="db-actions">
+                <div class="db-action-card">
+                    <h3>Download Backup</h3>
+                    <p>Download a backup copy of your database file.</p>
+                    {% if db_exists %}
+                    <a href="{{ url_for('admin.download_db') }}" class="btn btn-primary btn-sm">
+                        Download Database
+                    </a>
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm" disabled>No Database to Download</button>
+                    {% endif %}
+                </div>
 
-        <div class="warning-box">
-            <strong>Warning:</strong> Uploading a database will replace all current data.
-            Make sure to download a backup first. After uploading, restart the application for changes to take effect.
-        </div>
+                <div class="db-action-card">
+                    <h3>Restore / Upload</h3>
+                    <p>Upload a database file to replace the current one. A backup is created automatically.</p>
+                    <form action="{{ url_for('admin.upload_db') }}" method="post" enctype="multipart/form-data"
+                          onsubmit="return confirmUpload()">
+                        <div class="file-upload">
+                            <input type="file" id="db_file" name="db_file" accept=".db" required>
+                            <label for="db_file" class="file-label">
+                                <span class="file-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+                                </span>
+                                <span class="file-text">Choose .db file</span>
+                            </label>
+                            <span id="file_name" class="file-name"></span>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-sm">
+                            Upload &amp; Replace
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>Warning:</strong> Uploading a database will replace all current data.
+                Make sure to download a backup first. After uploading, restart the application for changes to take effect.
+            </div>
+        </section>
     </div>
 </div>
 {% endblock content %}
@@ -219,33 +271,27 @@
         const thousands = document.getElementById('thousands_separator').value;
         const decimal = document.getElementById('decimal_separator').value;
         const places = parseInt(document.getElementById('decimal_places').value);
-        
+
         let number = 1234.5678;
         let formatted = number.toFixed(places);
-        
-        // Split into integer and decimal parts
+
         let parts = formatted.split('.');
         let intPart = parts[0];
         let decPart = parts[1] || '';
-        
-        // Add thousands separator
+
         if (thousands) {
             intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, thousands);
         }
-        
-        // Combine with decimal separator
+
         let result = decPart ? intPart + decimal + decPart : intPart;
-        
         document.getElementById('format_preview').textContent = symbol + result;
     }
 
-    // Update preview on any change
     ['currency_symbol', 'thousands_separator', 'decimal_separator', 'decimal_places'].forEach(id => {
         document.getElementById(id).addEventListener('change', updatePreview);
         document.getElementById(id).addEventListener('input', updatePreview);
     });
 
-    // File upload display
     document.getElementById('db_file').addEventListener('change', function(e) {
         const fileName = e.target.files[0]?.name || '';
         document.getElementById('file_name').textContent = fileName;
@@ -255,11 +301,28 @@
         return confirm('Are you sure you want to replace the database? This action cannot be undone without a backup.');
     }
 
-    // Auto-update timezone name when offset changes
     document.getElementById('timezone_offset').addEventListener('change', function(e) {
         const offset = parseInt(e.target.value);
         const sign = offset >= 0 ? '+' : '';
         document.getElementById('timezone_name').value = 'GMT' + sign + offset;
+    });
+
+    // Live-preview sidebar position when radio option is clicked
+    document.querySelectorAll('input[name="sidebar_position"]').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            const pos = radio.value === 'right' ? 'right' : 'left';
+            document.body.classList.toggle('sidebar-left', pos === 'left');
+            document.body.classList.toggle('sidebar-right', pos === 'right');
+            document.body.setAttribute('data-sidebar-position', pos);
+        });
+    });
+
+    // Highlight active section in settings sub-nav
+    document.querySelectorAll('.settings-nav-item').forEach(function (link) {
+        link.addEventListener('click', function () {
+            document.querySelectorAll('.settings-nav-item').forEach(function (el) { el.classList.remove('active'); });
+            link.classList.add('active');
+        });
     });
 </script>
 {% endblock scripts %}

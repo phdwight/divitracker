@@ -11,53 +11,117 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=night4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=night7">
 </head>
-<body>
+<body class="sidebar-{{ sidebar_position | default('left') }}" data-sidebar-position="{{ sidebar_position | default('left') }}">
     {% set ep = request.endpoint or '' %}
-    <nav class="navbar">
-        <div class="container">
-            <a href="{{ url_for('main.index') }}" class="logo">
+    <div class="app-shell">
+        <nav class="navbar sidebar" aria-label="Primary navigation">
+            <a href="{{ url_for('main.index') }}" class="sidebar-logo" title="DiviTracker">
                 <span class="logo-mark">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M21 12a1 1 0 0 0-1-1h-4a2 2 0 0 0 0 4h4a1 1 0 0 0 1-1v-2Z"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M21 12a1 1 0 0 0-1-1h-4a2 2 0 0 0 0 4h4a1 1 0 0 0 1-1v-2Z"/></svg>
                 </span>
-                DiviTracker
+                <span class="logo-text">DiviTracker</span>
             </a>
+
             <div class="nav-links">
-                <a href="{{ url_for('main.index') }}" class="{{ 'active' if ep in ('main.index', 'main.yield_breakdown') or ep.startswith('investments.view') }}">Dashboard</a>
-                <a href="{{ url_for('main.dividend_graph') }}" class="{{ 'active' if ep == 'main.dividend_graph' }}">Graph</a>
-                <a href="{{ url_for('investments.add_investment') }}" class="{{ 'active' if ep == 'investments.add_investment' }}">Add investment</a>
-                <a href="{{ url_for('dividends.add_dividend') }}" class="{{ 'active' if ep == 'dividends.add_dividend' }}">Add dividend</a>
-                <a href="{{ url_for('admin.admin_index') }}" class="{{ 'active' if ep.startswith('admin.') }}">Settings</a>
-            </div>
-            <button type="button" id="mask-toggle" class="nav-mask-toggle" onclick="toggleAmountsMask()" title="Hide/Show amounts" aria-pressed="false">
-                <svg class="icon-eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <svg class="icon-eye-off hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-                <span class="mask-label">Hide amounts</span>
-            </button>
-        </div>
-    </nav>
+                <a href="{{ url_for('main.index') }}" class="nav-item {{ 'active' if ep in ('main.index', 'main.yield_breakdown') or ep.startswith('investments.view') }}">
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+                    <span class="nav-label">Dashboard</span>
+                </a>
+                <a href="{{ url_for('main.dividend_graph') }}" class="nav-item {{ 'active' if ep == 'main.dividend_graph' }}">
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    <span class="nav-label">Graph</span>
+                </a>
 
-    <main class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
-                        <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <details class="popover new-menu" data-popover>
+                    <summary class="nav-new {{ 'active' if ep in ('investments.add_investment', 'dividends.add_dividend') }}" aria-label="Create new">
+                        <span class="nav-new-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </span>
+                        <span class="nav-label">New</span>
+                    </summary>
+                    <div class="popover-panel new-menu-panel" role="menu">
+                        <div class="popover-label">Create</div>
+                        <a href="{{ url_for('investments.add_investment') }}" class="menu-item" role="menuitem">
+                            <span class="menu-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+                            <span>Add investment<small>New holding or top-up</small></span>
+                        </a>
+                        <a href="{{ url_for('dividends.add_dividend') }}" class="menu-item" role="menuitem">
+                            <span class="menu-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+                            <span>Add dividend<small>Record a payout</small></span>
+                        </a>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+                </details>
 
-        {% block content %}{% endblock content %}
-    </main>
+                <a href="{{ url_for('admin.admin_index') }}" class="nav-item {{ 'active' if ep.startswith('admin.') }}">
+                    <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+                    <span class="nav-label">Settings</span>
+                </a>
+            </div>
 
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 DiviTracker - Track Your Dividend Income | Version {{ app_version }}</p>
+            <div class="sidebar-footer">
+                <button type="button" id="sidebar-position-toggle" class="sidebar-pos-btn" onclick="toggleSidebarPosition()" title="Move sidebar to the right side" aria-label="Move sidebar to the right side">
+                    <svg class="icon-pos-right" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/><polyline points="9 9 12 12 9 15"/></svg>
+                    <svg class="icon-pos-left hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><polyline points="15 15 12 12 15 9"/></svg>
+                </button>
+            </div>
+        </nav>
+
+        <div class="app-main">
+            <div class="container">
+                <header class="page-topbar">
+                    <div class="page-heading">
+                        {% block page_heading %}{% endblock page_heading %}
+                    </div>
+                    <div class="page-actions">
+                        {% block page_actions %}{% endblock page_actions %}
+
+                        {# Consolidated visibility controls: privacy + page-specific hide filters #}
+                        <details class="popover view-menu no-print" id="view-menu" data-popover>
+                            <summary class="view-menu-btn" aria-label="View and hide options">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <span class="view-menu-label">View</span>
+                                <span class="view-badge hidden" id="view-badge" title="Active hide options">0</span>
+                                <svg class="view-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                            </summary>
+                            <div class="popover-panel view-menu-panel">
+                                <div class="popover-section">
+                                    <div class="popover-label">Privacy</div>
+                                    <label class="switch-row">
+                                        <span class="switch-text">Hide amounts<small>Blur monetary values (hover to peek)</small></span>
+                                        <input type="checkbox" id="mask-toggle" class="switch" data-view-toggle>
+                                    </label>
+                                </div>
+                                {% block view_menu_filters %}{% endblock view_menu_filters %}
+                            </div>
+                        </details>
+                    </div>
+                </header>
+            </div>
+
+            <main class="container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock content %}
+            </main>
+
+            <footer class="footer">
+                <div class="container">
+                    <p>© 2025 DiviTracker - Track Your Dividend Income | Version {{ app_version }}</p>
+                </div>
+            </footer>
         </div>
-    </footer>
+    </div>
 
     <script>
         // Auto-dismiss alerts after 5 seconds
@@ -68,22 +132,43 @@
             });
         }, 5000);
 
-        // Global amount masking toggle
+        // Popovers (<details data-popover>): close on outside click / Escape, one open at a time
+        (function () {
+            const popovers = () => document.querySelectorAll('details[data-popover]');
+            document.addEventListener('click', function (e) {
+                popovers().forEach(function (d) {
+                    if (d.open && !d.contains(e.target)) d.open = false;
+                });
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') popovers().forEach(function (d) { d.open = false; });
+            });
+            popovers().forEach(function (d) {
+                d.addEventListener('toggle', function () {
+                    if (!d.open) return;
+                    popovers().forEach(function (other) { if (other !== d) other.open = false; });
+                });
+            });
+        })();
+
+        // Badge on the View menu showing how many hide options are active
+        window.updateViewBadge = function () {
+            const badge = document.getElementById('view-badge');
+            if (!badge) return;
+            const active = document.querySelectorAll('[data-view-toggle]:checked').length;
+            badge.textContent = active;
+            badge.classList.toggle('hidden', active === 0);
+        };
+
+        // Global amount masking toggle (persisted in localStorage)
         (function () {
             const STORAGE_KEY = 'divitracker.amountsMasked';
-            const btn = document.getElementById('mask-toggle');
-            const labelEl = btn ? btn.querySelector('.mask-label') : null;
-            const eyeEl = btn ? btn.querySelector('.icon-eye') : null;
-            const eyeOffEl = btn ? btn.querySelector('.icon-eye-off') : null;
+            const toggle = document.getElementById('mask-toggle');
 
             function applyState(masked) {
                 document.body.classList.toggle('amounts-masked', masked);
-                if (btn) {
-                    btn.setAttribute('aria-pressed', masked ? 'true' : 'false');
-                    if (labelEl) labelEl.textContent = masked ? 'Show amounts' : 'Hide amounts';
-                    if (eyeEl) eyeEl.classList.toggle('hidden', masked);
-                    if (eyeOffEl) eyeOffEl.classList.toggle('hidden', !masked);
-                }
+                if (toggle) toggle.checked = masked;
+                window.updateViewBadge();
             }
 
             window.toggleAmountsMask = function () {
@@ -92,9 +177,56 @@
                 applyState(next);
             };
 
+            if (toggle) {
+                toggle.addEventListener('change', function () {
+                    try { localStorage.setItem(STORAGE_KEY, toggle.checked ? '1' : '0'); } catch (e) {}
+                    applyState(toggle.checked);
+                });
+            }
+
             let initial = false;
             try { initial = localStorage.getItem(STORAGE_KEY) === '1'; } catch (e) {}
             applyState(initial);
+        })();
+
+        // Sidebar position toggle (left / right), persisted server-side
+        (function () {
+            const posBtn = document.getElementById('sidebar-position-toggle');
+            const iconRightEl = posBtn ? posBtn.querySelector('.icon-pos-right') : null;
+            const iconLeftEl = posBtn ? posBtn.querySelector('.icon-pos-left') : null;
+
+            function applySidebarPosition(pos) {
+                const validPos = pos === 'right' ? 'right' : 'left';
+                document.body.classList.toggle('sidebar-left', validPos === 'left');
+                document.body.classList.toggle('sidebar-right', validPos === 'right');
+                document.body.setAttribute('data-sidebar-position', validPos);
+
+                if (posBtn) {
+                    const isRight = validPos === 'right';
+                    const label = isRight ? 'Move sidebar to the left side' : 'Move sidebar to the right side';
+                    posBtn.setAttribute('title', label);
+                    posBtn.setAttribute('aria-label', label);
+                    if (iconRightEl) iconRightEl.classList.toggle('hidden', isRight);
+                    if (iconLeftEl) iconLeftEl.classList.toggle('hidden', !isRight);
+                }
+
+                const settingsRadio = document.querySelector('input[name="sidebar_position"][value="' + validPos + '"]');
+                if (settingsRadio) settingsRadio.checked = true;
+            }
+
+            window.toggleSidebarPosition = function () {
+                const current = document.body.getAttribute('data-sidebar-position') === 'right' ? 'right' : 'left';
+                const next = current === 'right' ? 'left' : 'right';
+                applySidebarPosition(next);
+
+                fetch("{{ url_for('admin.update_sidebar_position') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sidebar_position: next })
+                }).catch(function () {});
+            };
+
+            applySidebarPosition(document.body.getAttribute('data-sidebar-position') || 'left');
         })();
     </script>
     {% block scripts %}{% endblock scripts %}
