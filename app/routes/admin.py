@@ -180,7 +180,7 @@ def update_sidebar_position() -> Response | WerkzeugResponse | tuple[Response, i
 
     if request.is_json:
         return jsonify({"status": "ok", "sidebar_position": sidebar_position})
-    return redirect(request.referrer or url_for("main.index"))
+    return redirect(url_for("main.index"))
 
 
 @admin_bp.route("/database/download")
