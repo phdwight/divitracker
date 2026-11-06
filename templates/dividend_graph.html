@@ -164,15 +164,15 @@
 
     const ctx = document.getElementById('dividendChart').getContext('2d');
 
-    // Night theme chart defaults
-    Chart.defaults.color = '#948fa8';
-    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.07)';
+    // Forest & Amber theme chart defaults (color1.tiff palette)
+    Chart.defaults.color = '#B89F84';
+    Chart.defaults.borderColor = 'rgba(243, 210, 175, 0.09)';
     Chart.defaults.font.family = "'Manrope', -apple-system, sans-serif";
 
-    // Calculate gradient for bars
+    // Calculate gradient for bars (#A55704 burnt amber)
     const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(139, 92, 246, 0.85)');
-    gradient.addColorStop(1, 'rgba(139, 92, 246, 0.05)');
+    gradient.addColorStop(0, 'rgba(196, 107, 11, 0.90)');
+    gradient.addColorStop(1, 'rgba(165, 87, 4, 0.12)');
 
     const currencySymbol = '{{ settings.currency.symbol if settings else "₱" }}';
 
@@ -189,7 +189,7 @@
                     label: 'Dividend Amount',
                     data: values,
                     backgroundColor: gradient,
-                    borderColor: 'rgba(167, 139, 250, 1)',
+                    borderColor: '#D98A36',
                     borderWidth: 1,
                     borderRadius: 6,
                     order: 2,
@@ -199,11 +199,11 @@
                     label: 'Cumulative Total',
                     data: cumulativeValues,
                     type: 'line',
-                    borderColor: 'rgba(52, 199, 123, 1)',
-                    backgroundColor: 'rgba(52, 199, 123, 0.08)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(52, 199, 123, 1)',
-                    pointBorderColor: '#1c1928',
+                    borderColor: '#F3D2AF',
+                    backgroundColor: 'rgba(243, 210, 175, 0.10)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#F8EADC',
+                    pointBorderColor: '#09251C',
                     pointBorderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,

@@ -17,17 +17,21 @@ These guidelines define the required standards for any code, documentation, or t
   - modern exception handling patterns  
 
 - Code must be **lint‑clean** using:
-  - `flake8`
-  - `black` (PEP 8 formatting)
-  - `isort` for import ordering
-  - `mypy` for type checking (when applicable)
+  - `flake8` (`--max-line-length=100 --extend-ignore=E203,W503`)
+  - `black` (PEP 8 formatting, `line-length = 100`)
+  - `isort` for import ordering (`profile = "black"`, `line-length = 100`)
+  - `pylint` (`--rcfile=.pylintrc`)
+  - `mypy` for type checking (`--config-file=mypy.ini`)
+  - `djlint` for Jinja2 HTML templates (`--profile=jinja --lint`)
 
 ### 🧱 Architecture & Structure
 - All application code must follow the **Flask** framework structure:
-  - `app/` directory with `__init__.py`
-  - Blueprints for modular routing
-  - Jinja2 templates (if applicable)
-  - Config classes for environment separation
+  - `app/` directory with `__init__.py` and application factory in `app/factory.py`
+  - Blueprints for modular routing in `app/routes/` (`main`, `investments`, `dividends`, `admin`)
+  - Business logic encapsulated in the service layer (`app/services/`)
+  - User settings management in `app/settings.py` backed by `config/user_settings.json`
+  - Jinja2 templates in `templates/` and centralized CSS design tokens in `static/style.css`
+  - Config classes for environment separation in `app/config.py` (`DevelopmentConfig`, `TestingConfig`, `ProductionConfig`)
 
 - **SQLite** must be used for persistent storage unless otherwise specified.
   - Use SQLAlchemy ORM or raw SQL with parameterized queries.
@@ -78,16 +82,20 @@ All classes must adhere to:
 ## 🧪 Testing Requirements
 
 ### Test Framework
-- All tests must use **pytest**.
-- Tests must be placed in a `tests/` directory.
+- All tests must use **pytest** with **pytest-bdd** for behavior-driven development.
+- Tests must be placed in the `tests/` directory:
+  - Gherkin feature specifications in `tests/features/*.feature`
+  - Step definitions in `tests/step_defs/test_*.py` and shared steps in `tests/step_defs/shared_steps.py`
+  - Shared fixtures in `tests/conftest.py`
 - Tests must follow:
-  - AAA pattern (Arrange–Act–Assert)
-  - descriptive test names
+  - Given–When–Then / AAA pattern (Arrange–Act–Assert)
+  - descriptive scenario and test names
   - fixtures for reusable setup
   - mocking for external dependencies
 
 ### Test Coverage
-- Every new feature must include tests.
+- Minimum test coverage of **80%** (`--cov-fail-under=80` in `pyproject.toml`) is enforced on every test run.
+- Every new feature must include BDD feature scenarios and step definitions.
 - Tests must be updated when:
   - logic changes  
   - APIs change  
