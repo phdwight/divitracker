@@ -67,9 +67,7 @@ def sort_investments(
     """
     safe_key = key if key in SORT_COLUMNS else DEFAULT_SORT
     reverse = direction == "desc"
-    return sorted(
-        investments, key=lambda inv: _sort_value(inv, safe_key, year), reverse=reverse
-    )
+    return sorted(investments, key=lambda inv: _sort_value(inv, safe_key, year), reverse=reverse)
 
 
 def search_investments(investments: Sequence[Investment], query: str) -> list[Investment]:
@@ -157,9 +155,7 @@ def index(year: int | None = None):
     sort_dir = request.args.get("dir", type=str, default="asc")
     if sort_dir not in SORT_DIRECTIONS:
         sort_dir = "asc"
-    filtered_investments = sort_investments(
-        filtered_investments, sort_key, sort_dir, selected_year
-    )
+    filtered_investments = sort_investments(filtered_investments, sort_key, sort_dir, selected_year)
 
     # Pagination
     items_per_page = request.args.get(
