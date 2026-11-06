@@ -118,17 +118,17 @@
                 <tbody>
                     {% for dividend in dividends %}
                     <tr>
-                        <td>{{ dividend.period_label or '-' }}</td>
-                        <td>{{ format_currency(dividend.amount) }}</td>
-                        <td>
+                        <td data-label="Period">{{ dividend.period_label or '-' }}</td>
+                        <td data-label="Amount">{{ format_currency(dividend.amount) }}</td>
+                        <td data-label="Frequency">
                             <span class="frequency-badge frequency-{{ dividend.frequency }}">
                                 {{ dividend.frequency|capitalize }}
                             </span>
                         </td>
-                        <td>{{ format_currency(dividend.investment_amount_at_time) if dividend.investment_amount_at_time else '-' }}</td>
-                        <td>{{ "%.2f"|format(dividend.yield_at_time) ~ '%' if dividend.yield_at_time else '-' }}</td>
-                        <td>{{ dividend.notes or '-' }}</td>
-                        <td class="actions-cell">
+                        <td data-label="Investment at Time">{{ format_currency(dividend.investment_amount_at_time) if dividend.investment_amount_at_time else '-' }}</td>
+                        <td data-label="Yield at Time">{{ "%.2f"|format(dividend.yield_at_time) ~ '%' if dividend.yield_at_time else '-' }}</td>
+                        <td data-label="Notes">{{ dividend.notes or '-' }}</td>
+                        <td class="actions-cell" data-label="Actions">
                             <a href="{{ url_for('dividends.edit_dividend', dividend_id=dividend.id) }}" class="icon-btn" title="Edit">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                             </a>

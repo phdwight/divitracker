@@ -81,6 +81,14 @@
     box-sizing: border-box;
 }
 
+html {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+}
+
 body {
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background:
@@ -90,6 +98,11 @@ body {
     color: var(--text-color);
     line-height: 1.6;
     min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
     display: flex;
     flex-direction: column;
 }
@@ -166,6 +179,8 @@ svg {
     flex-direction: row;
     min-height: 100vh;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
 }
 
 body.sidebar-right .app-shell {
@@ -322,6 +337,9 @@ body.sidebar-right .navbar.sidebar {
 .app-main {
     flex: 1;
     min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -585,9 +603,11 @@ body.amounts-masked .maskable:hover {
 }
 
 /* Main content */
-main {
+main,
+main.container {
     flex: 1;
-    padding: 20px 0 64px;
+    padding: 20px 24px 64px;
+    min-width: 0;
 }
 
 /* ============================================================
@@ -755,16 +775,18 @@ main {
    ============================================================ */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
     gap: 18px;
     margin-bottom: 44px;
+    min-width: 0;
 }
 
 .detail-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
     gap: 18px;
     margin-bottom: 2rem;
+    min-width: 0;
 }
 
 .stat-card {
@@ -773,6 +795,7 @@ main {
     border-radius: var(--radius-card);
     padding: 26px 28px;
     display: block;
+    min-width: 0;
 }
 
 .stat-card-invested {
@@ -2300,13 +2323,16 @@ main {
 }
 
 .chart-wrapper {
+    position: relative;
+    width: 100%;
+    min-width: 0;
     height: 400px;
     margin-bottom: 1.5rem;
 }
 
 .chart-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
     gap: 1rem;
     padding-top: 1.25rem;
     border-top: 1px solid rgba(255, 255, 255, 0.07);
@@ -2945,13 +2971,19 @@ main {
     .admin-grid,
     .split-form-layout,
     .settings-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .settings-nav {
         position: static;
         flex-direction: row;
         overflow-x: auto;
+        max-width: 100%;
+    }
+
+    .settings-nav-item {
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .holding-preview-card {
@@ -2962,28 +2994,58 @@ main {
 @media (max-width: 768px) {
     .container {
         padding: 0 16px;
+        max-width: 100%;
     }
 
     .app-shell,
     body.sidebar-right .app-shell {
         flex-direction: column;
-    }
-
-    .app-main {
-        padding-bottom: 76px;
-        max-width: 100vw;
+        width: 100%;
+        max-width: 100%;
         overflow-x: hidden;
     }
 
-    main {
-        padding: 16px 0 36px;
+    .app-main {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding-bottom: 76px;
+        overflow-x: hidden;
+    }
+
+    main,
+    main.container {
+        padding: 16px 16px 36px;
         min-width: 0;
         max-width: 100%;
     }
 
-    .holdings-table-card {
-        overflow-x: auto;
+    .dashboard,
+    .dividend-graph-page,
+    .settings-layout,
+    .settings-content,
+    .admin-form,
+    .settings-section,
+    .split-form-layout,
+    .form-container,
+    .holding-preview-card,
+    .investment-detail,
+    .yield-breakdown,
+    .yield-summary-box,
+    .yield-details,
+    .section,
+    .graph-container,
+    .data-table-section {
+        min-width: 0;
         max-width: 100%;
+    }
+
+    .holdings-table-card,
+    .table-container {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     /* Convert sidebar into fixed bottom tab bar on mobile */
@@ -2995,8 +3057,9 @@ main {
         right: 0;
         top: auto;
         width: 100%;
+        max-width: 100%;
         height: 66px;
-        padding: 6px 12px;
+        padding: 6px 8px;
         border-right: none;
         border-left: none;
         border-top: 1px solid rgba(243, 210, 175, 0.14);
@@ -3016,19 +3079,27 @@ main {
     .nav-links {
         flex-direction: row;
         width: 100%;
+        max-width: 100%;
         justify-content: space-around;
         align-items: center;
-        gap: 4px;
+        gap: 2px;
     }
 
     .nav-links > a,
     .nav-item,
     .nav-new {
         flex: 1;
-        padding: 6px 4px;
+        min-width: 0;
+        padding: 6px 2px;
         border-radius: 12px;
         font-size: 11px;
         gap: 3px;
+    }
+
+    .navbar.sidebar .new-menu {
+        flex: 1;
+        min-width: 0;
+        position: static;
     }
 
     .nav-new-icon {
@@ -3039,25 +3110,43 @@ main {
 
     .new-menu-panel,
     body.sidebar-right .new-menu-panel {
-        left: 50%;
-        right: auto;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        min-width: 0;
+        max-width: calc(100vw - 24px);
         top: auto;
-        bottom: calc(100% + 12px);
-        transform: translateX(-50%);
+        bottom: calc(100% + 10px);
+        transform: none;
     }
 
     .page-topbar {
+        position: relative;
         padding: 20px 0 4px;
     }
 
     .page-actions {
         margin-left: 0;
         width: 100%;
+        min-width: 0;
+    }
+
+    .page-actions .view-menu {
+        position: static;
+    }
+
+    .view-menu-panel {
+        left: 0;
+        right: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
     }
 
     .holdings-search,
     .holdings-search input[type="search"] {
         width: 100%;
+        max-width: 100%;
     }
 
     .holdings-toolbar-right {
@@ -3065,7 +3154,7 @@ main {
     }
 
     .layout-segmented {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .form-actions {
@@ -3076,8 +3165,14 @@ main {
         width: 100%;
     }
 
-    .stats-grid {
-        grid-template-columns: 1fr;
+    .stats-grid,
+    .detail-stats {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .calc-row {
+        flex-wrap: wrap;
+        gap: 4px 12px;
     }
 
     .formula-display {
@@ -3092,15 +3187,164 @@ main {
     .yield-table td {
         padding: 0.5rem;
     }
-}
 
-@media (max-width: 640px) {
-    .db-actions {
-        grid-template-columns: 1fr;
+    .db-actions,
+    .form-row {
+        grid-template-columns: minmax(0, 1fr);
     }
 
-    .form-row {
-        grid-template-columns: 1fr;
+    .stat-card,
+    .section:not(.section-plain),
+    .admin-card,
+    .form-container,
+    .card,
+    .graph-container,
+    .data-table-section,
+    .yield-summary-box,
+    .yield-details {
+        padding: 18px 16px;
+    }
+
+    /* Stack dashboard holdings table into portrait cards so nothing scrolls off-screen */
+    .holdings-table-card,
+    .holdings-table-card .table-container {
+        overflow: visible;
+    }
+
+    .holdings-table,
+    .holdings-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .holdings-table thead {
+        display: block;
+        width: 100%;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(243, 210, 175, 0.1);
+    }
+
+    .holdings-table thead tr {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .holdings-table thead th {
+        display: inline-flex;
+        padding: 4px 10px;
+        border-bottom: none;
+        background: rgba(243, 210, 175, 0.05);
+        border: 1px solid rgba(243, 210, 175, 0.14);
+        border-radius: 999px;
+        font-size: 10.5px;
+    }
+
+    .holdings-table thead th.col-actions {
+        display: none;
+    }
+
+    .holdings-table tbody tr.investment-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px 12px;
+        padding: 14px 16px;
+        align-items: center;
+    }
+
+    .holdings-table td,
+    .holdings-table td.col-num,
+    .holdings-table td.col-yield {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 3px 0;
+        text-align: right;
+        grid-column: 1 / -1;
+        min-width: 0;
+    }
+
+    .holdings-table td.col-holding {
+        grid-column: 1 / 2;
+        grid-row: 1;
+        padding: 0 0 6px 0;
+        text-align: left;
+        justify-content: flex-start;
+    }
+
+    .holdings-table td.col-actions {
+        grid-column: 2 / 3;
+        grid-row: 1;
+        width: auto;
+        padding: 0 0 6px 0;
+        justify-content: flex-end;
+    }
+
+    .holdings-table td[data-label]:not(.col-holding)::before {
+        content: attr(data-label);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-align: left;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+
+    /* Stack investment detail dividend history table into portrait cards */
+    .investment-detail .table-container {
+        overflow: visible;
+    }
+
+    .investment-detail .data-table,
+    .investment-detail .data-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .investment-detail .data-table thead {
+        display: none;
+    }
+
+    .investment-detail .data-table tbody tr {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(243, 210, 175, 0.1);
+    }
+
+    .investment-detail .data-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .investment-detail .data-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 2px 0;
+        border-bottom: none;
+        text-align: right;
+        gap: 12px;
+    }
+
+    .investment-detail .data-table td[data-label]::before {
+        content: attr(data-label);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-muted);
+        text-align: left;
+        flex-shrink: 0;
+    }
+
+    .settings-save-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .settings-save-bar .btn {
+        width: 100%;
     }
 
     .graph-filters {
@@ -3110,15 +3354,24 @@ main {
 
     .filter-group {
         width: 100%;
+        max-width: 100%;
+        min-width: 0;
         justify-content: space-between;
     }
 
     .filter-group select {
         flex: 1;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .period-inputs {
+        flex-direction: column;
+        gap: 0.75rem;
     }
 
     .chart-wrapper {
-        height: 300px;
+        height: 280px;
     }
 
     .pagination {

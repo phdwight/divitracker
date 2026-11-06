@@ -61,44 +61,46 @@
         <p class="yield-note">The investment amount used for yield calculation is the average of all investment amounts recorded at the time of each dividend in {{ selected_year }}. This provides a more accurate yield calculation when investment balances change during the year.</p>
 
         {% if investment_details %}
-        <table class="yield-table">
-            <thead>
-                <tr>
-                    <th>Investment</th>
-                    <th>Ticker</th>
-                    <th class="text-right">Investment Amount</th>
-                    <th class="text-right">Dividends Received</th>
-                    <th class="text-right">Yield</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detail in investment_details %}
-                <tr>
-                    <td>{{ detail.name }}</td>
-                    <td>{{ detail.ticker or '-' }}</td>
-                    <td class="text-right">{{ format_currency(detail.investment_amount) }}</td>
-                    <td class="text-right">{{ format_currency(detail.dividends_received) }}</td>
-                    <td class="text-right">
-                        <span class="yield-badge {% if detail.yield_percent >= 5 %}yield-high{% elif detail.yield_percent >= 2 %}yield-medium{% else %}yield-low{% endif %}">
-                            {{ "%.2f"|format(detail.yield_percent) }}%
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr class="totals-row">
-                    <td colspan="2"><strong>Total</strong></td>
-                    <td class="text-right"><strong>{{ format_currency(total_investment_for_yield) }}</strong></td>
-                    <td class="text-right"><strong>{{ format_currency(total_dividends) }}</strong></td>
-                    <td class="text-right">
-                        <span class="yield-badge yield-total">
-                            <strong>{{ "%.2f"|format(overall_yield) }}%</strong>
-                        </span>
-                    </td>
-                </tr>
-            </tfoot>
-        </table>
+        <div class="table-container">
+            <table class="yield-table">
+                <thead>
+                    <tr>
+                        <th>Investment</th>
+                        <th>Ticker</th>
+                        <th class="text-right">Investment Amount</th>
+                        <th class="text-right">Dividends Received</th>
+                        <th class="text-right">Yield</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in investment_details %}
+                    <tr>
+                        <td>{{ detail.name }}</td>
+                        <td>{{ detail.ticker or '-' }}</td>
+                        <td class="text-right">{{ format_currency(detail.investment_amount) }}</td>
+                        <td class="text-right">{{ format_currency(detail.dividends_received) }}</td>
+                        <td class="text-right">
+                            <span class="yield-badge {% if detail.yield_percent >= 5 %}yield-high{% elif detail.yield_percent >= 2 %}yield-medium{% else %}yield-low{% endif %}">
+                                {{ "%.2f"|format(detail.yield_percent) }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="totals-row">
+                        <td colspan="2"><strong>Total</strong></td>
+                        <td class="text-right"><strong>{{ format_currency(total_investment_for_yield) }}</strong></td>
+                        <td class="text-right"><strong>{{ format_currency(total_dividends) }}</strong></td>
+                        <td class="text-right">
+                            <span class="yield-badge yield-total">
+                                <strong>{{ "%.2f"|format(overall_yield) }}%</strong>
+                            </span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
         {% else %}
         <div class="empty-state">
             <div class="empty-icon">
