@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=forest4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=forest5">
 </head>
 <body class="sidebar-{{ sidebar_position | default('left') }}" data-sidebar-position="{{ sidebar_position | default('left') }}">
     {% set ep = request.endpoint or '' %}
@@ -25,17 +25,17 @@
             </a>
 
             <div class="nav-links">
-                <a href="{{ url_for('main.index') }}" class="nav-item {{ 'active' if ep in ('main.index', 'main.yield_breakdown') or ep.startswith('investments.view') }}">
+                <a href="{{ url_for('main.index') }}" class="nav-item {{ 'active' if ep in ('main.index', 'main.yield_breakdown') or ep.startswith('investments.view') }}" data-nav-key="dashboard">
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
                     <span class="nav-label">Dashboard</span>
                 </a>
-                <a href="{{ url_for('main.dividend_graph') }}" class="nav-item {{ 'active' if ep == 'main.dividend_graph' }}">
+                <a href="{{ url_for('main.dividend_graph') }}" class="nav-item {{ 'active' if ep == 'main.dividend_graph' }}" data-nav-key="dividend-graph">
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                     <span class="nav-label">Graph</span>
                 </a>
 
                 <details class="popover new-menu" data-popover>
-                    <summary class="nav-new {{ 'active' if ep in ('investments.add_investment', 'dividends.add_dividend') }}" aria-label="Create new">
+                    <summary class="nav-new {{ 'active' if ep in ('investments.add_investment', 'dividends.add_dividend') }}" aria-label="Create new" data-nav-key="new">
                         <span class="nav-new-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </span>
@@ -54,7 +54,7 @@
                     </div>
                 </details>
 
-                <a href="{{ url_for('admin.admin_index') }}" class="nav-item {{ 'active' if ep.startswith('admin.') }}">
+                <a href="{{ url_for('admin.admin_index') }}" class="nav-item {{ 'active' if ep.startswith('admin.') }}" data-nav-key="settings">
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
                     <span class="nav-label">Settings</span>
                 </a>
@@ -72,47 +72,455 @@
             <div class="container">
                 <header class="page-topbar">
                     <div class="page-heading">
-                        {% block page_heading %}{% endblock page_heading %}
+                        <div class="page-heading-live">
+                            {% block page_heading %}{% endblock page_heading %}
+                        </div>
+                        <div class="page-heading-skeleton" id="optimistic-heading" aria-hidden="true">
+                            <div class="detail-title-row">
+                                <h1 id="optimistic-title">Loading</h1>
+                                <span class="ticker-badge hidden" id="optimistic-ticker"></span>
+                            </div>
+                            <p class="page-subtitle" id="optimistic-subtitle">Loading view…</p>
+                        </div>
                     </div>
                     <div class="page-actions">
-                        {% block page_actions %}{% endblock page_actions %}
+                        <div class="page-actions-live">
+                            {% block page_actions %}{% endblock page_actions %}
 
-                        {# Consolidated visibility controls: privacy + page-specific hide filters #}
-                        <details class="popover view-menu no-print" id="view-menu" data-popover>
-                            <summary class="view-menu-btn" aria-label="View and hide options">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <span class="view-menu-label">View</span>
-                                <span class="view-badge hidden" id="view-badge" title="Active hide options">0</span>
-                                <svg class="view-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                            </summary>
-                            <div class="popover-panel view-menu-panel">
-                                <div class="popover-section">
-                                    <div class="popover-label">Privacy</div>
-                                    <label class="switch-row">
-                                        <span class="switch-text">Hide amounts<small>Blur monetary values (hover to peek)</small></span>
-                                        <input type="checkbox" id="mask-toggle" class="switch" data-view-toggle>
-                                    </label>
+                            {# Consolidated visibility controls: privacy + page-specific hide filters #}
+                            <details class="popover view-menu no-print" id="view-menu" data-popover>
+                                <summary class="view-menu-btn" aria-label="View and hide options">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <span class="view-menu-label">View</span>
+                                    <span class="view-badge hidden" id="view-badge" title="Active hide options">0</span>
+                                    <svg class="view-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                </summary>
+                                <div class="popover-panel view-menu-panel">
+                                    <div class="popover-section">
+                                        <div class="popover-label">Privacy</div>
+                                        <label class="switch-row">
+                                            <span class="switch-text">Hide amounts<small>Blur monetary values (hover to peek)</small></span>
+                                            <input type="checkbox" id="mask-toggle" class="switch" data-view-toggle>
+                                        </label>
+                                    </div>
+                                    {% block view_menu_filters %}{% endblock view_menu_filters %}
                                 </div>
-                                {% block view_menu_filters %}{% endblock view_menu_filters %}
-                            </div>
-                        </details>
+                            </details>
+                        </div>
+                        <div class="page-actions-skeleton" id="optimistic-actions" aria-hidden="true">
+                            <span class="skeleton-bone skeleton-pill"></span>
+                            <span class="skeleton-bone skeleton-pill"></span>
+                        </div>
                     </div>
                 </header>
             </div>
 
             <main class="container">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }}">
-                                {{ message }}
-                                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                <div class="page-content-live" id="page-content-live">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    {{ message }}
+                                    <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
 
-                {% block content %}{% endblock content %}
+                    {% block content %}{% endblock content %}
+                </div>
+
+                <div id="optimistic-skeleton-root" class="optimistic-skeleton-root" aria-live="polite" aria-hidden="true">
+                    {# 1. Dashboard target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="dashboard">
+                        <div class="stats-grid">
+                            <div class="stat-card stat-card-invested">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                                <span class="skeleton-bone skeleton-subvalue"></span>
+                            </div>
+                            <div class="stat-card stat-card-dividends">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                                <span class="skeleton-bone skeleton-subvalue skeleton-subvalue-short"></span>
+                            </div>
+                            <div class="stat-card highlight">
+                                <span class="skeleton-bone skeleton-bone-accent skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-bone-accent skeleton-value"></span>
+                                <span class="skeleton-bone skeleton-bone-accent skeleton-subvalue"></span>
+                            </div>
+                        </div>
+
+                        <div class="section section-plain">
+                            <div class="holdings-toolbar">
+                                <div class="holdings-toolbar-left">
+                                    <span class="skeleton-bone skeleton-section-title"></span>
+                                </div>
+                                <div class="holdings-toolbar-right">
+                                    <span class="skeleton-bone skeleton-search"></span>
+                                    <span class="skeleton-bone skeleton-bone-accent skeleton-btn skeleton-btn-sm"></span>
+                                </div>
+                            </div>
+
+                            <div class="holdings-table-card">
+                                <div class="skeleton-table-header skeleton-holdings-grid">
+                                    <span class="skeleton-bone skeleton-th"></span>
+                                    <span class="skeleton-bone skeleton-th skeleton-th-right"></span>
+                                    <span class="skeleton-bone skeleton-th skeleton-th-right"></span>
+                                    <span class="skeleton-bone skeleton-th skeleton-th-right"></span>
+                                    <span class="skeleton-bone skeleton-th skeleton-th-right"></span>
+                                    <span class="skeleton-bone skeleton-th skeleton-th-icon"></span>
+                                </div>
+                                {% for _ in range(5) %}
+                                <div class="skeleton-table-row skeleton-holdings-grid">
+                                    <div class="holding-cell">
+                                        <span class="skeleton-bone skeleton-avatar"></span>
+                                        <div class="skeleton-holding-meta">
+                                            <span class="skeleton-bone skeleton-holding-name"></span>
+                                            <span class="skeleton-bone skeleton-badge"></span>
+                                        </div>
+                                    </div>
+                                    <span class="skeleton-bone skeleton-num"></span>
+                                    <span class="skeleton-bone skeleton-num"></span>
+                                    <span class="skeleton-bone skeleton-num"></span>
+                                    <div class="skeleton-yield-pair">
+                                        <span class="skeleton-bone skeleton-badge"></span>
+                                        <span class="skeleton-bone skeleton-badge"></span>
+                                    </div>
+                                    <span class="skeleton-bone skeleton-icon-btn"></span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# 2. Dividend Graph target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="dividend-graph">
+                        <div class="stats-grid graph-kpi-strip">
+                            <div class="stat-card stat-card-dividends">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                            </div>
+                            <div class="stat-card stat-card-invested">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                            </div>
+                        </div>
+
+                        <div class="graph-container">
+                            <div class="chart-wrapper skeleton-chart-wrapper">
+                                <div class="skeleton-chart-bars">
+                                    {% for h in [42, 68, 54, 85, 48, 74, 92, 61, 78, 35, 64, 88] %}
+                                    <div class="skeleton-chart-col">
+                                        <span class="skeleton-bone skeleton-bone-accent skeleton-chart-bar" style="height: {{ h }}%;"></span>
+                                        <span class="skeleton-bone skeleton-chart-axis"></span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="data-table-section">
+                            <div class="skeleton-section-header">
+                                <span class="skeleton-bone skeleton-section-title"></span>
+                                <span class="skeleton-bone skeleton-icon-btn"></span>
+                            </div>
+                            <div class="skeleton-table-header skeleton-cols-3">
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                            </div>
+                            {% for _ in range(4) %}
+                            <div class="skeleton-table-row skeleton-cols-3">
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-cell"></span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {# 3. Yield Breakdown target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="yield-breakdown">
+                        <div class="yield-summary-box">
+                            <div class="yield-formula">
+                                <span class="skeleton-bone skeleton-section-title skeleton-mb-md"></span>
+                                <div class="formula-display">
+                                    <span class="skeleton-bone skeleton-formula-text"></span>
+                                    <span class="skeleton-bone skeleton-formula-op"></span>
+                                    <span class="skeleton-bone skeleton-formula-fraction"></span>
+                                </div>
+                            </div>
+                            <div class="yield-result">
+                                <span class="skeleton-bone skeleton-section-title skeleton-mb-md"></span>
+                                <div class="result-calculation">
+                                    <div class="calc-row">
+                                        <span class="skeleton-bone skeleton-calc-label"></span>
+                                        <span class="skeleton-bone skeleton-calc-val"></span>
+                                    </div>
+                                    <div class="calc-row">
+                                        <span class="skeleton-bone skeleton-calc-label"></span>
+                                        <span class="skeleton-bone skeleton-calc-val"></span>
+                                    </div>
+                                    <div class="calc-row calc-divider"></div>
+                                    <div class="calc-row">
+                                        <span class="skeleton-bone skeleton-calc-label"></span>
+                                        <span class="skeleton-bone skeleton-bone-accent skeleton-calc-val-lg"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="yield-details">
+                            <span class="skeleton-bone skeleton-section-title skeleton-mb-sm"></span>
+                            <span class="skeleton-bone skeleton-note-bar skeleton-mb-md"></span>
+                            <div class="skeleton-table-header skeleton-cols-5">
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th skeleton-th-right"></span>
+                                <span class="skeleton-bone skeleton-th skeleton-th-right"></span>
+                                <span class="skeleton-bone skeleton-th skeleton-th-right"></span>
+                            </div>
+                            {% for _ in range(4) %}
+                            <div class="skeleton-table-row skeleton-cols-5">
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-badge"></span>
+                                <span class="skeleton-bone skeleton-num"></span>
+                                <span class="skeleton-bone skeleton-num"></span>
+                                <span class="skeleton-bone skeleton-badge skeleton-num"></span>
+                            </div>
+                            {% endfor %}
+                            <div class="skeleton-table-row skeleton-table-totals skeleton-cols-5">
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-cell-empty"></span>
+                                <span class="skeleton-bone skeleton-num"></span>
+                                <span class="skeleton-bone skeleton-num"></span>
+                                <span class="skeleton-bone skeleton-bone-accent skeleton-badge skeleton-num"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# 4. View Investment target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="view-investment">
+                        <div class="detail-stats">
+                            <div class="stat-card">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                                <span class="skeleton-bone skeleton-subvalue"></span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                            </div>
+                            <div class="stat-card highlight">
+                                <span class="skeleton-bone skeleton-bone-accent skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-bone-accent skeleton-value"></span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="skeleton-bone skeleton-label"></span>
+                                <span class="skeleton-bone skeleton-value"></span>
+                            </div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-header">
+                                <span class="skeleton-bone skeleton-section-title"></span>
+                                <span class="skeleton-bone skeleton-bone-accent skeleton-btn skeleton-btn-sm"></span>
+                            </div>
+                            <div class="skeleton-table-header skeleton-cols-7">
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                                <span class="skeleton-bone skeleton-th"></span>
+                            </div>
+                            {% for _ in range(4) %}
+                            <div class="skeleton-table-row skeleton-cols-7">
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-badge"></span>
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-cell"></span>
+                                <span class="skeleton-bone skeleton-icon-btn"></span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {# 5. Add Investment target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="add-investment">
+                        <div class="split-form-layout">
+                            <div class="form-container">
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <span class="skeleton-bone skeleton-input"></span>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <span class="skeleton-bone skeleton-form-label"></span>
+                                        <span class="skeleton-bone skeleton-input"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <span class="skeleton-bone skeleton-form-label"></span>
+                                        <span class="skeleton-bone skeleton-input"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <span class="skeleton-bone skeleton-input"></span>
+                                </div>
+                                <div class="form-actions">
+                                    <span class="skeleton-bone skeleton-btn"></span>
+                                    <span class="skeleton-bone skeleton-bone-accent skeleton-btn"></span>
+                                </div>
+                            </div>
+
+                            <aside class="holding-preview-card card">
+                                <div class="preview-card-header">
+                                    <span class="skeleton-bone skeleton-badge skeleton-mb-sm"></span>
+                                    <span class="skeleton-bone skeleton-section-title"></span>
+                                </div>
+                                <div class="preview-metrics">
+                                    <div class="preview-metric-row">
+                                        <span class="skeleton-bone skeleton-calc-label"></span>
+                                        <span class="skeleton-bone skeleton-calc-val"></span>
+                                    </div>
+                                    <div class="preview-metric-row">
+                                        <span class="skeleton-bone skeleton-calc-label"></span>
+                                        <span class="skeleton-bone skeleton-calc-val"></span>
+                                    </div>
+                                    <div class="preview-metric-row preview-metric-total">
+                                        <span class="skeleton-bone skeleton-calc-label"></span>
+                                        <span class="skeleton-bone skeleton-bone-accent skeleton-calc-val"></span>
+                                    </div>
+                                    <div class="preview-metric-row">
+                                        <span class="skeleton-bone skeleton-calc-label"></span>
+                                        <span class="skeleton-bone skeleton-calc-val"></span>
+                                    </div>
+                                </div>
+                                <div class="quick-pick-section">
+                                    <span class="skeleton-bone skeleton-label skeleton-mb-sm"></span>
+                                    <div class="investment-chips">
+                                        <span class="skeleton-bone skeleton-chip"></span>
+                                        <span class="skeleton-bone skeleton-chip"></span>
+                                        <span class="skeleton-bone skeleton-chip"></span>
+                                        <span class="skeleton-bone skeleton-chip"></span>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+
+                    {# 6. Edit Investment target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="edit-investment">
+                        <div class="form-page">
+                            <div class="form-container">
+                                {% for _ in range(4) %}
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <span class="skeleton-bone skeleton-input"></span>
+                                </div>
+                                {% endfor %}
+                                <div class="form-actions">
+                                    <span class="skeleton-bone skeleton-btn"></span>
+                                    <span class="skeleton-bone skeleton-bone-accent skeleton-btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# 7. Add / Edit Dividend form target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="dividend-form">
+                        <div class="form-page">
+                            <div class="form-container">
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <span class="skeleton-bone skeleton-input"></span>
+                                </div>
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <span class="skeleton-bone skeleton-input"></span>
+                                </div>
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <div class="period-inputs">
+                                        <span class="skeleton-bone skeleton-input"></span>
+                                        <span class="skeleton-bone skeleton-input"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <span class="skeleton-bone skeleton-input"></span>
+                                </div>
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <div class="radio-group">
+                                        {% for _ in range(4) %}
+                                        <div class="radio-option skeleton-radio-card">
+                                            <span class="skeleton-bone skeleton-radio-dot"></span>
+                                            <div class="skeleton-radio-lines">
+                                                <span class="skeleton-bone skeleton-radio-title"></span>
+                                                <span class="skeleton-bone skeleton-radio-sub"></span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <span class="skeleton-bone skeleton-form-label"></span>
+                                    <span class="skeleton-bone skeleton-textarea"></span>
+                                </div>
+                                <div class="form-actions">
+                                    <span class="skeleton-bone skeleton-btn"></span>
+                                    <span class="skeleton-bone skeleton-bone-accent skeleton-btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# 8. Admin Settings target skeleton #}
+                    <div class="skeleton-page" data-skeleton-page="settings">
+                        <div class="settings-layout">
+                            <aside class="settings-nav" aria-hidden="true">
+                                {% for _ in range(5) %}
+                                <span class="skeleton-bone skeleton-nav-pill"></span>
+                                {% endfor %}
+                            </aside>
+                            <div class="settings-content">
+                                {% for _ in range(3) %}
+                                <section class="card admin-card settings-section">
+                                    <div class="settings-section-head">
+                                        <span class="skeleton-bone skeleton-section-title skeleton-mb-sm"></span>
+                                        <span class="skeleton-bone skeleton-subvalue"></span>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <span class="skeleton-bone skeleton-form-label"></span>
+                                            <span class="skeleton-bone skeleton-input"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="skeleton-bone skeleton-form-label"></span>
+                                            <span class="skeleton-bone skeleton-input"></span>
+                                        </div>
+                                        <div class="form-group">
+                                            <span class="skeleton-bone skeleton-form-label"></span>
+                                            <span class="skeleton-bone skeleton-input"></span>
+                                        </div>
+                                    </div>
+                                </section>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
 
             <footer class="footer">
@@ -227,6 +635,367 @@
             };
 
             applySidebarPosition(document.body.getAttribute('data-sidebar-position') || 'left');
+        })();
+
+        // Optimistic UI: immediately show target page skeleton on link clicks, filter changes & form submits
+        (function () {
+            const skeletonRoot = document.getElementById('optimistic-skeleton-root');
+            const titleEl = document.getElementById('optimistic-title');
+            const tickerEl = document.getElementById('optimistic-ticker');
+            const subtitleEl = document.getElementById('optimistic-subtitle');
+            const activeNavEl = document.querySelector('.navbar.sidebar [data-nav-key].active');
+            const initialNavKey = activeNavEl ? activeNavEl.getAttribute('data-nav-key') : '';
+            let pendingNavTimer = null;
+
+            const SKELETON_PRESETS = {
+                'dashboard': {
+                    page: 'dashboard',
+                    nav: 'dashboard',
+                    titleHtml: 'Dividend <span>Dashboard</span>',
+                    subtitle: 'Tracking payouts across your portfolio'
+                },
+                'dividend-graph': {
+                    page: 'dividend-graph',
+                    nav: 'dividend-graph',
+                    titleHtml: 'Dividend <span>Graph</span>',
+                    subtitle: 'Visual representation of your dividend income'
+                },
+                'yield-breakdown': {
+                    page: 'yield-breakdown',
+                    nav: 'dashboard',
+                    titleHtml: 'Annualized <span>Yield</span>',
+                    subtitle: 'Detailed yield calculation breakdown'
+                },
+                'view-investment': {
+                    page: 'view-investment',
+                    nav: 'dashboard',
+                    titleHtml: 'Holding <span>Overview</span>',
+                    subtitle: 'Holding overview and dividend history'
+                },
+                'add-investment': {
+                    page: 'add-investment',
+                    nav: 'new',
+                    titleHtml: 'Add <span>Investment</span>',
+                    subtitle: 'Create a new holding or top up an existing position'
+                },
+                'edit-investment': {
+                    page: 'edit-investment',
+                    nav: 'dashboard',
+                    titleHtml: 'Edit <span>Investment</span>',
+                    subtitle: 'Loading holding details…'
+                },
+                'dividend-form': {
+                    page: 'dividend-form',
+                    nav: 'new',
+                    titleHtml: 'Record <span>Dividend</span>',
+                    subtitle: 'Log a dividend payout for one of your holdings'
+                },
+                'settings': {
+                    page: 'settings',
+                    nav: 'settings',
+                    titleHtml: 'Admin <span>Settings</span>',
+                    subtitle: 'Manage application settings and database'
+                }
+            };
+
+            function extractHoldingContext(triggerEl) {
+                if (!triggerEl || triggerEl.nodeType !== 1) return {};
+                const explicitName = triggerEl.getAttribute('data-holding-name');
+                const explicitTicker = triggerEl.getAttribute('data-holding-ticker');
+                if (explicitName) {
+                    return { name: explicitName.trim(), ticker: (explicitTicker || '').trim() };
+                }
+
+                const row = triggerEl.closest ? triggerEl.closest('.investment-row') : null;
+                if (row) {
+                    const rowName = row.querySelector('.inv-name');
+                    const rowTicker = row.querySelector('.ticker-badge');
+                    return {
+                        name: rowName ? rowName.textContent.trim() : '',
+                        ticker: rowTicker ? rowTicker.textContent.trim() : ''
+                    };
+                }
+
+                if (triggerEl.classList && triggerEl.classList.contains('inv-name')) {
+                    return { name: triggerEl.textContent.trim(), ticker: '' };
+                }
+
+                if (triggerEl.closest && triggerEl.closest('#modalTableBody')) {
+                    return { name: triggerEl.textContent.trim(), ticker: '' };
+                }
+
+                if (triggerEl.tagName === 'FORM') {
+                    const nameInput = triggerEl.querySelector('#name');
+                    const tickerInput = triggerEl.querySelector('#ticker');
+                    if (nameInput && nameInput.value.trim()) {
+                        return {
+                            name: nameInput.value.trim(),
+                            ticker: tickerInput ? tickerInput.value.trim().toUpperCase() : ''
+                        };
+                    }
+                    const invSelect = triggerEl.querySelector('#investment_id');
+                    if (invSelect && invSelect.selectedIndex > 0) {
+                        const optText = invSelect.options[invSelect.selectedIndex].textContent.trim();
+                        const cleanName = optText.split(' (')[0].split(' - ')[0].trim();
+                        return { name: cleanName, ticker: '' };
+                    }
+                    if (triggerEl.closest && triggerEl.closest('.investment-detail')) {
+                        const liveTitle = document.querySelector('.page-heading-live h1');
+                        const liveTicker = document.querySelector('.page-heading-live .ticker-badge');
+                        return {
+                            name: liveTitle ? liveTitle.textContent.trim() : '',
+                            ticker: liveTicker ? liveTicker.textContent.trim() : ''
+                        };
+                    }
+                }
+
+                return {};
+            }
+
+            window.resolveSkeletonTarget = function (urlOrKey, triggerEl) {
+                const rawTarget = urlOrKey || (triggerEl && triggerEl.getAttribute ? triggerEl.getAttribute('data-skeleton-target') : '');
+                if (rawTarget && Object.prototype.hasOwnProperty.call(SKELETON_PRESETS, rawTarget)) {
+                    return Object.assign({}, SKELETON_PRESETS[rawTarget]);
+                }
+
+                let parsed;
+                try {
+                    parsed = new URL(String(rawTarget || '/'), window.location.href);
+                } catch (e) {
+                    return Object.assign({}, SKELETON_PRESETS.dashboard);
+                }
+
+                const path = parsed.pathname;
+                const holding = extractHoldingContext(triggerEl);
+                if (!holding.name && path === window.location.pathname && document.querySelector('.investment-detail')) {
+                    const liveTitle = document.querySelector('.page-heading-live h1');
+                    const liveTicker = document.querySelector('.page-heading-live .ticker-badge');
+                    if (liveTitle) holding.name = liveTitle.textContent.trim();
+                    if (liveTicker) holding.ticker = liveTicker.textContent.trim();
+                }
+
+                if (path === '/reports/dividends-chart' || path.startsWith('/reports/dividends-chart/')) {
+                    return Object.assign({}, SKELETON_PRESETS['dividend-graph']);
+                }
+
+                if (path === '/reports/yield-breakdown' || path.startsWith('/reports/yield-breakdown/')) {
+                    const yearParam = parsed.searchParams.get('year');
+                    return {
+                        page: 'yield-breakdown',
+                        nav: 'dashboard',
+                        titleHtml: SKELETON_PRESETS['yield-breakdown'].titleHtml,
+                        subtitle: yearParam ? 'Detailed breakdown for ' + yearParam : SKELETON_PRESETS['yield-breakdown'].subtitle
+                    };
+                }
+
+                if (path === '/investments/new') {
+                    return Object.assign({}, SKELETON_PRESETS['add-investment']);
+                }
+
+                if (/^\/investments\/\d+\/edit\/?$/.test(path)) {
+                    return {
+                        page: 'edit-investment',
+                        nav: 'dashboard',
+                        titleHtml: SKELETON_PRESETS['edit-investment'].titleHtml,
+                        subtitle: holding.name ? 'Update details for ' + holding.name : SKELETON_PRESETS['edit-investment'].subtitle
+                    };
+                }
+
+                if (/^\/investments\/\d+\/?$/.test(path)) {
+                    const base = Object.assign({}, SKELETON_PRESETS['view-investment']);
+                    if (holding.name) {
+                        base.titleText = holding.name;
+                        base.titleHtml = '';
+                        base.ticker = holding.ticker || '';
+                    }
+                    return base;
+                }
+
+                if (path === '/dividends/new') {
+                    return Object.assign({}, SKELETON_PRESETS['dividend-form']);
+                }
+
+                if (/^\/dividends\/\d+\/edit\/?$/.test(path)) {
+                    return {
+                        page: 'dividend-form',
+                        nav: 'dashboard',
+                        titleHtml: 'Edit <span>Dividend</span>',
+                        subtitle: 'Loading dividend record…'
+                    };
+                }
+
+                if (path === '/settings' || path.startsWith('/settings/')) {
+                    return Object.assign({}, SKELETON_PRESETS.settings);
+                }
+
+                const yearMatch = path.match(/^\/year\/(\d+)/);
+                const dashYear = (yearMatch && yearMatch[1]) || parsed.searchParams.get('year');
+                return {
+                    page: 'dashboard',
+                    nav: 'dashboard',
+                    titleHtml: SKELETON_PRESETS.dashboard.titleHtml,
+                    subtitle: dashYear
+                        ? 'Tracking ' + dashYear + ' payouts across your portfolio'
+                        : SKELETON_PRESETS.dashboard.subtitle
+                };
+            };
+
+            window.showPageSkeleton = function (urlOrKey, triggerEl) {
+                const target = window.resolveSkeletonTarget(urlOrKey, triggerEl);
+
+                document.querySelectorAll('details[data-popover]').forEach(function (d) {
+                    d.open = false;
+                });
+
+                document.querySelectorAll('.navbar.sidebar [data-nav-key]').forEach(function (el) {
+                    el.classList.toggle('active', el.getAttribute('data-nav-key') === target.nav);
+                });
+
+                if (titleEl) {
+                    if (target.titleText) {
+                        titleEl.textContent = target.titleText;
+                    } else {
+                        titleEl.innerHTML = target.titleHtml || 'Loading';
+                    }
+                }
+
+                if (tickerEl) {
+                    if (target.ticker) {
+                        tickerEl.textContent = target.ticker;
+                        tickerEl.classList.remove('hidden');
+                    } else {
+                        tickerEl.textContent = '';
+                        tickerEl.classList.add('hidden');
+                    }
+                }
+
+                if (subtitleEl) {
+                    subtitleEl.textContent = target.subtitle || '';
+                }
+
+                if (skeletonRoot) {
+                    skeletonRoot.querySelectorAll('.skeleton-page').forEach(function (panel) {
+                        panel.classList.toggle('is-active', panel.getAttribute('data-skeleton-page') === target.page);
+                    });
+                    skeletonRoot.setAttribute('aria-hidden', 'false');
+                }
+
+                document.body.setAttribute('data-active-skeleton', target.page);
+                document.body.setAttribute('aria-busy', 'true');
+                document.body.classList.add('is-loading-skeleton');
+            };
+
+            window.hidePageSkeleton = function () {
+                document.body.classList.remove('is-loading-skeleton');
+                document.body.removeAttribute('data-active-skeleton');
+                document.body.removeAttribute('aria-busy');
+                if (skeletonRoot) {
+                    skeletonRoot.setAttribute('aria-hidden', 'true');
+                    skeletonRoot.querySelectorAll('.skeleton-page').forEach(function (panel) {
+                        panel.classList.remove('is-active');
+                    });
+                }
+                document.querySelectorAll('.navbar.sidebar [data-nav-key]').forEach(function (el) {
+                    el.classList.toggle('active', el.getAttribute('data-nav-key') === initialNavKey);
+                });
+            };
+
+            window.navigateWithSkeleton = function (url, triggerEl) {
+                if (!url) return;
+                window.showPageSkeleton(url, triggerEl);
+                if (pendingNavTimer) {
+                    clearTimeout(pendingNavTimer);
+                }
+                requestAnimationFrame(function () {
+                    pendingNavTimer = setTimeout(function () {
+                        window.location.assign(url);
+                    }, 90);
+                });
+            };
+
+            function resolveFormTarget(form) {
+                const explicit = form.getAttribute('data-skeleton-target');
+                if (explicit) return explicit;
+
+                let actionPath = window.location.pathname;
+                try {
+                    const actionAttr = form.getAttribute('action') || window.location.href;
+                    actionPath = new URL(actionAttr, window.location.href).pathname;
+                } catch (e) {}
+
+                if (/^\/investments\/\d+\/delete\/?$/.test(actionPath) || actionPath === '/investments/new') {
+                    return '/';
+                }
+                if (/^\/investments\/\d+\/edit\/?$/.test(actionPath)) {
+                    return actionPath.replace(/\/edit\/?$/, '');
+                }
+                if (actionPath === '/dividends/new') {
+                    const invSel = form.querySelector('[name="investment_id"]');
+                    if (invSel && invSel.value) {
+                        return '/investments/' + encodeURIComponent(invSel.value);
+                    }
+                    return '/';
+                }
+                if (/^\/dividends\/\d+\/edit\/?$/.test(actionPath)) {
+                    const cancelLink = form.querySelector('.form-actions a[href*="/investments/"]');
+                    return cancelLink ? cancelLink.getAttribute('href') : '/';
+                }
+                if (/^\/dividends\/\d+\/delete\/?$/.test(actionPath)) {
+                    return window.location.pathname;
+                }
+                if (actionPath.startsWith('/settings')) {
+                    return '/settings/';
+                }
+                return window.location.href;
+            }
+
+            document.addEventListener('click', function (e) {
+                if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+                    return;
+                }
+                const anchor = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+                if (!anchor) return;
+                if (anchor.hasAttribute('download') || anchor.hasAttribute('data-no-skeleton')) return;
+                if (anchor.target && anchor.target !== '_self') return;
+
+                const rawHref = (anchor.getAttribute('href') || '').trim();
+                if (!rawHref || rawHref.startsWith('#') || rawHref.toLowerCase().startsWith('javascript:')) {
+                    return;
+                }
+
+                let parsed;
+                try {
+                    parsed = new URL(anchor.href, window.location.origin);
+                } catch (err) {
+                    return;
+                }
+
+                if (parsed.origin !== window.location.origin) return;
+                if (parsed.pathname === '/settings/database/download') return;
+
+                e.preventDefault();
+                window.navigateWithSkeleton(parsed.href, anchor);
+            });
+
+            document.addEventListener('submit', function (e) {
+                const form = e.target;
+                if (!form || form.tagName !== 'FORM' || e.defaultPrevented || form.hasAttribute('data-no-skeleton')) {
+                    return;
+                }
+                if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                    return;
+                }
+                const targetUrl = resolveFormTarget(form);
+                window.showPageSkeleton(targetUrl, form);
+            });
+
+            window.addEventListener('pageshow', function () {
+                if (pendingNavTimer) {
+                    clearTimeout(pendingNavTimer);
+                    pendingNavTimer = null;
+                }
+                window.hidePageSkeleton();
+            });
         })();
     </script>
     {% block scripts %}{% endblock scripts %}

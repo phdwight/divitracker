@@ -55,11 +55,21 @@
         }
 
         function updateFilters() {
-            window.location.href = buildDashboardUrl();
+            const url = buildDashboardUrl();
+            if (window.navigateWithSkeleton) {
+                window.navigateWithSkeleton(url);
+            } else {
+                window.location.href = url;
+            }
         }
 
         function goToPage(page) {
-            window.location.href = buildDashboardUrl(page);
+            const url = buildDashboardUrl(page);
+            if (window.navigateWithSkeleton) {
+                window.navigateWithSkeleton(url);
+            } else {
+                window.location.href = url;
+            }
         }
 
         function toggleFilterChip(checkboxId) {

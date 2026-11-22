@@ -212,7 +212,7 @@
                     <h3>Download Backup</h3>
                     <p>Download a backup copy of your database file.</p>
                     {% if db_exists %}
-                    <a href="{{ url_for('admin.download_db') }}" class="btn btn-primary btn-sm">
+                    <a href="{{ url_for('admin.download_db') }}" class="btn btn-primary btn-sm" data-no-skeleton>
                         Download Database
                     </a>
                     {% else %}

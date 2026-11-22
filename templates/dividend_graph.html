@@ -47,7 +47,11 @@
             let url = '{{ url_for("main.dividend_graph") }}?';
             if (year) url += 'year=' + year + '&';
             if (investmentId) url += 'investment_id=' + investmentId;
-            window.location.href = url;
+            if (window.navigateWithSkeleton) {
+                window.navigateWithSkeleton(url);
+            } else {
+                window.location.href = url;
+            }
         }
     </script>
 
