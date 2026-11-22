@@ -40,13 +40,23 @@
         function updatePageFilters() {
             const year = document.getElementById('year-select')?.value || {{ selected_year }};
             const perPage = document.getElementById('per-page-select')?.value || {{ items_per_page }};
-            window.location.href = '?year=' + year + '&per_page=' + perPage;
+            const url = '?year=' + year + '&per_page=' + perPage;
+            if (window.navigateWithSkeleton) {
+                window.navigateWithSkeleton(url);
+            } else {
+                window.location.href = url;
+            }
         }
         
         function goToPage(page) {
             const year = document.getElementById('year-select')?.value || {{ selected_year }};
             const perPage = document.getElementById('per-page-select')?.value || {{ items_per_page }};
-            window.location.href = '?year=' + year + '&per_page=' + perPage + '&page=' + page;
+            const url = '?year=' + year + '&per_page=' + perPage + '&page=' + page;
+            if (window.navigateWithSkeleton) {
+                window.navigateWithSkeleton(url);
+            } else {
+                window.location.href = url;
+            }
         }
     </script>
 

@@ -286,3 +286,28 @@ Feature: Web Routes
         When I update a dividend for "Test Investment" with investment amount "8000"
         Then I should see "Updated" in the page
         And the dividend should have investment amount at time 8000
+
+    # Optimistic UI & Page Skeletons
+    Scenario: Application shell renders optimistic UI target page skeletons
+        When I visit "/"
+        Then I should see status code 200
+        And I should see "optimistic-skeleton-root" in the page
+        And the page should include optimistic skeleton for "dashboard"
+        And the page should include optimistic skeleton for "dividend-graph"
+        And the page should include optimistic skeleton for "yield-breakdown"
+        And the page should include optimistic skeleton for "view-investment"
+        And the page should include optimistic skeleton for "add-investment"
+        And the page should include optimistic skeleton for "edit-investment"
+        And the page should include optimistic skeleton for "dividend-form"
+        And the page should include optimistic skeleton for "settings"
+
+    Scenario: Application shell includes optimistic navigation controller and sidebar hooks
+        When I visit "/"
+        Then I should see status code 200
+        And I should see "navigateWithSkeleton" in the page
+        And I should see "showPageSkeleton" in the page
+        And I should see "resolveSkeletonTarget" in the page
+        And the page should include sidebar nav hook "dashboard"
+        And the page should include sidebar nav hook "dividend-graph"
+        And the page should include sidebar nav hook "new"
+        And the page should include sidebar nav hook "settings"

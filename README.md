@@ -14,6 +14,7 @@ A Flask application for tracking dividend income from your investments. Calculat
 - **Configurable Sidebar Navigation**: Vertical icon+label navigation sidebar (`Dashboard`, `Graph`, `+ New` quick-create popover, `Settings`) docked on the left by default and configurable to the right side via the Settings page or the quick sidebar toggle button (adapting into a fixed bottom tab bar on mobile)
 - **Consolidated View & Privacy Menu**: Unified topbar `View` popover menu consolidating `Hide amounts` (privacy blur with hover-to-peek, persisted in `localStorage`), `Hide zero dividends`, `Hide zero investments`, and `Show Cumulative Line` chart toggle with an active count badge
 - **Forest & Amber Dark Theme with Frosted Glass Layering**: High-contrast dark theme crafted from a 4-color palette — Deep Forest Green (`#09251C` canvas), Burnt Amber (`#A55704` brand & interactive accents), Warm Sand (`#F3D2AF` secondary highlights, borders & chart cumulative line), and Soft Cream (`#F8EADC` WCAG AAA primary typography) — paired with multi-tier frosted glass (`backdrop-filter: blur(...)`) cards, sub-cards, controls, and popovers for visual depth
+- **Optimistic UI with Instant Page Skeletons**: Immediate visual response on navigation link clicks, filter/sort/year/pagination changes, and form submissions — optimistically updating the active sidebar item and destination heading while rendering a frosted-glass shimmer skeleton matching the target page (`dashboard`, `dividend-graph`, `yield-breakdown`, `view-investment`, `add-investment`, `edit-investment`, `dividend-form`, `settings`)
 - **Pagination**: Configurable items per page (5–100) for dashboard holdings and investment dividend history views
 - **Historical Tracking**: Track investment amount at time of dividend for accurate multi-period yield calculations
 - **Timezone Support**: Configurable timezone for accurate local time display (default: GMT+8)
@@ -58,7 +59,7 @@ divitracker/
 │   └── errors.html          # Custom 400/403/404/500 error page
 ├── static/                  # Static assets (style.css, favicon.svg)
 ├── config/                  # User configuration (user_settings.json)
-├── tests/                   # BDD test suite (pytest-bdd, 208 scenarios)
+├── tests/                   # BDD test suite (pytest-bdd, 210 scenarios)
 │   ├── conftest.py          # Shared test fixtures
 │   ├── features/            # Gherkin feature files (12 feature suites)
 │   │   ├── admin_settings.feature
@@ -290,7 +291,7 @@ Tests are organized by actor and domain using tags:
 ### Running Tests
 
 ```bash
-# Run all tests (208 scenarios; automatically enforces >= 80% coverage via pyproject.toml)
+# Run all tests (210 scenarios; automatically enforces >= 80% coverage via pyproject.toml)
 pytest
 
 # Run with HTML coverage report
@@ -314,7 +315,7 @@ pytest -v
 
 ### Test Coverage
 
-Current coverage: **95.02%** (208 BDD scenarios; minimum required threshold of **80%** enforced via `pyproject.toml`):
+Current coverage: **95.02%** (210 BDD scenarios; minimum required threshold of **80%** enforced via `pyproject.toml`):
 
 | Module | Coverage |
 |--------|----------|
@@ -510,7 +511,7 @@ The application supports multiple environments:
 - **Framework**: Flask 3.1.3
 - **Database**: SQLite with Flask-SQLAlchemy 3.1.1 ORM
 - **Migrations**: Flask-Migrate 4.1.0
-- **Testing**: pytest 9.1.1, pytest-bdd 9.0.0, pytest-cov 7.1.0 (95.02% coverage, 208 BDD scenarios)
+- **Testing**: pytest 9.1.1, pytest-bdd 9.0.0, pytest-cov 7.1.0 (95.02% coverage, 210 BDD scenarios)
 - **Frontend & Styling**: Jinja2 templates, Chart.js 4.4.0, custom CSS (`static/style.css`) with Forest & Amber dark theme (`#09251C`, `#A55704`, `#F3D2AF`, `#F8EADC`), and SVG favicon (`static/favicon.svg`)
 - **Containerization**: Docker with multi-stage `python:3.14.9-slim` builds
 - **CI/CD**: GitHub Actions (automated lint, test, CodeQL, and multi-arch builds to GHCR)

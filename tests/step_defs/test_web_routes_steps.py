@@ -436,3 +436,15 @@ def check_version_in_footer(response):
     assert re.search(
         pattern, data
     ), "Footer should contain 'Version' followed by a version number or 'dev'"
+
+
+@then(parsers.parse('the page should include optimistic skeleton for "{page_key}"'))
+def check_optimistic_skeleton_present(response, page_key):
+    """Check that the target page skeleton block is present in the HTML."""
+    assert f'data-skeleton-page="{page_key}"'.encode() in response.data
+
+
+@then(parsers.parse('the page should include sidebar nav hook "{nav_key}"'))
+def check_sidebar_nav_hook_present(response, nav_key):
+    """Check that the sidebar navigation hook is present in the HTML."""
+    assert f'data-nav-key="{nav_key}"'.encode() in response.data
