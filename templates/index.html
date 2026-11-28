@@ -25,11 +25,11 @@
     <div class="popover-label">Holdings filters</div>
     <label class="switch-row">
         <span class="switch-text">Hide zero dividends<small>Only holdings with {{ selected_year }} payouts</small></span>
-        <input type="checkbox" id="hide-zero" class="switch" data-view-toggle {% if hide_zero %}checked{% endif %} onchange="updateFilters()">
+        <input type="checkbox" id="hide-zero" class="switch" switch data-view-toggle {% if hide_zero %}checked{% endif %} onchange="updateFilters()">
     </label>
     <label class="switch-row">
         <span class="switch-text">Hide zero investments<small>Only holdings with balance &gt; 0</small></span>
-        <input type="checkbox" id="hide-zero-investments" class="switch" data-view-toggle {% if hide_zero_investments %}checked{% endif %} onchange="updateFilters()">
+        <input type="checkbox" id="hide-zero-investments" class="switch" switch data-view-toggle {% if hide_zero_investments %}checked{% endif %} onchange="updateFilters()">
     </label>
 </div>
 {% endblock view_menu_filters %}
@@ -146,7 +146,7 @@
 
         {% if investments %}
         <div class="holdings-table-card">
-            <div class="table-container">
+            <div class="table-container" tabindex="0" role="region" aria-label="Portfolio holdings">
                 <table class="holdings-table">
                     <thead>
                         <tr>
@@ -209,25 +209,25 @@
                                 </div>
                             </td>
                             <td class="col-actions">
-                                <details class="popover row-menu" data-popover>
-                                    <summary class="icon-btn row-menu-btn" title="Actions for {{ investment.name }}" aria-label="Actions for {{ investment.name }}">
+                                <div class="popover-host row-menu">
+                                    <button type="button" class="icon-btn row-menu-btn" commandfor="row-menu-{{ investment.id }}" command="toggle-popover" aria-expanded="false" title="Actions for {{ investment.name }}" aria-label="Actions for {{ investment.name }}">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
-                                    </summary>
-                                    <div class="popover-panel row-menu-panel" role="menu">
-                                        <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="menu-item" role="menuitem">
+                                    </button>
+                                    <div id="row-menu-{{ investment.id }}" popover="auto" class="popover-panel row-menu-panel">
+                                        <a href="{{ url_for('dividends.add_dividend', investment_id=investment.id) }}" class="menu-item">
                                             <span class="menu-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
                                             <span>Record dividend</span>
                                         </a>
-                                        <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="menu-item" role="menuitem">
+                                        <a href="{{ url_for('investments.view_investment', investment_id=investment.id) }}" class="menu-item" data-holding-name="{{ investment.name }}" data-holding-ticker="{{ investment.ticker or '' }}">
                                             <span class="menu-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span>
                                             <span>View details</span>
                                         </a>
-                                        <a href="{{ url_for('investments.edit_investment', investment_id=investment.id) }}" class="menu-item" role="menuitem">
+                                        <a href="{{ url_for('investments.edit_investment', investment_id=investment.id) }}" class="menu-item" data-holding-name="{{ investment.name }}" data-holding-ticker="{{ investment.ticker or '' }}">
                                             <span class="menu-item-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span>
                                             <span>Edit holding</span>
                                         </a>
                                     </div>
-                                </details>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

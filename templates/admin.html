@@ -43,17 +43,23 @@
                     <div class="form-group">
                         <label for="currency_code">Code</label>
                         <input type="text" id="currency_code" name="currency_code"
-                               value="{{ settings.currency.code }}" class="form-control" required maxlength="5">
+                               value="{{ settings.currency.code }}" class="form-control" required maxlength="5"
+                               data-error="currency_code-error">
+                        <span id="currency_code-error" class="field-error">Enter a currency code (up to 5 characters).</span>
                     </div>
                     <div class="form-group">
                         <label for="currency_symbol">Symbol</label>
                         <input type="text" id="currency_symbol" name="currency_symbol"
-                               value="{{ settings.currency.symbol }}" class="form-control" required maxlength="5">
+                               value="{{ settings.currency.symbol }}" class="form-control" required maxlength="5"
+                               data-error="currency_symbol-error">
+                        <span id="currency_symbol-error" class="field-error">Enter a currency symbol.</span>
                     </div>
                     <div class="form-group">
                         <label for="currency_name">Name</label>
                         <input type="text" id="currency_name" name="currency_name"
-                               value="{{ settings.currency.name }}" class="form-control" required>
+                               value="{{ settings.currency.name }}" class="form-control" required
+                               data-error="currency_name-error">
+                        <span id="currency_name-error" class="field-error">Enter a currency name.</span>
                     </div>
                 </div>
             </section>
@@ -148,13 +154,15 @@
                         <label for="timezone_offset">UTC Offset (hours)</label>
                         <input type="number" id="timezone_offset" name="timezone_offset"
                                value="{{ settings.timezone.offset_hours }}" class="form-control"
-                               min="-12" max="14" required>
+                               min="-12" max="14" required data-error="timezone_offset-error">
+                        <span id="timezone_offset-error" class="field-error">Enter a UTC offset between -12 and +14.</span>
                     </div>
                     <div class="form-group">
                         <label for="timezone_name">Timezone Name</label>
                         <input type="text" id="timezone_name" name="timezone_name"
                                value="{{ settings.timezone.name }}" class="form-control" required
-                               placeholder="e.g., GMT+8, PST, EST">
+                               placeholder="e.g., GMT+8, PST, EST" data-error="timezone_name-error">
+                        <span id="timezone_name-error" class="field-error">Enter a timezone name.</span>
                     </div>
                     <div class="form-group">
                         <label for="items_per_page">Items Per Page</label>
@@ -224,7 +232,10 @@
                     <h3>Restore / Upload</h3>
                     <p>Upload a database file to replace the current one. A backup is created automatically.</p>
                     <form action="{{ url_for('admin.upload_db') }}" method="post" enctype="multipart/form-data"
-                          onsubmit="return confirmUpload()">
+                          data-confirm="Are you sure you want to replace the database? This action cannot be undone without a backup."
+                          data-confirm-title="Replace database"
+                          data-confirm-label="Upload &amp; Replace"
+                          data-confirm-variant="warning">
                         <div class="file-upload">
                             <input type="file" id="db_file" name="db_file" accept=".db" required>
                             <label for="db_file" class="file-label">
@@ -296,10 +307,6 @@
         const fileName = e.target.files[0]?.name || '';
         document.getElementById('file_name').textContent = fileName;
     });
-
-    function confirmUpload() {
-        return confirm('Are you sure you want to replace the database? This action cannot be undone without a backup.');
-    }
 
     document.getElementById('timezone_offset').addEventListener('change', function(e) {
         const offset = parseInt(e.target.value);

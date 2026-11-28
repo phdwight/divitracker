@@ -311,3 +311,38 @@ Feature: Web Routes
         And the page should include sidebar nav hook "dividend-graph"
         And the page should include sidebar nav hook "new"
         And the page should include sidebar nav hook "settings"
+
+    # Modern Web Guidance UI Primitives
+    Scenario: Application shell uses speculation rules, native popovers, and invoker commands
+        When I visit "/"
+        Then I should see status code 200
+        And the page should contain raw markup 'type="speculationrules"'
+        And the page should contain raw markup 'popover="auto"'
+        And the page should contain raw markup 'command="toggle-popover"'
+        And the page should contain raw markup 'commandfor="new-menu-popover"'
+        And the page should contain raw markup 'commandfor="view-menu-popover"'
+
+    Scenario: Application shell renders native confirmation modal dialog
+        When I visit "/"
+        Then I should see status code 200
+        And the page should contain raw markup '<dialog id="confirmDialog"'
+        And the page should contain raw markup 'closedby="closerequest"'
+
+    Scenario: Dividend graph uses native modal dialog and accessible collapsible summary
+        When I visit "/reports/dividends-chart"
+        Then I should see status code 200
+        And the page should contain raw markup '<dialog id="dividendModal"'
+        And the page should contain raw markup 'closedby="any"'
+        And the page should contain raw markup '<span class="collapsible-title">Data Table</span>'
+        And the page should not contain raw markup '<h2>Data Table</h2>'
+
+    Scenario: Investment and dividend forms include accessible validation wiring
+        Given an investment "Test Investment" with ticker "TEST" exists
+        When I visit "/investments/new"
+        Then I should see status code 200
+        And the page should contain raw markup 'data-error="name-error"'
+        And the page should contain raw markup 'class="field-error"'
+        When I visit "/dividends/new"
+        Then I should see status code 200
+        And the page should contain raw markup 'data-error="investment_id-error"'
+        And the page should contain raw markup 'class="field-error"'

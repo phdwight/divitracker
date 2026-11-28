@@ -61,7 +61,7 @@
         <p class="yield-note">The investment amount used for yield calculation is the average of all investment amounts recorded at the time of each dividend in {{ selected_year }}. This provides a more accurate yield calculation when investment balances change during the year.</p>
 
         {% if investment_details %}
-        <div class="table-container">
+        <div class="table-container" tabindex="0" role="region" aria-label="Investment yield breakdown">
             <table class="yield-table">
                 <thead>
                     <tr>

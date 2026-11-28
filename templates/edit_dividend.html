@@ -19,14 +19,16 @@
                        step="0.01" 
                        min="0.01"
                        value="{{ dividend.amount }}"
-                       required>
+                       required
+                       data-error="amount-error">
+                <span id="amount-error" class="field-error">Enter a dividend amount greater than 0.</span>
                 <small class="form-help">Enter the dividend amount you received</small>
             </div>
 
             <div class="form-group">
                 <label>Dividend Period *</label>
                 <div class="period-inputs">
-                    <select id="period_month" name="period_month" required>
+                    <select id="period_month" name="period_month" required data-error="period_month-error">
                         <option value="">-- Month --</option>
                         <option value="1" {% if dividend.period_month == 1 %}selected{% endif %}>January</option>
                         <option value="2" {% if dividend.period_month == 2 %}selected{% endif %}>February</option>
@@ -41,13 +43,15 @@
                         <option value="11" {% if dividend.period_month == 11 %}selected{% endif %}>November</option>
                         <option value="12" {% if dividend.period_month == 12 %}selected{% endif %}>December</option>
                     </select>
-                    <select id="period_year" name="period_year" required>
+                    <select id="period_year" name="period_year" required data-error="period_year-error">
                         <option value="">-- Year --</option>
                         {% for year in range(2020, 2031) %}
                         <option value="{{ year }}" {% if dividend.period_year == year %}selected{% endif %}>{{ year }}</option>
                         {% endfor %}
                     </select>
                 </div>
+                <span id="period_month-error" class="field-error">Choose the payout month.</span>
+                <span id="period_year-error" class="field-error">Choose the payout year.</span>
                 <small class="form-help">Select the month and year this dividend is for</small>
             </div>
 

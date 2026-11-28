@@ -33,7 +33,7 @@
     <div class="popover-label">Chart options</div>
     <label class="switch-row">
         <span class="switch-text">Show Cumulative Line<small>Overlay running total on chart</small></span>
-        <input type="checkbox" id="show-cumulative" class="switch" onchange="toggleCumulative()" checked>
+        <input type="checkbox" id="show-cumulative" class="switch" switch onchange="toggleCumulative()" checked>
     </label>
 </div>
 {% endblock view_menu_filters %}
@@ -86,10 +86,10 @@
 
     <details class="data-table-section collapsible-section" open>
         <summary class="collapsible-header">
-            <h2>Data Table</h2>
+            <span class="collapsible-title">Data Table</span>
             <span class="collapsible-chevron">▾</span>
         </summary>
-        <div class="table-container">
+        <div class="table-container" tabindex="0" role="region" aria-label="Dividend data table">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -120,12 +120,12 @@
         </div>
     </details>
 
-    <!-- Modal for dividend details -->
-    <div id="dividendModal" class="modal" style="display: none;">
+    <!-- Native modal dialog for dividend details -->
+    <dialog id="dividendModal" class="modal-dialog" closedby="any" aria-labelledby="modalTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">Dividend Details</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <h1 id="modalTitle" class="modal-title">Dividend Details</h1>
+                <button type="button" class="modal-close" aria-label="Close dividend details" commandfor="dividendModal" command="close">&times;</button>
             </div>
             <div class="modal-body">
                 <table class="data-table">
@@ -148,7 +148,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </dialog>
 </div>
 {% endblock content %}
 
@@ -306,8 +306,18 @@
     }
 
     // Modal functions
+    const dividendModal = document.getElementById('dividendModal');
+
+    if (dividendModal) {
+        dividendModal.addEventListener('cancel', function(e) {
+            if (window.supportsTopLayerExit && !window.supportsTopLayerExit()) {
+                e.preventDefault();
+                closeModal();
+            }
+        });
+    }
+
     function showDividendDetails(period, details, total) {
-        const modal = document.getElementById('dividendModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalTableBody = document.getElementById('modalTableBody');
         const modalTotal = document.getElementById('modalTotal');
@@ -324,25 +334,21 @@
             </tr>
         `).join('');
 
-        modal.style.display = 'flex';
+        if (dividendModal) {
+            dividendModal.removeAttribute('data-closing');
+            if (typeof dividendModal.showModal === 'function') {
+                dividendModal.showModal();
+            }
+        }
     }
 
     function closeModal() {
-        document.getElementById('dividendModal').style.display = 'none';
+        if (!dividendModal) return;
+        if (window.closeTopLayer) {
+            window.closeTopLayer(dividendModal);
+        } else if (typeof dividendModal.close === 'function') {
+            dividendModal.close();
+        }
     }
-
-    // Close modal when clicking outside
-    document.getElementById('dividendModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
-
-    // Close modal on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal();
-        }
-    });
 </script>
 {% endblock scripts %}
