@@ -448,3 +448,15 @@ def check_optimistic_skeleton_present(response, page_key):
 def check_sidebar_nav_hook_present(response, nav_key):
     """Check that the sidebar navigation hook is present in the HTML."""
     assert f'data-nav-key="{nav_key}"'.encode() in response.data
+
+
+@then(parsers.parse("the page should contain raw markup '{snippet}'"))
+def check_raw_markup_present(response, snippet):
+    """Check that a literal HTML markup snippet is present in the response."""
+    assert snippet.encode() in response.data
+
+
+@then(parsers.parse("the page should not contain raw markup '{snippet}'"))
+def check_raw_markup_absent(response, snippet):
+    """Check that a literal HTML markup snippet is absent from the response."""
+    assert snippet.encode() not in response.data

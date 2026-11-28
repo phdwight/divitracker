@@ -11,7 +11,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=forest5">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=forest6">
+    <script type="speculationrules">
+    {
+      "tag": "divitracker-nav-prefetch",
+      "prefetch": [
+        {
+          "where": {
+            "and": [
+              { "href_matches": "/*" },
+              { "not": { "href_matches": "/settings/database/download" } },
+              { "not": { "href_matches": "/*/delete" } },
+              { "not": { "selector_matches": "[download]" } },
+              { "not": { "selector_matches": "[data-no-skeleton]" } }
+            ]
+          },
+          "eagerness": "moderate"
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="sidebar-{{ sidebar_position | default('left') }}" data-sidebar-position="{{ sidebar_position | default('left') }}">
     {% set ep = request.endpoint or '' %}
@@ -34,25 +53,25 @@
                     <span class="nav-label">Graph</span>
                 </a>
 
-                <details class="popover new-menu" data-popover>
-                    <summary class="nav-new {{ 'active' if ep in ('investments.add_investment', 'dividends.add_dividend') }}" aria-label="Create new" data-nav-key="new">
+                <div class="popover-host new-menu">
+                    <button type="button" class="nav-new {{ 'active' if ep in ('investments.add_investment', 'dividends.add_dividend') }}" id="new-menu-trigger" commandfor="new-menu-popover" command="toggle-popover" aria-expanded="false" aria-label="Create new" data-nav-key="new">
                         <span class="nav-new-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </span>
                         <span class="nav-label">New</span>
-                    </summary>
-                    <div class="popover-panel new-menu-panel" role="menu">
+                    </button>
+                    <div id="new-menu-popover" popover="auto" class="popover-panel new-menu-panel">
                         <div class="popover-label">Create</div>
-                        <a href="{{ url_for('investments.add_investment') }}" class="menu-item" role="menuitem">
+                        <a href="{{ url_for('investments.add_investment') }}" class="menu-item">
                             <span class="menu-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
                             <span>Add investment<small>New holding or top-up</small></span>
                         </a>
-                        <a href="{{ url_for('dividends.add_dividend') }}" class="menu-item" role="menuitem">
+                        <a href="{{ url_for('dividends.add_dividend') }}" class="menu-item">
                             <span class="menu-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span>
                             <span>Add dividend<small>Record a payout</small></span>
                         </a>
                     </div>
-                </details>
+                </div>
 
                 <a href="{{ url_for('admin.admin_index') }}" class="nav-item {{ 'active' if ep.startswith('admin.') }}" data-nav-key="settings">
                     <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
@@ -88,24 +107,24 @@
                             {% block page_actions %}{% endblock page_actions %}
 
                             {# Consolidated visibility controls: privacy + page-specific hide filters #}
-                            <details class="popover view-menu no-print" id="view-menu" data-popover>
-                                <summary class="view-menu-btn" aria-label="View and hide options">
+                            <div class="popover-host view-menu no-print" id="view-menu">
+                                <button type="button" class="view-menu-btn" id="view-menu-trigger" commandfor="view-menu-popover" command="toggle-popover" aria-expanded="false" aria-label="View and hide options">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                     <span class="view-menu-label">View</span>
                                     <span class="view-badge hidden" id="view-badge" title="Active hide options">0</span>
                                     <svg class="view-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                                </summary>
-                                <div class="popover-panel view-menu-panel">
+                                </button>
+                                <div id="view-menu-popover" popover="auto" class="popover-panel view-menu-panel">
                                     <div class="popover-section">
                                         <div class="popover-label">Privacy</div>
                                         <label class="switch-row">
                                             <span class="switch-text">Hide amounts<small>Blur monetary values (hover to peek)</small></span>
-                                            <input type="checkbox" id="mask-toggle" class="switch" data-view-toggle>
+                                            <input type="checkbox" id="mask-toggle" class="switch" switch data-view-toggle>
                                         </label>
                                     </div>
                                     {% block view_menu_filters %}{% endblock view_menu_filters %}
                                 </div>
-                            </details>
+                            </div>
                         </div>
                         <div class="page-actions-skeleton" id="optimistic-actions" aria-hidden="true">
                             <span class="skeleton-bone skeleton-pill"></span>
@@ -119,12 +138,14 @@
                 <div class="page-content-live" id="page-content-live">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }}">
-                                    {{ message }}
-                                    <button class="close-btn" onclick="this.parentElement.remove()">×</button>
-                                </div>
-                            {% endfor %}
+                            <div class="alerts-region" role="region" aria-label="Notifications">
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">
+                                        <span>{{ message }}</span>
+                                        <button type="button" class="close-btn" aria-label="Dismiss notification" onclick="this.parentElement.remove()">×</button>
+                                    </div>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                     {% endwith %}
 
@@ -531,32 +552,429 @@
         </div>
     </div>
 
-    <script>
-        // Auto-dismiss alerts after 5 seconds
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(alert => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            });
-        }, 5000);
+    <dialog id="confirmDialog" class="modal-dialog confirm-dialog" closedby="closerequest" aria-labelledby="confirmDialogTitle" aria-describedby="confirmDialogMessage">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 id="confirmDialogTitle" class="modal-title">Confirm action</h1>
+                <button type="button" class="modal-close" aria-label="Close dialog" commandfor="confirmDialog" command="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmDialogMessage" class="confirm-dialog-message"></p>
+                <form method="dialog" class="confirm-dialog-actions">
+                    <button type="submit" value="cancel" class="btn btn-secondary btn-sm" autofocus>Cancel</button>
+                    <button type="submit" value="confirm" id="confirmDialogSubmit" class="btn btn-danger btn-sm">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </dialog>
 
-        // Popovers (<details data-popover>): close on outside click / Escape, one open at a time
+    <script type="module">
+        if (!('commandForElement' in HTMLButtonElement.prototype)) {
+            import('https://esm.run/invokers-polyfill').catch(function () {});
+        }
+        if (!Object.hasOwn(HTMLElement.prototype, 'popover')) {
+            import('https://unpkg.com/@oddbird/popover-polyfill@latest/dist/popover.min.js').catch(function () {});
+        }
+    </script>
+
+    <script>
+        // Accessible alert auto-dismiss: pause while hovered or focused
         (function () {
-            const popovers = () => document.querySelectorAll('details[data-popover]');
+            document.querySelectorAll('.alert').forEach(function (alert) {
+                let timer = null;
+                function dismiss() {
+                    if (alert.contains(document.activeElement) || alert.matches(':hover')) {
+                        schedule(1500);
+                        return;
+                    }
+                    alert.style.opacity = '0';
+                    setTimeout(function () { alert.remove(); }, 300);
+                }
+                function schedule(delay) {
+                    clearTimeout(timer);
+                    timer = setTimeout(dismiss, delay);
+                }
+                alert.addEventListener('mouseenter', function () { clearTimeout(timer); });
+                alert.addEventListener('mouseleave', function () { schedule(2000); });
+                alert.addEventListener('focusin', function () { clearTimeout(timer); });
+                alert.addEventListener('focusout', function () { schedule(2000); });
+                schedule(5000);
+            });
+        })();
+
+        // Modern platform controls: native Popover + Invoker fallbacks, anchor fallback, switch role, top-layer dialog exit & confirm dialog
+        (function () {
+            // Switch role fallback for browsers without native <input type="checkbox" switch>
+            if (!('switch' in HTMLInputElement.prototype)) {
+                document.querySelectorAll('input[type="checkbox"][switch]').forEach(function (el) {
+                    if (!el.hasAttribute('role')) el.setAttribute('role', 'switch');
+                });
+            }
+
+            // Offline/pre-polyfill fallback for Invoker Commands ([commandfor][command])
             document.addEventListener('click', function (e) {
-                popovers().forEach(function (d) {
+                if ('commandForElement' in HTMLButtonElement.prototype) return;
+                const btn = e.target && e.target.closest ? e.target.closest('button[commandfor][command]') : null;
+                if (!btn) return;
+                const target = document.getElementById(btn.getAttribute('commandfor'));
+                if (!target) return;
+                const cmd = btn.getAttribute('command');
+                if (cmd === 'toggle-popover' && typeof target.togglePopover === 'function') {
+                    target.togglePopover({ source: btn });
+                } else if (cmd === 'show-popover' && typeof target.showPopover === 'function') {
+                    target.showPopover({ source: btn });
+                } else if (cmd === 'hide-popover' && typeof target.hidePopover === 'function') {
+                    target.hidePopover();
+                } else if (cmd === 'show-modal' && typeof target.showModal === 'function') {
+                    target.showModal();
+                } else if (cmd === 'close' && typeof target.close === 'function') {
+                    window.closeTopLayer(target);
+                }
+            });
+
+            // Sync aria-expanded and fallback fixed positioning when CSS Anchor Positioning (position-area) is unavailable
+            const supportsPositionArea = window.CSS && CSS.supports && CSS.supports('position-area: block-end');
+
+            function positionPopoverFallback(popover, trigger) {
+                if (supportsPositionArea || !trigger) return;
+                const rect = trigger.getBoundingClientRect();
+                const panelRect = popover.getBoundingClientRect();
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+                const gap = 8;
+
+                let top = rect.bottom + gap;
+                let left = rect.right - panelRect.width;
+
+                if (popover.classList.contains('new-menu-panel')) {
+                    const isMobile = vw <= 768;
+                    if (isMobile) {
+                        left = Math.max(12, Math.min(rect.left, vw - panelRect.width - 12));
+                        top = Math.max(12, rect.top - panelRect.height - gap);
+                    } else if (document.body.classList.contains('sidebar-right')) {
+                        left = Math.max(12, rect.left - panelRect.width - 10);
+                        top = Math.min(rect.top, vh - panelRect.height - 12);
+                    } else {
+                        left = Math.min(rect.right + 10, vw - panelRect.width - 12);
+                        top = Math.min(rect.top, vh - panelRect.height - 12);
+                    }
+                } else {
+                    if (left < 12) left = Math.max(12, rect.left);
+                    if (left + panelRect.width > vw - 12) left = Math.max(12, vw - panelRect.width - 12);
+                    if (top + panelRect.height > vh - 12 && rect.top - panelRect.height - gap >= 12) {
+                        top = rect.top - panelRect.height - gap;
+                    }
+                    top = Math.max(12, Math.min(top, vh - panelRect.height - 12));
+                }
+
+                popover.style.position = 'fixed';
+                popover.style.inset = 'auto';
+                popover.style.margin = '0';
+                popover.style.left = Math.round(left) + 'px';
+                popover.style.top = Math.round(top) + 'px';
+            }
+
+            document.addEventListener('toggle', function (e) {
+                const target = e.target;
+                if (!target || !target.hasAttribute || !target.hasAttribute('popover')) return;
+                const isOpen = e.newState === 'open';
+                const id = target.id;
+                const triggers = id ? document.querySelectorAll('[commandfor="' + CSS.escape(id) + '"]') : [];
+                triggers.forEach(function (btn) {
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+                if (isOpen) {
+                    const source = e.source || triggers[0];
+                    requestAnimationFrame(function () { positionPopoverFallback(target, source); });
+                } else {
+                    target.style.left = '';
+                    target.style.top = '';
+                    target.style.position = '';
+                    target.style.inset = '';
+                    target.style.margin = '';
+                }
+            }, true);
+
+            // Legacy <details data-popover> support if any remain
+            document.addEventListener('click', function (e) {
+                document.querySelectorAll('details[data-popover]').forEach(function (d) {
                     if (d.open && !d.contains(e.target)) d.open = false;
                 });
             });
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') popovers().forEach(function (d) { d.open = false; });
-            });
-            popovers().forEach(function (d) {
-                d.addEventListener('toggle', function () {
-                    if (!d.open) return;
-                    popovers().forEach(function (other) { if (other !== d) other.open = false; });
+
+            // Top-layer discrete display transition probe (handles Firefox bug 1882408)
+            let supportsDisplayTransition;
+            function canTransitionDisplay() {
+                if (supportsDisplayTransition !== undefined) return supportsDisplayTransition;
+                if (!window.CSS || !CSS.supports || !CSS.supports('transition-behavior', 'allow-discrete') || !document.body) {
+                    return false;
+                }
+                const probe = document.createElement('div');
+                probe.style.cssText = 'transition: display 1s allow-discrete !important; display: block;';
+                document.body.appendChild(probe);
+                getComputedStyle(probe).display;
+                probe.style.display = 'none';
+                supportsDisplayTransition = getComputedStyle(probe).display === 'block';
+                probe.remove();
+                return supportsDisplayTransition;
+            }
+
+            window.supportsTopLayerExit = function () {
+                return Boolean(window.CSS && CSS.supports && CSS.supports('overlay', 'auto') && canTransitionDisplay());
+            };
+
+            window.closeTopLayer = async function (element, returnValue) {
+                if (!element || !element.open) return;
+                if (!window.supportsTopLayerExit()) {
+                    element.setAttribute('data-closing', '');
+                    const animations = element.getAnimations ? element.getAnimations({ subtree: true }) : [];
+                    if (animations.length > 0) {
+                        await Promise.race([
+                            Promise.allSettled(animations.map(function (a) { return a.finished; })),
+                            new Promise(function (r) { setTimeout(r, 400); })
+                        ]);
+                    }
+                    if (!element.hasAttribute('data-closing')) return;
+                    element.removeAttribute('data-closing');
+                }
+                if (typeof element.close === 'function') {
+                    if (returnValue !== undefined) element.close(returnValue);
+                    else element.close();
+                }
+            };
+
+            // Fallback for closedby="any" on <dialog> (Safari)
+            if (!('closedBy' in HTMLDialogElement.prototype)) {
+                const isOutsideDialog = function (e, dialog) {
+                    const r = dialog.getBoundingClientRect();
+                    return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+                };
+                document.querySelectorAll('dialog[closedby="any"]').forEach(function (dialog) {
+                    let pressedOutside = false;
+                    dialog.addEventListener('pointerdown', function (e) {
+                        pressedOutside = e.target === dialog && isOutsideDialog(e, dialog);
+                    });
+                    dialog.addEventListener('pointerup', function (e) {
+                        if (pressedOutside && e.target === dialog && isOutsideDialog(e, dialog)) {
+                            window.closeTopLayer(dialog);
+                        }
+                        pressedOutside = false;
+                    });
+                });
+            }
+
+            // Shared native confirmation <dialog> controller
+            const confirmDialog = document.getElementById('confirmDialog');
+            const confirmTitleEl = document.getElementById('confirmDialogTitle');
+            const confirmMsgEl = document.getElementById('confirmDialogMessage');
+            const confirmSubmitBtn = document.getElementById('confirmDialogSubmit');
+            let pendingConfirmResolver = null;
+
+            if (confirmDialog) {
+                confirmDialog.addEventListener('cancel', function (e) {
+                    if (!window.supportsTopLayerExit()) {
+                        e.preventDefault();
+                        window.closeTopLayer(confirmDialog, 'cancel');
+                    }
+                });
+
+                confirmDialog.addEventListener('close', function () {
+                    const value = confirmDialog.returnValue;
+                    confirmDialog.returnValue = '';
+                    if (pendingConfirmResolver) {
+                        const resolve = pendingConfirmResolver;
+                        pendingConfirmResolver = null;
+                        resolve(value === 'confirm');
+                    }
+                });
+            }
+
+            window.confirmAction = function (options) {
+                const opts = options || {};
+                if (!confirmDialog || typeof confirmDialog.showModal !== 'function') {
+                    return Promise.resolve(window.confirm(opts.message || 'Are you sure?'));
+                }
+                if (confirmTitleEl) confirmTitleEl.textContent = opts.title || 'Confirm action';
+                if (confirmMsgEl) confirmMsgEl.textContent = opts.message || 'Are you sure you want to continue?';
+                if (confirmSubmitBtn) {
+                    confirmSubmitBtn.textContent = opts.confirmLabel || 'Confirm';
+                    confirmSubmitBtn.className = 'btn btn-sm btn-' + (opts.confirmVariant || 'danger');
+                }
+                if (pendingConfirmResolver) {
+                    const prevResolve = pendingConfirmResolver;
+                    pendingConfirmResolver = null;
+                    prevResolve(false);
+                }
+                const { promise, resolve } = Promise.withResolvers();
+                pendingConfirmResolver = resolve;
+                confirmDialog.removeAttribute('data-closing');
+                confirmDialog.returnValue = '';
+                confirmDialog.showModal();
+                return promise;
+            };
+
+            document.addEventListener('submit', function (e) {
+                const form = e.target;
+                if (!form || form.tagName !== 'FORM' || e.defaultPrevented) return;
+                const message = form.getAttribute('data-confirm');
+                if (!message) return;
+
+                e.preventDefault();
+                window.confirmAction({
+                    title: form.getAttribute('data-confirm-title') || 'Confirm action',
+                    message: message,
+                    confirmLabel: form.getAttribute('data-confirm-label') || 'Delete',
+                    confirmVariant: form.getAttribute('data-confirm-variant') || 'danger'
+                }).then(function (confirmed) {
+                    if (!confirmed) return;
+                    if (!form.hasAttribute('data-no-skeleton') && window.showPageSkeletonForForm) {
+                        window.showPageSkeletonForForm(form);
+                    }
+                    HTMLFormElement.prototype.submit.call(form);
                 });
             });
+        })();
+
+        // Accessible form validation ARIA sync (:user-invalid + single polite live region + legacy fallback)
+        (function () {
+            const supportsUserInvalid = window.CSS && CSS.supports && CSS.supports('selector(:user-invalid)');
+            const dirtyState = new WeakMap();
+            const flagged = new WeakSet();
+            const announced = new WeakSet();
+
+            const announcer = document.createElement('div');
+            announcer.setAttribute('aria-live', 'polite');
+            announcer.classList.add('visually-hidden');
+            document.body.append(announcer);
+            let announceTimer;
+            let announcedField;
+
+            function linkError(el, shown) {
+                const errorId = el.dataset ? el.dataset.error : '';
+                if (!errorId) return;
+                const ids = (el.getAttribute('aria-describedby') || '')
+                    .split(/\s+/)
+                    .filter(function (id) { return id && id !== errorId; });
+                if (shown) ids.push(errorId);
+                if (ids.length) el.setAttribute('aria-describedby', ids.join(' '));
+                else el.removeAttribute('aria-describedby');
+            }
+
+            function spokenText(node) {
+                const copy = node.cloneNode(true);
+                copy.querySelectorAll('[aria-hidden="true"]').forEach(function (n) { n.remove(); });
+                copy.querySelectorAll('[role="img"][aria-label]').forEach(function (n) {
+                    n.replaceWith(n.getAttribute('aria-label') + ': ');
+                });
+                return copy.textContent.replace(/\s+/g, ' ').trim();
+            }
+
+            function announceError(el) {
+                if (!el.dataset || !el.dataset.error) return;
+                const errorEl = document.getElementById(el.dataset.error);
+                if (!errorEl) return;
+                const label = el.labels && el.labels[0] ? spokenText(el.labels[0]) + ': ' : '';
+                clearTimeout(announceTimer);
+                announcer.textContent = '';
+                announcedField = el;
+                announceTimer = setTimeout(function () {
+                    announcer.textContent = label + spokenText(errorEl);
+                }, 500);
+            }
+
+            function syncAria(el, announce) {
+                if (!el || !el.matches || !el.matches('input, select, textarea')) return;
+                const invalid = supportsUserInvalid
+                    ? el.matches(':user-invalid')
+                    : el.classList.contains('user-invalid-fallback');
+                if (invalid) {
+                    if (announce && !announced.has(el)) {
+                        announceError(el);
+                        announced.add(el);
+                    }
+                    el.setAttribute('aria-invalid', 'true');
+                    linkError(el, true);
+                    flagged.add(el);
+                } else if (flagged.has(el) || el.getAttribute('aria-invalid') !== 'true') {
+                    el.setAttribute('aria-invalid', 'false');
+                    linkError(el, false);
+                    flagged.delete(el);
+                    announced.delete(el);
+                    if (announcedField === el) {
+                        clearTimeout(announceTimer);
+                        announcer.textContent = '';
+                    }
+                }
+            }
+
+            document.querySelectorAll('input, select, textarea').forEach(function (el) {
+                syncAria(el, false);
+            });
+
+            if (!supportsUserInvalid) {
+                const updateFallback = function (el, announce) {
+                    const isValid = el.validity.valid;
+                    el.classList.toggle('user-invalid-fallback', !isValid);
+                    el.classList.toggle('user-valid-fallback', isValid);
+                    syncAria(el, announce);
+                };
+                document.addEventListener('invalid', function (e) {
+                    const el = e.target;
+                    if (!el || !el.checkValidity) return;
+                    dirtyState.set(el, { hasInteracted: true, hasBlurred: true });
+                    announced.add(el);
+                    updateFallback(el, false);
+                }, true);
+                document.addEventListener('blur', function (e) {
+                    const el = e.target;
+                    if (!el || !el.checkValidity) return;
+                    const st = dirtyState.get(el) || { hasInteracted: false, hasBlurred: false };
+                    st.hasBlurred = true;
+                    dirtyState.set(el, st);
+                    if (st.hasInteracted) updateFallback(el, true);
+                }, true);
+                document.addEventListener('input', function (e) {
+                    const el = e.target;
+                    if (!el || !el.checkValidity) return;
+                    const st = dirtyState.get(el) || { hasInteracted: false, hasBlurred: false };
+                    st.hasInteracted = true;
+                    dirtyState.set(el, st);
+                    if (st.hasBlurred) updateFallback(el, false);
+                });
+                document.addEventListener('change', function (e) {
+                    const el = e.target;
+                    if (!el || !el.checkValidity) return;
+                    dirtyState.set(el, { hasInteracted: true, hasBlurred: true });
+                    updateFallback(el, true);
+                }, true);
+                document.addEventListener('reset', function (e) {
+                    const controls = (e.target && e.target.elements) || [];
+                    for (const control of controls) {
+                        dirtyState.delete(control);
+                        control.classList.remove('user-invalid-fallback', 'user-valid-fallback');
+                        syncAria(control, false);
+                    }
+                }, true);
+            } else {
+                document.addEventListener('blur', function (e) { syncAria(e.target, true); }, true);
+                document.addEventListener('input', function (e) {
+                    if (e.target && e.target.hasAttribute && e.target.hasAttribute('aria-invalid')) {
+                        syncAria(e.target, false);
+                    }
+                });
+                document.addEventListener('change', function (e) { syncAria(e.target, true); }, true);
+                document.addEventListener('invalid', function (e) {
+                    announced.add(e.target);
+                    syncAria(e.target, false);
+                }, true);
+                document.addEventListener('reset', function (e) {
+                    setTimeout(function () {
+                        if (e.target && e.target.elements) {
+                            Array.from(e.target.elements).forEach(function (el) { syncAria(el, false); });
+                        }
+                    });
+                }, true);
+            }
         })();
 
         // Badge on the View menu showing how many hide options are active
@@ -843,6 +1261,15 @@
             window.showPageSkeleton = function (urlOrKey, triggerEl) {
                 const target = window.resolveSkeletonTarget(urlOrKey, triggerEl);
 
+                document.querySelectorAll('[popover]').forEach(function (p) {
+                    let isOpen = p.classList.contains(':popover-open');
+                    if (!isOpen) {
+                        try { isOpen = p.matches(':popover-open'); } catch (e) {}
+                    }
+                    if (isOpen && typeof p.hidePopover === 'function') {
+                        try { p.hidePopover(); } catch (e) {}
+                    }
+                });
                 document.querySelectorAll('details[data-popover]').forEach(function (d) {
                     d.open = false;
                 });
@@ -948,6 +1375,10 @@
                 }
                 return window.location.href;
             }
+
+            window.showPageSkeletonForForm = function (form) {
+                window.showPageSkeleton(resolveFormTarget(form), form);
+            };
 
             document.addEventListener('click', function (e) {
                 if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {

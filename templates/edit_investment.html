@@ -18,7 +18,9 @@
                        name="name" 
                        value="{{ investment.name }}"
                        placeholder="e.g., Apple Inc., Vanguard S&amp;P 500 ETF"
-                       required>
+                       required
+                       data-error="name-error">
+                <span id="name-error" class="field-error">Enter a holding name to continue.</span>
             </div>
 
             <div class="form-group">
@@ -39,7 +41,9 @@
                        value="{{ investment.total_invested }}"
                        step="0.01" 
                        min="0"
-                       required>
+                       required
+                       data-error="amount-error">
+                <span id="amount-error" class="field-error">Enter a non-negative total amount.</span>
             </div>
 
             <div class="form-group">

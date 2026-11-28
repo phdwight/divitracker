@@ -19,7 +19,9 @@
                        list="investment-list"
                        placeholder="e.g., Apple Inc., Vanguard S&amp;P 500 ETF"
                        required
-                       autocomplete="off">
+                       autocomplete="off"
+                       data-error="name-error">
+                <span id="name-error" class="field-error">Enter a holding name to continue.</span>
                 <datalist id="investment-list">
                     {% for inv in investments %}
                     <option value="{{ inv.name }}" data-ticker="{{ inv.ticker or '' }}">{{ inv.ticker }}</option>
@@ -45,7 +47,9 @@
                            step="0.01"
                            min="0"
                            placeholder="0.00"
-                           required>
+                           required
+                           data-error="amount-error">
+                    <span id="amount-error" class="field-error">Enter a non-negative investment amount.</span>
                 </div>
             </div>
 
